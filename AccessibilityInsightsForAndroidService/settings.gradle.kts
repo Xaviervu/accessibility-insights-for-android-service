@@ -9,5 +9,5 @@ pluginManagement {
     }
 }
 
-include ':app'
-rootProject.name='Accessibility Insights For Android Service'
+include(":app")
+rootProject.name = "Accessibility Insights For Android Service"

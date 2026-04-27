@@ -7,7 +7,7 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 
 class ResultsV2Container {
     @JvmField
-    var ATFAResults: MutableList<AccessibilityHierarchyCheckResult?>? = null
+    var ATFAResults: List<AccessibilityHierarchyCheckResult>? = null
     @JvmField
     var AxeResult: AxeResult? = null
 }

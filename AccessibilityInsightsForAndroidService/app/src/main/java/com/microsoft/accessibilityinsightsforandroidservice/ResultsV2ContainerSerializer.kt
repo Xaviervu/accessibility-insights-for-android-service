@@ -47,7 +47,7 @@ class ResultsV2ContainerSerializer(
     }
 
     fun createResultsJson(
-        axeResult: AxeResult?, atfaResults: MutableList<AccessibilityHierarchyCheckResult?>?
+        axeResult: AxeResult?, atfaResults: List<AccessibilityHierarchyCheckResult>?
     ): String {
         val container = ResultsV2Container()
         container.ATFAResults = atfaResults

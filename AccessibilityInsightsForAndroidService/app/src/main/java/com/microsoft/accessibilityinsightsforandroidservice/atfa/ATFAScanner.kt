@@ -11,10 +11,10 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 import com.google.android.apps.common.testing.accessibility.framework.Parameters
 import com.google.android.apps.common.testing.accessibility.framework.uielement.AccessibilityHierarchyAndroid
 import com.google.android.apps.common.testing.accessibility.framework.utils.contrast.BitmapImage
-import java.util.Arrays
+import java.util.ArrayList
 
 class ATFAScanner(private val context: Context) {
-    private val relevantResultTypes = arrayOf<AccessibilityCheckResultType?>(
+    private val relevantResultTypes = listOf(
         AccessibilityCheckResultType.ERROR,
         AccessibilityCheckResultType.INFO,
         AccessibilityCheckResultType.WARNING,
@@ -24,7 +24,7 @@ class ATFAScanner(private val context: Context) {
 
     fun scanWithATFA(
         rootNode: AccessibilityNodeInfo, screenshot: BitmapImage?
-    ): MutableList<AccessibilityHierarchyCheckResult?> {
+    ): MutableList<AccessibilityHierarchyCheckResult> {
         val parameters = Parameters()
         parameters.setSaveViewImages(true)
         parameters.putCustomTouchTargetSize(44) // default is 48 but min size as defined by WCAG is 44
@@ -36,16 +36,16 @@ class ATFAScanner(private val context: Context) {
             )
         val hierarchy =
             AccessibilityHierarchyAndroid.newBuilder(rootNode, this.context).build()
-        val results: MutableList<AccessibilityHierarchyCheckResult?> =
-            ArrayList<AccessibilityHierarchyCheckResult?>()
+        val results: MutableList<AccessibilityHierarchyCheckResult> =
+            ArrayList()
 
         for (check in checks) {
             results.addAll(check.runCheckOnHierarchy(hierarchy, null, parameters))
         }
 
-        return AccessibilityCheckResultUtils.getResultsForTypes<AccessibilityHierarchyCheckResult?>(
+        return AccessibilityCheckResultUtils.getResultsForTypes(
             results,
-            HashSet<AccessibilityCheckResultType?>(Arrays.asList<AccessibilityCheckResultType?>(*relevantResultTypes))
+            relevantResultTypes.toSet()
         )
     }
 }
