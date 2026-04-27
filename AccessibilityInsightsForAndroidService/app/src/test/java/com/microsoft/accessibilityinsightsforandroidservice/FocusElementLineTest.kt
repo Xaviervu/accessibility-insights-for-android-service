@@ -1,135 +1,161 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.content.res.Resources
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
+import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers
+import org.mockito.Mock
+import org.mockito.MockedConstruction
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class FocusElementLineTest {
+    var testSubject: FocusElementLine? = null
 
-import android.content.res.Resources;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.view.View;
-import android.view.accessibility.AccessibilityNodeInfo;
-import java.util.HashMap;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var eventSourceMock: AccessibilityNodeInfo? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class FocusElementLineTest {
+    @Mock
+    var previousEventSourceMock: AccessibilityNodeInfo? = null
 
-  FocusElementLine testSubject;
+    @Mock
+    var foregroundLinePaintMock: Paint? = null
 
-  @Mock AccessibilityNodeInfo eventSourceMock;
-  @Mock AccessibilityNodeInfo previousEventSourceMock;
-  @Mock Paint foregroundLinePaintMock;
-  @Mock Paint backgroundLinePaintMock;
-  @Mock Paint differentBackgroundLinePaintMock;
-  @Mock View viewMock;
-  @Mock Resources resourcesMock;
-  @Mock Canvas canvasMock;
-  MockedConstruction<Rect> rectConstructionMock;
+    @Mock
+    var backgroundLinePaintMock: Paint? = null
 
-  HashMap<String, Paint> initialPaints;
+    @Mock
+    var differentBackgroundLinePaintMock: Paint? = null
 
-  @Before
-  public void prepare() throws Exception {
-    initialPaints = new HashMap<>();
-    initialPaints.put("foregroundLine", foregroundLinePaintMock);
-    initialPaints.put("backgroundLine", backgroundLinePaintMock);
+    @Mock
+    var viewMock: View? = null
 
-    when(viewMock.getResources()).thenReturn(resourcesMock);
-    rectConstructionMock = Mockito.mockConstruction(Rect.class);
+    @Mock
+    var resourcesMock: Resources? = null
 
-    testSubject =
-        new FocusElementLine(eventSourceMock, previousEventSourceMock, initialPaints, viewMock);
-  }
+    @Mock
+    var canvasMock: Canvas? = null
+    var rectConstructionMock: MockedConstruction<Rect?>? = null
 
-  @After
-  public void cleanUp() {
-    rectConstructionMock.close();
-  }
+    var initialPaints: HashMap<String?, Paint?>? = null
 
-  @Test
-  public void returnsNotNull() {
-    Assert.assertNotNull(testSubject);
-  }
+    @Before
+    @Throws(Exception::class)
+    fun prepare() {
+        initialPaints = HashMap<String?, Paint?>()
+        initialPaints!!.put("foregroundLine", foregroundLinePaintMock)
+        initialPaints!!.put("backgroundLine", backgroundLinePaintMock)
 
-  @Test
-  public void drawLineDrawsOneForegroundAndOneBackgroundLine() throws Exception {
-    when(eventSourceMock.refresh()).thenReturn(true);
-    when(previousEventSourceMock.refresh()).thenReturn(true);
+        Mockito.`when`<Resources?>(viewMock!!.getResources()).thenReturn(resourcesMock)
+        rectConstructionMock = Mockito.mockConstruction<Rect?>(Rect::class.java)
 
-    testSubject.drawLine(canvasMock);
-    verify(canvasMock, times(1))
-        .drawLine(anyFloat(), anyFloat(), anyFloat(), anyFloat(), same(foregroundLinePaintMock));
-    verify(canvasMock, times(1))
-        .drawLine(anyFloat(), anyFloat(), anyFloat(), anyFloat(), same(backgroundLinePaintMock));
-    verifyNoMoreInteractions(canvasMock);
-  }
+        testSubject =
+            FocusElementLine(eventSourceMock, previousEventSourceMock, initialPaints, viewMock!!)
+    }
 
-  @Test
-  public void setPaintUpdatesPaintsUsedToDrawLines() throws Exception {
-    when(eventSourceMock.refresh()).thenReturn(true);
-    when(previousEventSourceMock.refresh()).thenReturn(true);
+    @After
+    fun cleanUp() {
+        rectConstructionMock!!.close()
+    }
 
-    HashMap<String, Paint> updatedPaints = new HashMap<>(initialPaints);
-    updatedPaints.put("backgroundLine", differentBackgroundLinePaintMock);
+    @Test
+    fun returnsNotNull() {
+        Assert.assertNotNull(testSubject)
+    }
 
-    testSubject.setPaint(updatedPaints);
-    testSubject.drawLine(canvasMock);
+    @Test
+    @Throws(Exception::class)
+    fun drawLineDrawsOneForegroundAndOneBackgroundLine() {
+        Mockito.`when`<Boolean?>(eventSourceMock!!.refresh()).thenReturn(true)
+        Mockito.`when`<Boolean?>(previousEventSourceMock!!.refresh()).thenReturn(true)
 
-    verify(canvasMock, times(0))
-        .drawLine(
-            anyFloat(),
-            anyFloat(),
-            anyFloat(),
-            anyFloat(),
-            same(/* original */ backgroundLinePaintMock));
-    verify(canvasMock, times(1))
-        .drawLine(
-            anyFloat(), anyFloat(), anyFloat(), anyFloat(), same(differentBackgroundLinePaintMock));
-  }
+        testSubject!!.drawLine(canvasMock!!)
+        Mockito.verify<Canvas?>(canvasMock, Mockito.times(1))
+            .drawLine(
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.same<Paint?>(foregroundLinePaintMock)
+            )
+        Mockito.verify<Canvas?>(canvasMock, Mockito.times(1))
+            .drawLine(
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.same<Paint?>(backgroundLinePaintMock)
+            )
+        Mockito.verifyNoMoreInteractions(canvasMock)
+    }
 
-  @Test
-  public void drawLineDoesNothingWhenEventSourceIsNull() {
-    testSubject = new FocusElementLine(null, previousEventSourceMock, initialPaints, viewMock);
-    testSubject.drawLine(canvasMock);
-    verifyNoInteractions(canvasMock);
-  }
+    @Test
+    @Throws(Exception::class)
+    fun setPaintUpdatesPaintsUsedToDrawLines() {
+        Mockito.`when`<Boolean?>(eventSourceMock!!.refresh()).thenReturn(true)
+        Mockito.`when`<Boolean?>(previousEventSourceMock!!.refresh()).thenReturn(true)
 
-  @Test
-  public void drawLineDoesNothingWhenPreviousEventSourceIsNull() {
-    testSubject = new FocusElementLine(eventSourceMock, null, initialPaints, viewMock);
-    testSubject.drawLine(canvasMock);
-    verifyNoInteractions(canvasMock);
-  }
+        val updatedPaints = HashMap<String?, Paint?>(initialPaints)
+        updatedPaints.put("backgroundLine", differentBackgroundLinePaintMock)
 
-  @Test
-  public void drawLineDoesNothingWhenPreviousEventSourceDoesNotRefresh() {
-    when(eventSourceMock.refresh()).thenReturn(true);
-    when(previousEventSourceMock.refresh()).thenReturn(false);
-    testSubject.drawLine(canvasMock);
-    verifyNoInteractions(canvasMock);
-  }
+        testSubject!!.setPaint(updatedPaints)
+        testSubject!!.drawLine(canvasMock!!)
 
-  @Test
-  public void drawLineDoesNothingWhenEventSourceDoesNotRefresh() {
-    when(eventSourceMock.refresh()).thenReturn(false);
-    testSubject.drawLine(canvasMock);
-    verifyNoInteractions(canvasMock);
-  }
+        Mockito.verify<Canvas?>(canvasMock, Mockito.times(0))
+            .drawLine(
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.same<Paint?>( /* original */backgroundLinePaintMock)
+            )
+        Mockito.verify<Canvas?>(canvasMock, Mockito.times(1))
+            .drawLine(
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.anyFloat(),
+                ArgumentMatchers.same<Paint?>(differentBackgroundLinePaintMock)
+            )
+    }
+
+    @Test
+    fun drawLineDoesNothingWhenEventSourceIsNull() {
+        testSubject = FocusElementLine(null, previousEventSourceMock, initialPaints, viewMock!!)
+        testSubject!!.drawLine(canvasMock!!)
+        Mockito.verifyNoInteractions(canvasMock)
+    }
+
+    @Test
+    fun drawLineDoesNothingWhenPreviousEventSourceIsNull() {
+        testSubject = FocusElementLine(eventSourceMock, null, initialPaints, viewMock!!)
+        testSubject!!.drawLine(canvasMock!!)
+        Mockito.verifyNoInteractions(canvasMock)
+    }
+
+    @Test
+    fun drawLineDoesNothingWhenPreviousEventSourceDoesNotRefresh() {
+        Mockito.`when`<Boolean?>(eventSourceMock!!.refresh()).thenReturn(true)
+        Mockito.`when`<Boolean?>(previousEventSourceMock!!.refresh()).thenReturn(false)
+        testSubject!!.drawLine(canvasMock!!)
+        Mockito.verifyNoInteractions(canvasMock)
+    }
+
+    @Test
+    fun drawLineDoesNothingWhenEventSourceDoesNotRefresh() {
+        Mockito.`when`<Boolean?>(eventSourceMock!!.refresh()).thenReturn(false)
+        testSubject!!.drawLine(canvasMock!!)
+        Mockito.verifyNoInteractions(canvasMock)
+    }
 }

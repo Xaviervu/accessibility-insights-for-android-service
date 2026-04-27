@@ -1,29 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.os.CancellationSignal
+import org.junit.Assert
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
+@RunWith(MockitoJUnitRunner::class)
+class TabStopsRequestFulfillerTest {
+    @Mock
+    var focusVisualizationStateManager: FocusVisualizationStateManager? = null
 
-import android.os.CancellationSignal;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var cancellationSignal: CancellationSignal? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class TabStopsRequestFulfillerTest {
-  @Mock FocusVisualizationStateManager focusVisualizationStateManager;
-  @Mock CancellationSignal cancellationSignal;
+    var testSubject: TabStopsRequestFulfiller? = null
 
-  TabStopsRequestFulfiller testSubject;
+    @Test
+    fun fulfillRequestSetsTabStopState() {
+        testSubject = TabStopsRequestFulfiller(focusVisualizationStateManager!!, true)
+        Assert.assertEquals("", testSubject!!.fulfillRequest(cancellationSignal!!))
 
-  @Test
-  public void fulfillRequestSetsTabStopState() {
-    testSubject = new TabStopsRequestFulfiller(focusVisualizationStateManager, true);
-    assertEquals("", testSubject.fulfillRequest(cancellationSignal));
-
-    verify(focusVisualizationStateManager).setState(true);
-  }
+        Mockito.verify<FocusVisualizationStateManager?>(focusVisualizationStateManager).state = true
+    }
 }

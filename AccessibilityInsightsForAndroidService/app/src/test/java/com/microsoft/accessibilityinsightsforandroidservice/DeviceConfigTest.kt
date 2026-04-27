@@ -1,33 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+class DeviceConfigTest {
+    var deviceName: String = "test-device-name"
+    var packageName: String = "test-package-name"
+    var serviceVersion: String = "test-service-version"
 
-public class DeviceConfigTest {
-  String deviceName = "test-device-name";
-  String packageName = "test-package-name";
-  String serviceVersion = "test-service-version";
+    var testSubject: DeviceConfig? = null
 
-  DeviceConfig testSubject;
+    @Before
+    fun prepare() {
+        testSubject = DeviceConfig(deviceName, packageName, serviceVersion)
+    }
 
-  @Before
-  public void prepare() {
-    testSubject = new DeviceConfig(deviceName, packageName, serviceVersion);
-  }
+    @Test
+    fun deviceConfigExists() {
+        Assert.assertNotNull(testSubject)
+    }
 
-  @Test
-  public void deviceConfigExists() {
-    Assert.assertNotNull(testSubject);
-  }
-
-  @Test
-  public void deviceConfigHasExpectedProperties() {
-    Assert.assertEquals(deviceName, testSubject.deviceName);
-    Assert.assertEquals(packageName, testSubject.packageName);
-    Assert.assertEquals(serviceVersion, testSubject.serviceVersion);
-  }
+    @Test
+    fun deviceConfigHasExpectedProperties() {
+        Assert.assertEquals(deviceName, testSubject!!.deviceName)
+        Assert.assertEquals(packageName, testSubject!!.packageName)
+        Assert.assertEquals(serviceVersion, testSubject!!.serviceVersion)
+    }
 }

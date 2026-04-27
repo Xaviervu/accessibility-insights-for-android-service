@@ -1,59 +1,56 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import java.util.function.Consumer
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+@RunWith(MockitoJUnitRunner::class)
+class FocusVisualizationStateManagerTest {
+    @Mock
+    var onChangeMock: Consumer<Boolean?>? = null
 
-import java.util.function.Consumer;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    var testSubject: FocusVisualizationStateManager? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class FocusVisualizationStateManagerTest {
+    @Before
+    fun prepare() {
+        testSubject = FocusVisualizationStateManager()
+    }
 
-  @Mock Consumer<Boolean> onChangeMock;
+    @Test
+    fun exists() {
+        Assert.assertNotNull(testSubject)
+    }
 
-  FocusVisualizationStateManager testSubject;
+    @Test
+    fun getStateReturnsFalseByDefault() {
+        Assert.assertFalse(testSubject!!.state)
+    }
 
-  @Before
-  public void prepare() {
-    testSubject = new FocusVisualizationStateManager();
-  }
+    @Test
+    fun getStateReturnsUpdatedState() {
+        testSubject!!.state = true
+        Assert.assertTrue(testSubject!!.state)
+    }
 
-  @Test
-  public void exists() {
-    Assert.assertNotNull(testSubject);
-  }
+    @Test
+    fun setStateDoesNotCallOnChangeListenersIfStateDoesNotChange() {
+        testSubject!!.subscribe(onChangeMock)
+        testSubject!!.state = false
+        Mockito.verify<Consumer<Boolean?>?>(onChangeMock, Mockito.times(0)).accept(false)
+    }
 
-  @Test
-  public void getStateReturnsFalseByDefault() {
-    Assert.assertFalse(testSubject.getState());
-  }
-
-  @Test
-  public void getStateReturnsUpdatedState() {
-    testSubject.setState(true);
-    Assert.assertTrue(testSubject.getState());
-  }
-
-  @Test
-  public void setStateDoesNotCallOnChangeListenersIfStateDoesNotChange() {
-    testSubject.subscribe(onChangeMock);
-    testSubject.setState(false);
-    verify(onChangeMock, times(0)).accept(false);
-  }
-
-  @Test
-  public void setStateCallsOnChangeListenersOnStateChange() {
-    testSubject.subscribe(onChangeMock);
-    testSubject.setState(true);
-    Assert.assertTrue(testSubject.getState());
-    verify(onChangeMock, times(1)).accept(true);
-  }
+    @Test
+    fun setStateCallsOnChangeListenersOnStateChange() {
+        testSubject!!.subscribe(onChangeMock)
+        testSubject!!.state = true
+        Assert.assertTrue(testSubject!!.state)
+        Mockito.verify<Consumer<Boolean?>?>(onChangeMock, Mockito.times(1)).accept(true)
+    }
 }

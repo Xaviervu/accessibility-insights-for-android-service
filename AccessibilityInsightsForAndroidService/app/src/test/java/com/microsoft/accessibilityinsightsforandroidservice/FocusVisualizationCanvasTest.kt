@@ -1,67 +1,76 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.content.Context
+import android.graphics.Canvas
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+@RunWith(MockitoJUnitRunner::class)
+class FocusVisualizationCanvasTest {
+    var testSubject: FocusVisualizationCanvas? = null
 
-import android.content.Context;
-import android.graphics.Canvas;
-import java.util.ArrayList;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var contextMock: Context? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class FocusVisualizationCanvasTest {
-  FocusVisualizationCanvas testSubject;
+    @Mock
+    var focusElementHighlightMock: FocusElementHighlight? = null
 
-  @Mock Context contextMock;
-  @Mock FocusElementHighlight focusElementHighlightMock;
-  @Mock FocusElementLine focusElementLineMock;
-  @Mock Canvas canvasMock;
+    @Mock
+    var focusElementLineMock: FocusElementLine? = null
 
-  @Before
-  public void prepare() {
-    testSubject = new FocusVisualizationCanvas(contextMock);
-  }
+    @Mock
+    var canvasMock: Canvas? = null
 
-  @Test
-  public void drawHighlightsAndLinesOnlyDrawsHighlightOnFirstPass() throws Exception {
-    ArrayList<FocusElementLine> lineStub = new ArrayList<>();
-    lineStub.add(focusElementLineMock);
+    @Before
+    fun prepare() {
+        testSubject = FocusVisualizationCanvas(contextMock)
+    }
 
-    ArrayList<FocusElementHighlight> highlightStub = new ArrayList<>();
-    highlightStub.add(focusElementHighlightMock);
+    @Test
+    @Throws(Exception::class)
+    fun drawHighlightsAndLinesOnlyDrawsHighlightOnFirstPass() {
+        val lineStub = ArrayList<FocusElementLine?>()
+        lineStub.add(focusElementLineMock)
 
-    testSubject.setDrawItems(highlightStub, lineStub);
-    testSubject.drawHighlightsAndLines(canvasMock);
+        val highlightStub = ArrayList<FocusElementHighlight?>()
+        highlightStub.add(focusElementHighlightMock)
 
-    verify(focusElementHighlightMock, times(1)).drawElementHighlight(any(Canvas.class));
-    verify(focusElementLineMock, times(0)).drawLine(any(Canvas.class));
-  }
+        testSubject!!.setDrawItems(highlightStub, lineStub)
+        testSubject!!.drawHighlightsAndLines(canvasMock!!)
 
-  @Test
-  public void drawHighlightsAndLinesDrawsAllRelevantObjectsOnSubsequentPasses() throws Exception {
-    ArrayList<FocusElementLine> lineStub = new ArrayList<>();
-    lineStub.add(focusElementLineMock);
-    lineStub.add(focusElementLineMock);
+        Mockito.verify<FocusElementHighlight?>(focusElementHighlightMock, Mockito.times(1))
+            .drawElementHighlight(ArgumentMatchers.any<Canvas?>(Canvas::class.java))
+        Mockito.verify<FocusElementLine?>(focusElementLineMock, Mockito.times(0))
+            .drawLine(ArgumentMatchers.any<Canvas?>(Canvas::class.java))
+    }
 
-    ArrayList<FocusElementHighlight> highlightStub = new ArrayList<>();
-    highlightStub.add(focusElementHighlightMock);
-    highlightStub.add(focusElementHighlightMock);
+    @Test
+    @Throws(Exception::class)
+    fun drawHighlightsAndLinesDrawsAllRelevantObjectsOnSubsequentPasses() {
+        val lineStub = ArrayList<FocusElementLine?>()
+        lineStub.add(focusElementLineMock)
+        lineStub.add(focusElementLineMock)
 
-    testSubject.setDrawItems(highlightStub, lineStub);
-    testSubject.drawHighlightsAndLines(canvasMock);
+        val highlightStub = ArrayList<FocusElementHighlight?>()
+        highlightStub.add(focusElementHighlightMock)
+        highlightStub.add(focusElementHighlightMock)
 
-    // Note: drawElementHighlight will call twice for each subsequent onDraw event.  This is to
-    // ensure that the line is drawn underneath the highlight, as the canvas drawings draw on
-    // top of any previous drawings by default.
-    verify(focusElementHighlightMock, times(3)).drawElementHighlight(any(Canvas.class));
-    verify(focusElementLineMock, times(1)).drawLine(any(Canvas.class));
-  }
+        testSubject!!.setDrawItems(highlightStub, lineStub)
+        testSubject!!.drawHighlightsAndLines(canvasMock!!)
+
+        // Note: drawElementHighlight will call twice for each subsequent onDraw event.  This is to
+        // ensure that the line is drawn underneath the highlight, as the canvas drawings draw on
+        // top of any previous drawings by default.
+        Mockito.verify<FocusElementHighlight?>(focusElementHighlightMock, Mockito.times(3))
+            .drawElementHighlight(ArgumentMatchers.any<Canvas?>(Canvas::class.java))
+        Mockito.verify<FocusElementLine?>(focusElementLineMock, Mockito.times(1))
+            .drawLine(ArgumentMatchers.any<Canvas?>(Canvas::class.java))
+    }
 }

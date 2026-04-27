@@ -1,75 +1,75 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.stubbing.OngoingStubbing
+import java.io.BufferedReader
+import java.io.IOException
 
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class RequestReaderTest {
+    @Mock
+    var bufferedReaderMock: BufferedReader? = null
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.OngoingStubbing;
+    var testSubject: RequestReader? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class RequestReaderTest {
-
-  @Mock BufferedReader bufferedReaderMock;
-
-  RequestReader testSubject;
-
-  @Before
-  public void prepare() {
-    testSubject = new RequestReader(bufferedReaderMock);
-  }
-
-  @Test
-  public void requestReaderExists() {
-    Assert.assertNotNull(testSubject);
-  }
-
-  @Test
-  public void readsFromBufferedReader() throws IOException {
-    String requestString = "test request string";
-    setupReadLine(requestString);
-
-    String actualRequestString = testSubject.readRequest();
-
-    Assert.assertEquals(actualRequestString, requestString);
-  }
-
-  @Test
-  public void limitsInputLength() throws IOException {
-    OngoingStubbing<Integer> bufferedReaderStubbing = when(bufferedReaderMock.read());
-    for (int i = 0; i < 300; i++) {
-      bufferedReaderStubbing = bufferedReaderStubbing.thenReturn(42);
+    @Before
+    fun prepare() {
+        testSubject = RequestReader(bufferedReaderMock!!)
     }
 
-    try {
-      testSubject.readRequest();
-      Assert.fail("Should have thrown exception");
-    } catch (IOException e) {
-      Assert.assertEquals(e.getMessage(), "input too long");
-    }
-  }
-
-  private void setupReadLine(String str) {
-    OngoingStubbing<Integer> bufferedReaderStubbing;
-    try {
-      bufferedReaderStubbing = when(bufferedReaderMock.read());
-    } catch (IOException e) {
-      Assert.fail(e.getMessage());
-      return;
+    @Test
+    fun requestReaderExists() {
+        Assert.assertNotNull(testSubject)
     }
 
-    for (int i = 0; i < str.length(); i++) {
-      bufferedReaderStubbing = bufferedReaderStubbing.thenReturn((int) str.charAt(i));
+    @Test
+    @Throws(IOException::class)
+    fun readsFromBufferedReader() {
+        val requestString = "test request string"
+        setupReadLine(requestString)
+
+        val actualRequestString = testSubject!!.readRequest()
+
+        Assert.assertEquals(actualRequestString, requestString)
     }
 
-    bufferedReaderStubbing.thenReturn((int) '\n');
-  }
+    @Test
+    @Throws(IOException::class)
+    fun limitsInputLength() {
+        var bufferedReaderStubbing = Mockito.`when`<Int?>(bufferedReaderMock!!.read())
+        for (i in 0..299) {
+            bufferedReaderStubbing = bufferedReaderStubbing.thenReturn(42)
+        }
+
+        try {
+            testSubject!!.readRequest()
+            Assert.fail("Should have thrown exception")
+        } catch (e: IOException) {
+            Assert.assertEquals(e.message, "input too long")
+        }
+    }
+
+    private fun setupReadLine(str: String) {
+        var bufferedReaderStubbing: OngoingStubbing<Int?>
+        try {
+            bufferedReaderStubbing = Mockito.`when`<Int?>(bufferedReaderMock!!.read())
+        } catch (e: IOException) {
+            Assert.fail(e.message)
+            return
+        }
+
+        for (i in 0..<str.length) {
+            bufferedReaderStubbing = bufferedReaderStubbing.thenReturn(str.get(i).code)
+        }
+
+        bufferedReaderStubbing.thenReturn('\n'.code)
+    }
 }

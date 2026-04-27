@@ -1,52 +1,49 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import java.util.function.Consumer
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+@RunWith(MockitoJUnitRunner::class)
+class DeviceOrientationHandlerTest {
+    @Mock
+    var onChangeMock: Consumer<Int?>? = null
+    var initialValue: Int = 1
 
-import java.util.function.Consumer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    var testSubject: DeviceOrientationHandler? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class DeviceOrientationHandlerTest {
+    @Before
+    fun prepare() {
+        testSubject = DeviceOrientationHandler(initialValue)
+    }
 
-  @Mock Consumer<Integer> onChangeMock;
-  int initialValue = 1;
+    @Test
+    fun setOrientationDoesNotCallOnChangeListenersIfOrientationDoesNotChange() {
+        testSubject!!.subscribe(onChangeMock)
+        testSubject!!.setOrientation(initialValue)
+        Mockito.verify<Consumer<Int?>?>(onChangeMock, Mockito.times(0)).accept(2)
+    }
 
-  DeviceOrientationHandler testSubject;
+    @Test
+    fun setOrientationCallsOnChangeListenersOnOrientationchange() {
+        testSubject!!.subscribe(onChangeMock)
+        testSubject!!.setOrientation(2)
+        Mockito.verify<Consumer<Int?>?>(onChangeMock, Mockito.times(1)).accept(2)
+    }
 
-  @Before
-  public void prepare() {
-    testSubject = new DeviceOrientationHandler(initialValue);
-  }
+    @Test
+    fun setOrientationSupportsMultipleListeners() {
+        testSubject!!.subscribe(onChangeMock)
+        testSubject!!.subscribe(onChangeMock)
 
-  @Test
-  public void setOrientationDoesNotCallOnChangeListenersIfOrientationDoesNotChange() {
-    testSubject.subscribe(onChangeMock);
-    testSubject.setOrientation(initialValue);
-    verify(onChangeMock, times(0)).accept(2);
-  }
+        testSubject!!.setOrientation(2)
 
-  @Test
-  public void setOrientationCallsOnChangeListenersOnOrientationchange() {
-    testSubject.subscribe(onChangeMock);
-    testSubject.setOrientation(2);
-    verify(onChangeMock, times(1)).accept(2);
-  }
-
-  @Test
-  public void setOrientationSupportsMultipleListeners() {
-    testSubject.subscribe(onChangeMock);
-    testSubject.subscribe(onChangeMock);
-
-    testSubject.setOrientation(2);
-
-    verify(onChangeMock, times(2)).accept(2);
-  }
+        Mockito.verify<Consumer<Int?>?>(onChangeMock, Mockito.times(2)).accept(2)
+    }
 }

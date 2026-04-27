@@ -1,54 +1,68 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Bitmap
+import android.view.accessibility.AccessibilityNodeInfo
+import com.deque.axe.android.Axe
+import com.deque.axe.android.AxeContext
+import com.deque.axe.android.AxeResult
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeContextFactory
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRunnerFactory
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class AxeScannerTest {
+    @Mock
+    var screenshotMock: Bitmap? = null
 
-import android.graphics.Bitmap;
-import android.view.accessibility.AccessibilityNodeInfo;
-import com.deque.axe.android.Axe;
-import com.deque.axe.android.AxeContext;
-import com.deque.axe.android.AxeResult;
-import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeContextFactory;
-import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRunnerFactory;
-import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner;
+    @Mock
+    var accessibilityNodeInfoMock: AccessibilityNodeInfo? = null
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var axeRunnerFactoryMock: AxeRunnerFactory? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class AxeScannerTest {
+    @Mock
+    var axeContextFactoryMock: AxeContextFactory? = null
 
-  @Mock Bitmap screenshotMock;
-  @Mock AccessibilityNodeInfo accessibilityNodeInfoMock;
-  @Mock
-  AxeRunnerFactory axeRunnerFactoryMock;
-  @Mock
-  AxeContextFactory axeContextFactoryMock;
-  @Mock AxeResult axeResultMock;
-  @Mock Axe axeMock;
-  @Mock AxeContext axeContextMock;
+    @Mock
+    var axeResultMock: AxeResult? = null
 
-  AxeScanner testSubject;
+    @Mock
+    var axeMock: Axe? = null
 
-  @Before
-  public void prepare() {
-    testSubject = new AxeScanner(axeRunnerFactoryMock, axeContextFactoryMock);
-  }
+    @Mock
+    var axeContextMock: AxeContext? = null
 
-  @Test
-  public void scanWithAxeReturnsCorrectResult() throws ViewChangedException {
-    when(axeRunnerFactoryMock.createAxeRunner()).thenReturn(axeMock);
-    when(axeContextFactoryMock.createAxeContext(accessibilityNodeInfoMock, screenshotMock))
-        .thenReturn(axeContextMock);
-    when(axeMock.run(axeContextMock)).thenReturn(axeResultMock);
+    var testSubject: AxeScanner? = null
 
-    Assert.assertEquals(
-        testSubject.scanWithAxe(accessibilityNodeInfoMock, screenshotMock), axeResultMock);
-  }
+    @Before
+    fun prepare() {
+        testSubject = AxeScanner(axeRunnerFactoryMock!!, axeContextFactoryMock!!)
+    }
+
+    @Test
+    @Throws(ViewChangedException::class)
+    fun scanWithAxeReturnsCorrectResult() {
+        Mockito.`when`<Axe>(axeRunnerFactoryMock!!.createAxeRunner()).thenReturn(axeMock)
+        Mockito.`when`<AxeContext>(
+            axeContextFactoryMock!!.createAxeContext(
+                accessibilityNodeInfoMock!!,
+                screenshotMock!!
+            )
+        )
+            .thenReturn(axeContextMock)
+        Mockito.`when`<AxeResult?>(axeMock!!.run(axeContextMock)).thenReturn(axeResultMock)
+
+        Assert.assertEquals(
+            testSubject!!.scanWithAxe(accessibilityNodeInfoMock!!, screenshotMock!!), axeResultMock
+        )
+    }
 }

@@ -1,169 +1,221 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.net.Uri
+import android.os.Binder
+import android.os.Bundle
+import android.os.CancellationSignal
+import android.os.ParcelFileDescriptor
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.function.ThrowingRunnable
+import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers
+import org.mockito.Mock
+import org.mockito.MockedConstruction
+import org.mockito.MockedStatic
+import org.mockito.MockedStatic.Verification
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import java.io.File
+import java.io.IOException
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.notNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class AccessibilityInsightsContentProviderTest {
+    @Mock
+    var uriMock: Uri? = null
 
-import android.net.Uri;
-import android.os.Binder;
-import android.os.Bundle;
-import android.os.CancellationSignal;
-import android.os.ParcelFileDescriptor;
-import java.io.File;
-import java.io.IOException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockedConstruction;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var cancellationSignalMock: CancellationSignal? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class AccessibilityInsightsContentProviderTest {
-  @Mock Uri uriMock;
-  @Mock CancellationSignal cancellationSignalMock;
-  @Mock TempFileProvider tempFileProviderMock;
-  @Mock SynchronizedRequestDispatcher requestDispatcherMock;
-  @Mock ParcelFileDescriptor tempFileDescriptor;
-  @Mock File tempFileMock;
+    @Mock
+    var tempFileProviderMock: TempFileProvider? = null
 
-  MockedStatic<Binder> binderStaticMock;
-  MockedStatic<ParcelFileDescriptor> parcelFileDescriptorStaticMock;
-  MockedConstruction<Bundle> bundleConstructionMock;
+    @Mock
+    var requestDispatcherMock: SynchronizedRequestDispatcher? = null
 
-  AccessibilityInsightsContentProvider testSubject;
+    @Mock
+    var tempFileDescriptor: ParcelFileDescriptor? = null
 
-  @Before
-  public void prepare() throws Exception {
-    binderStaticMock = Mockito.mockStatic(Binder.class);
-    parcelFileDescriptorStaticMock = Mockito.mockStatic(ParcelFileDescriptor.class);
-    bundleConstructionMock = Mockito.mockConstruction(Bundle.class);
+    @Mock
+    var tempFileMock: File? = null
 
-    testSubject = new AccessibilityInsightsContentProvider();
-    assertTrue(testSubject.onCreate(requestDispatcherMock, tempFileProviderMock));
+    var binderStaticMock: MockedStatic<Binder?>? = null
+    var parcelFileDescriptorStaticMock: MockedStatic<ParcelFileDescriptor?>? = null
+    var bundleConstructionMock: MockedConstruction<Bundle?>? = null
 
-    parcelFileDescriptorStaticMock
-        .when(() -> ParcelFileDescriptor.open(tempFileMock, ParcelFileDescriptor.MODE_READ_ONLY))
-        .thenReturn(tempFileDescriptor);
-  }
+    var testSubject: AccessibilityInsightsContentProvider? = null
 
-  @After
-  public void cleanUp() {
-    bundleConstructionMock.close();
-    parcelFileDescriptorStaticMock.close();
-    binderStaticMock.close();
-  }
+    @Before
+    @Throws(Exception::class)
+    fun prepare() {
+        binderStaticMock = Mockito.mockStatic<Binder?>(Binder::class.java)
+        parcelFileDescriptorStaticMock =
+            Mockito.mockStatic<ParcelFileDescriptor?>(ParcelFileDescriptor::class.java)
+        bundleConstructionMock = Mockito.mockConstruction<Bundle?>(Bundle::class.java)
 
-  private void setupCallerAsAdb() {
-    setupCallerAsUid(2000);
-  }
+        testSubject = AccessibilityInsightsContentProvider()
+        Assert.assertTrue(testSubject!!.onCreate(requestDispatcherMock!!, tempFileProviderMock!!))
 
-  private void setupCallerAsNotAdb() {
-    setupCallerAsUid(1);
-  }
+        parcelFileDescriptorStaticMock!!
+            .`when`<Any?>(Verification {
+                ParcelFileDescriptor.open(
+                    tempFileMock,
+                    ParcelFileDescriptor.MODE_READ_ONLY
+                )
+            })
+            .thenReturn(tempFileDescriptor)
+    }
 
-  private void setupCallerAsUid(int uid) {
-    when(Binder.getCallingUid()).thenReturn(uid);
-  }
+    @After
+    fun cleanUp() {
+        bundleConstructionMock!!.close()
+        parcelFileDescriptorStaticMock!!.close()
+        binderStaticMock!!.close()
+    }
 
-  @Test
-  public void callEmitsBundleWithSerializedSecurityExceptionIfNotAdb() {
-    setupCallerAsNotAdb();
-    assertThrows(SecurityException.class, () -> testSubject.call("METHOD", "ARG", null));
-  }
+    private fun setupCallerAsAdb() {
+        setupCallerAsUid(2000)
+    }
 
-  @Test
-  public void openFileThrowsSecurityExceptionIfCallerIsNotAdb() {
-    setupCallerAsNotAdb();
-    assertThrows(SecurityException.class, () -> testSubject.openFile(uriMock, "r", null));
-  }
+    private fun setupCallerAsNotAdb() {
+        setupCallerAsUid(1)
+    }
 
-  @Test
-  public void openFileDoesNotThrowSecurityExceptionIfCallerIsAdb() {
-    setupCallerAsAdb();
-    testSubject.openFile(uriMock, "r", null);
-  }
+    private fun setupCallerAsUid(uid: Int) {
+        Mockito.`when`<Int?>(Binder.getCallingUid()).thenReturn(uid)
+    }
 
-  @Test
-  public void openFileEmitsTempFileWithResponseFromDispatcher() throws Exception {
-    setupCallerAsAdb();
-    String dispatcherResponse = "dispatcher response";
-    when(uriMock.getPath()).thenReturn("/uri-path");
-    String expectedMethod = "/uri-path";
-    when(requestDispatcherMock.request(expectedMethod, cancellationSignalMock))
-        .thenReturn(dispatcherResponse);
-    when(tempFileProviderMock.createTempFileWithContents(any())).thenReturn(tempFileMock);
-    assertSame(tempFileDescriptor, testSubject.openFile(uriMock, "r", cancellationSignalMock));
-    verify(tempFileProviderMock).createTempFileWithContents(dispatcherResponse);
-  }
+    @Test
+    fun callEmitsBundleWithSerializedSecurityExceptionIfNotAdb() {
+        setupCallerAsNotAdb()
+        Assert.assertThrows<SecurityException?>(
+            SecurityException::class.java,
+            ThrowingRunnable { testSubject!!.call("METHOD", "ARG", null) })
+    }
 
-  @Test
-  public void openFileEmitsTempFileWithSerializedExceptionOnDispatcherError() throws Exception {
-    setupCallerAsAdb();
-    when(uriMock.getPath()).thenReturn("/uri-path");
-    String expectedMethod = "/uri-path";
-    when(requestDispatcherMock.request(expectedMethod, cancellationSignalMock))
-        .thenThrow(new Exception("dispatcher error"));
-    when(tempFileProviderMock.createTempFileWithContents(any())).thenReturn(tempFileMock);
-    assertSame(tempFileDescriptor, testSubject.openFile(uriMock, "r", cancellationSignalMock));
+    @Test
+    fun openFileThrowsSecurityExceptionIfCallerIsNotAdb() {
+        setupCallerAsNotAdb()
+        Assert.assertThrows<SecurityException?>(
+            SecurityException::class.java,
+            ThrowingRunnable { testSubject!!.openFile(uriMock!!, "r", null) })
+    }
 
-    String serializedException = "java.lang.Exception: dispatcher error";
-    verify(tempFileProviderMock).createTempFileWithContents(serializedException);
-  }
+    @Test
+    fun openFileDoesNotThrowSecurityExceptionIfCallerIsAdb() {
+        setupCallerAsAdb()
+        testSubject!!.openFile(uriMock!!, "r", null)
+    }
 
-  @Test
-  public void openFileThrowsRuntimeExceptionOnTempFileError() throws Exception {
-    setupCallerAsAdb();
+    @Test
+    @Throws(Exception::class)
+    fun openFileEmitsTempFileWithResponseFromDispatcher() {
+        setupCallerAsAdb()
+        val dispatcherResponse = "dispatcher response"
+        Mockito.`when`<String?>(uriMock!!.getPath()).thenReturn("/uri-path")
+        val expectedMethod = "/uri-path"
+        Mockito.`when`<String?>(
+            requestDispatcherMock!!.request(
+                expectedMethod,
+                cancellationSignalMock!!
+            )
+        )
+            .thenReturn(dispatcherResponse)
+        Mockito.`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
+            .thenReturn(tempFileMock)
+        Assert.assertSame(
+            tempFileDescriptor,
+            testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock)
+        )
+        Mockito.verify<TempFileProvider?>(tempFileProviderMock)
+            .createTempFileWithContents(dispatcherResponse)
+    }
 
-    when(uriMock.getPath()).thenReturn("uri-path");
-    when(tempFileProviderMock.createTempFileWithContents(any()))
-        .thenThrow(new IOException("tempFileProvider error"));
+    @Test
+    @Throws(Exception::class)
+    fun openFileEmitsTempFileWithSerializedExceptionOnDispatcherError() {
+        setupCallerAsAdb()
+        Mockito.`when`<String?>(uriMock!!.getPath()).thenReturn("/uri-path")
+        val expectedMethod = "/uri-path"
+        Mockito.`when`<String?>(
+            requestDispatcherMock!!.request(
+                expectedMethod,
+                cancellationSignalMock!!
+            )
+        )
+            .thenThrow(Exception("dispatcher error"))
+        Mockito.`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
+            .thenReturn(tempFileMock)
+        Assert.assertSame(
+            tempFileDescriptor,
+            testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock)
+        )
 
-    assertThrows(
-        "tempFileProvider error",
-        RuntimeException.class,
-        () -> testSubject.openFile(uriMock, "r", cancellationSignalMock));
-  }
+        val serializedException = "java.lang.Exception: dispatcher error"
+        Mockito.verify<TempFileProvider?>(tempFileProviderMock)
+            .createTempFileWithContents(serializedException)
+    }
 
-  @Test
-  public void callEmitsBundleWithResponseFromDispatcher() throws Exception {
-    setupCallerAsAdb();
-    String dispatcherResponse = "dispatcher response";
-    String expectedMethod = "/method";
-    when(requestDispatcherMock.request(eq(expectedMethod), notNull()))
-        .thenReturn(dispatcherResponse);
+    @Test
+    @Throws(Exception::class)
+    fun openFileThrowsRuntimeExceptionOnTempFileError() {
+        setupCallerAsAdb()
 
-    Bundle returnedBundle = testSubject.call("method", null, null);
+        Mockito.`when`<String?>(uriMock!!.getPath()).thenReturn("uri-path")
+        Mockito.`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
+            .thenThrow(IOException("tempFileProvider error"))
 
-    assertEquals(1, bundleConstructionMock.constructed().size());
-    assertSame(returnedBundle, bundleConstructionMock.constructed().get(0));
-    verify(returnedBundle).putString("response", dispatcherResponse);
-  }
+        Assert.assertThrows<RuntimeException?>(
+            "tempFileProvider error",
+            RuntimeException::class.java,
+            ThrowingRunnable { testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock) })
+    }
 
-  @Test
-  public void callEmitsBundleWithSerializedExceptionOnDispatcherError() throws Exception {
-    setupCallerAsAdb();
-    String expectedMethod = "/method";
-    when(requestDispatcherMock.request(eq(expectedMethod), notNull()))
-        .thenThrow(new Exception("dispatcher error"));
+    @Test
+    @Throws(Exception::class)
+    fun callEmitsBundleWithResponseFromDispatcher() {
+        setupCallerAsAdb()
+        val dispatcherResponse = "dispatcher response"
+        val expectedMethod = "/method"
+        Mockito.`when`<String?>(
+            requestDispatcherMock!!.request(
+                ArgumentMatchers.eq<String?>(
+                    expectedMethod
+                ), ArgumentMatchers.notNull<CancellationSignal>()
+            )
+        )
+            .thenReturn(dispatcherResponse)
 
-    Bundle returnedBundle = testSubject.call("method", null, null);
+        val returnedBundle = testSubject!!.call("method", null, null)
 
-    assertEquals(1, bundleConstructionMock.constructed().size());
-    assertSame(returnedBundle, bundleConstructionMock.constructed().get(0));
-    String serializedException = "java.lang.Exception: dispatcher error";
-    verify(returnedBundle).putString("response", serializedException);
-  }
+        Assert.assertEquals(1, bundleConstructionMock!!.constructed().size.toLong())
+        Assert.assertSame(returnedBundle, bundleConstructionMock!!.constructed().get(0))
+        Mockito.verify<Bundle?>(returnedBundle).putString("response", dispatcherResponse)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun callEmitsBundleWithSerializedExceptionOnDispatcherError() {
+        setupCallerAsAdb()
+        val expectedMethod = "/method"
+        Mockito.`when`<String?>(
+            requestDispatcherMock!!.request(
+                ArgumentMatchers.eq<String?>(
+                    expectedMethod
+                ), ArgumentMatchers.notNull<CancellationSignal>()
+            )
+        )
+            .thenThrow(Exception("dispatcher error"))
+
+        val returnedBundle = testSubject!!.call("method", null, null)
+
+        Assert.assertEquals(1, bundleConstructionMock!!.constructed().size.toLong())
+        Assert.assertSame(returnedBundle, bundleConstructionMock!!.constructed().get(0))
+        val serializedException = "java.lang.Exception: dispatcher error"
+        Mockito.verify<Bundle?>(returnedBundle).putString("response", serializedException)
+    }
 }

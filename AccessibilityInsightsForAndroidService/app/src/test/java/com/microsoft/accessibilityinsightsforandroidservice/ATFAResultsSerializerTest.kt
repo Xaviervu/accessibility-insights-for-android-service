@@ -1,113 +1,131 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult
+import com.google.android.apps.common.testing.accessibility.framework.uielement.ViewHierarchyElement
+import com.google.android.apps.common.testing.accessibility.framework.uielement.WindowHierarchyElement
+import com.google.android.apps.common.testing.accessibility.framework.uielement.WindowHierarchyElementAndroid
+import com.google.gson.ExclusionStrategy
+import com.google.gson.FieldNamingStrategy
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializer
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAResultsSerializer
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers
+import org.mockito.Captor
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import java.lang.reflect.Field
+import java.util.Arrays
+import java.util.function.Consumer
+import java.util.stream.Collectors
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.RETURNS_SELF;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class ATFAResultsSerializerTest {
+    var gsonBuilder: GsonBuilder =
+        Mockito.mock<GsonBuilder>(GsonBuilder::class.java, Mockito.RETURNS_SELF)
 
-import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult;
-import com.google.android.apps.common.testing.accessibility.framework.uielement.ViewHierarchyElement;
-import com.google.android.apps.common.testing.accessibility.framework.uielement.WindowHierarchyElement;
-import com.google.android.apps.common.testing.accessibility.framework.uielement.WindowHierarchyElementAndroid;
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldNamingStrategy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
-import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAResultsSerializer;
+    @Mock
+    var gson: Gson? = null
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Captor
+    var fieldNamingStrategy: ArgumentCaptor<FieldNamingStrategy?>? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class ATFAResultsSerializerTest {
+    @Captor
+    var exclusionStrategy: ArgumentCaptor<ExclusionStrategy?>? = null
 
-  GsonBuilder gsonBuilder = mock(GsonBuilder.class, RETURNS_SELF);
-  @Mock Gson gson;
-  @Captor ArgumentCaptor<FieldNamingStrategy> fieldNamingStrategy;
-  @Captor ArgumentCaptor<ExclusionStrategy> exclusionStrategy;
-  @Captor ArgumentCaptor<JsonSerializer<Class>> jsonSerializer;
-  ATFAResultsSerializer testSubject;
+    @Captor
+    var jsonSerializer: ArgumentCaptor<JsonSerializer<Class<*>?>?>? = null
+    var testSubject: ATFAResultsSerializer? = null
 
-  class TestClass {
-    public String testField;
-  }
-
-  @Before
-  public void prepare() {
-    when(gsonBuilder.create()).thenReturn(gson);
-
-    testSubject = new ATFAResultsSerializer(gsonBuilder);
-
-    verify(gsonBuilder).setExclusionStrategies(exclusionStrategy.capture());
-    verify(gsonBuilder).setFieldNamingStrategy(fieldNamingStrategy.capture());
-    verify(gsonBuilder).registerTypeAdapter(eq(Class.class), jsonSerializer.capture());
-  }
-
-  @Test
-  public void fieldNamingStrategyReturnsName() {
-    class ExtendingClass extends TestClass {
-      public String testField;
+    internal open inner class TestClass {
+        var testField: String? = null
     }
-    Field[] testFields = ExtendingClass.class.getFields();
 
-    String testFieldExtendingClass = fieldNamingStrategy.getValue().translateName(testFields[0]);
-    String testFieldBaseClass = fieldNamingStrategy.getValue().translateName(testFields[1]);
+    @Before
+    fun prepare() {
+        Mockito.`when`<Gson?>(gsonBuilder.create()).thenReturn(gson)
 
-    Assert.assertEquals("TestClass.testField", testFieldBaseClass);
-    Assert.assertEquals("ExtendingClass.testField", testFieldExtendingClass);
-  }
+        testSubject = ATFAResultsSerializer(gsonBuilder)
 
-  @Test
-  public void exclusionStrategyExcludesWindowHierarchyElements() {
-    List<Class> classesToExclude =
-        Arrays.asList(WindowHierarchyElement.class, WindowHierarchyElementAndroid.class);
-    List<Class> classesToInclude =
-        Arrays.stream(ViewHierarchyElement.class.getFields())
-            .map(f -> f.getClass())
-            .filter(c -> !classesToExclude.contains(c))
-            .collect(Collectors.toList());
+        Mockito.verify<GsonBuilder?>(gsonBuilder)
+            .setExclusionStrategies(exclusionStrategy!!.capture())
+        Mockito.verify<GsonBuilder?>(gsonBuilder)
+            .setFieldNamingStrategy(fieldNamingStrategy!!.capture())
+        Mockito.verify<GsonBuilder?>(gsonBuilder).registerTypeAdapter(
+            ArgumentMatchers.eq<Class<Class<*>?>?>(
+                Class::class.java
+            ), jsonSerializer!!.capture()
+        )
+    }
 
-    classesToExclude.forEach(
-        c -> Assert.assertTrue(exclusionStrategy.getValue().shouldSkipClass(c)));
-    classesToInclude.forEach(
-        c -> Assert.assertFalse(exclusionStrategy.getValue().shouldSkipClass(c)));
-  }
+    @Test
+    fun fieldNamingStrategyReturnsName() {
+        class ExtendingClass : TestClass() {
+            var testField: String? = null
+        }
 
-  @Test
-  public void jsonSerializerSerializesClassName() {
-    JsonPrimitive expectedJson = new JsonPrimitive(TestClass.class.getSimpleName());
+        val testFields = ExtendingClass::class.java.getFields()
 
-    JsonElement jsonElement =
-        jsonSerializer.getValue().serialize(TestClass.class, Class.class, null);
+        val testFieldExtendingClass =
+            fieldNamingStrategy!!.getValue()!!.translateName(testFields[0])
+        val testFieldBaseClass = fieldNamingStrategy!!.getValue()!!.translateName(testFields[1])
 
-    Assert.assertEquals(expectedJson, jsonElement);
-  }
+        Assert.assertEquals("TestClass.testField", testFieldBaseClass)
+        Assert.assertEquals("ExtendingClass.testField", testFieldExtendingClass)
+    }
 
-  @Test
-  public void serializeATFAResultsCallsGsonSerializer() {
-    List<AccessibilityHierarchyCheckResult> results = Collections.emptyList();
+    @Test
+    fun exclusionStrategyExcludesWindowHierarchyElements() {
+        val classesToExclude =
+            Arrays.asList<Class<*>?>(
+                WindowHierarchyElement::class.java,
+                WindowHierarchyElementAndroid::class.java
+            )
+        val classesToInclude: MutableList<Class<*>?> =
+            Arrays.stream<Field?>(ViewHierarchyElement::class.java.getFields())
+                .map { f: Field? -> f!!.javaClass }
+                .filter { c: Class<Field?>? -> !classesToExclude.contains(c) }
+                .collect(Collectors.toList())
 
-    testSubject.serializeATFAResults(results);
+        classesToExclude.forEach(
+            Consumer { c: Class<*>? ->
+                Assert.assertTrue(
+                    exclusionStrategy!!.getValue()!!.shouldSkipClass(c)
+                )
+            })
+        classesToInclude.forEach(
+            Consumer { c: Class<*>? ->
+                Assert.assertFalse(
+                    exclusionStrategy!!.getValue()!!.shouldSkipClass(c)
+                )
+            })
+    }
 
-    verify(gson, times(1)).toJson(results);
-  }
+    @Test
+    fun jsonSerializerSerializesClassName() {
+        val expectedJson = JsonPrimitive(TestClass::class.java.getSimpleName())
+
+        val jsonElement =
+            jsonSerializer!!.getValue()!!.serialize(TestClass::class.java, Class::class.java, null)
+
+        Assert.assertEquals(expectedJson, jsonElement)
+    }
+
+    @Test
+    fun serializeATFAResultsCallsGsonSerializer() {
+        val results = mutableListOf<AccessibilityHierarchyCheckResult?>()
+
+        testSubject!!.serializeATFAResults(results)
+
+        Mockito.verify<Gson?>(gson, Mockito.times(1)).toJson(results)
+    }
 }

@@ -1,52 +1,53 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.os.Handler
+import android.os.Looper
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers
+import org.mockito.Mock
+import org.mockito.MockedConstruction
+import org.mockito.MockedConstruction.MockInitializer
+import org.mockito.MockedStatic.Verification
+import org.mockito.Mockito
+import org.mockito.invocation.InvocationOnMock
+import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.stubbing.Answer
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
+@RunWith(MockitoJUnitRunner::class)
+class UIThreadRunnerTest {
+    @Mock
+    var looperMock: Looper? = null
 
-import android.os.Handler;
-import android.os.Looper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockedConstruction;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var runnableMock: Runnable? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class UIThreadRunnerTest {
+    var testSubject: UIThreadRunner? = null
 
-  @Mock Looper looperMock;
-  @Mock Runnable runnableMock;
-
-  UIThreadRunner testSubject;
-
-  @Test
-  public void createsNewHandlerUsingMainLooper() throws Exception {
-    try (MockedStatic<Looper> looperStaticMock = Mockito.mockStatic(Looper.class)) {
-      looperStaticMock.when(Looper::getMainLooper).thenReturn(looperMock);
-      try (MockedConstruction<Handler> handlerConstructionMock =
-          Mockito.mockConstruction(
-              Handler.class,
-              (handlerMock, context) -> {
-                doAnswer(
-                        invocation -> {
-                          Runnable runnable = invocation.getArgument(0);
-                          runnable.run();
-                          return null;
+    @Test
+    @Throws(Exception::class)
+    fun createsNewHandlerUsingMainLooper() {
+        Mockito.mockStatic<Looper?>(Looper::class.java).use { looperStaticMock ->
+            looperStaticMock.`when`<Any?>(Verification { Looper.getMainLooper() })
+                .thenReturn(looperMock)
+            Mockito.mockConstruction<Handler?>(
+                Handler::class.java,
+                MockInitializer { handlerMock: Handler?, context: MockedConstruction.Context? ->
+                    Mockito.doAnswer(
+                        Answer { invocation: InvocationOnMock? ->
+                            val runnable = invocation!!.getArgument<Runnable>(0)
+                            runnable.run()
+                            null
                         })
-                    .when(handlerMock)
-                    .post(any());
-              })) {
-        testSubject = new UIThreadRunner();
-        testSubject.run(runnableMock);
-
-        verify(runnableMock).run();
-      }
+                        .`when`<Handler?>(handlerMock)
+                        .post(ArgumentMatchers.any<Runnable?>())
+                }).use { handlerConstructionMock ->
+                testSubject = UIThreadRunner()
+                testSubject!!.run(runnableMock!!)
+                Mockito.verify<Runnable?>(runnableMock).run()
+            }
+        }
     }
-  }
 }

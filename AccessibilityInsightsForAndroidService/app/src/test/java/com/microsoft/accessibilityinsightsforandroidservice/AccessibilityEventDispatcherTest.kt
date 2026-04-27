@@ -1,130 +1,147 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import java.util.function.Consumer
 
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class AccessibilityEventDispatcherTest {
+    @Mock
+    var eventMock: AccessibilityEvent? = null
 
-import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityNodeInfo;
-import java.util.function.Consumer;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var rootNodeMock: AccessibilityNodeInfo? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class AccessibilityEventDispatcherTest {
+    @Mock
+    var onAppChangedListenerMock: Consumer<AccessibilityNodeInfo?>? = null
 
-  @Mock AccessibilityEvent eventMock;
-  @Mock AccessibilityNodeInfo rootNodeMock;
-  @Mock Consumer<AccessibilityNodeInfo> onAppChangedListenerMock;
-  @Mock Consumer<AccessibilityEvent> onFocusEventListenerMock;
-  @Mock Consumer<AccessibilityEvent> onRedrawEventListenerMock;
+    @Mock
+    var onFocusEventListenerMock: Consumer<AccessibilityEvent?>? = null
 
-  AccessibilityEventDispatcher testSubject;
+    @Mock
+    var onRedrawEventListenerMock: Consumer<AccessibilityEvent?>? = null
 
-  @Before
-  public void prepare() {
-    CharSequence packageNameStub = "some package name";
-    when(rootNodeMock.getPackageName()).thenReturn(packageNameStub);
+    var testSubject: AccessibilityEventDispatcher? = null
 
-    testSubject = new AccessibilityEventDispatcher();
-  }
+    @Before
+    fun prepare() {
+        val packageNameStub: CharSequence = "some package name"
+        Mockito.`when`<CharSequence?>(rootNodeMock!!.getPackageName()).thenReturn(packageNameStub)
 
-  @Test
-  public void accessibilityEventDispatcherExists() {
-    Assert.assertNotNull(testSubject);
-  }
+        testSubject = AccessibilityEventDispatcher()
+    }
 
-  @Test
-  public void onAppChangedFiresWithoutPreviousPackageName() {
-    int trivialEventType = -1;
-    when(eventMock.getEventType()).thenReturn(trivialEventType);
+    @Test
+    fun accessibilityEventDispatcherExists() {
+        Assert.assertNotNull(testSubject)
+    }
 
-    testSubject.addOnAppChangedListener(onAppChangedListenerMock);
-    testSubject.onAccessibilityEvent(eventMock, rootNodeMock);
+    @Test
+    fun onAppChangedFiresWithoutPreviousPackageName() {
+        val trivialEventType = -1
+        Mockito.`when`<Int?>(eventMock!!.getEventType()).thenReturn(trivialEventType)
 
-    verify(onAppChangedListenerMock, times(1)).accept(rootNodeMock);
-  }
+        testSubject!!.addOnAppChangedListener(onAppChangedListenerMock)
+        testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-  @Test
-  public void onAppChangedDoesNotFireWhenRootNodeIsNull() {
-    int trivialEventType = -1;
-    when(eventMock.getEventType()).thenReturn(trivialEventType);
+        Mockito.verify<Consumer<AccessibilityNodeInfo?>?>(
+            onAppChangedListenerMock,
+            Mockito.times(1)
+        ).accept(rootNodeMock)
+    }
 
-    testSubject.addOnAppChangedListener(onAppChangedListenerMock);
-    testSubject.onAccessibilityEvent(eventMock, null);
+    @Test
+    fun onAppChangedDoesNotFireWhenRootNodeIsNull() {
+        val trivialEventType = -1
+        Mockito.`when`<Int?>(eventMock!!.getEventType()).thenReturn(trivialEventType)
 
-    verify(onAppChangedListenerMock, times(0)).accept(rootNodeMock);
-  }
+        testSubject!!.addOnAppChangedListener(onAppChangedListenerMock)
+        testSubject!!.onAccessibilityEvent(eventMock!!, null)
 
-  @Test
-  public void onAppChangedFiresWhenPackageNameChanged() {
-    int trivialEventType = -1;
-    CharSequence differentPackageNameStub = "different package name";
-    when(eventMock.getEventType()).thenReturn(trivialEventType);
+        Mockito.verify<Consumer<AccessibilityNodeInfo?>?>(
+            onAppChangedListenerMock,
+            Mockito.times(0)
+        ).accept(rootNodeMock)
+    }
 
-    testSubject.addOnAppChangedListener(onAppChangedListenerMock);
-    testSubject.onAccessibilityEvent(eventMock, rootNodeMock);
+    @Test
+    fun onAppChangedFiresWhenPackageNameChanged() {
+        val trivialEventType = -1
+        val differentPackageNameStub: CharSequence = "different package name"
+        Mockito.`when`<Int?>(eventMock!!.getEventType()).thenReturn(trivialEventType)
 
-    reset(rootNodeMock);
+        testSubject!!.addOnAppChangedListener(onAppChangedListenerMock)
+        testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-    when(rootNodeMock.getPackageName()).thenReturn(differentPackageNameStub);
-    testSubject.onAccessibilityEvent(eventMock, rootNodeMock);
+        Mockito.reset<AccessibilityNodeInfo?>(rootNodeMock)
 
-    verify(onAppChangedListenerMock, times(2)).accept(rootNodeMock);
-  }
+        Mockito.`when`<CharSequence?>(rootNodeMock!!.getPackageName())
+            .thenReturn(differentPackageNameStub)
+        testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-  @Test
-  public void onFocusEventListenerFiresOnFocusEvent() {
-    int focusEventType = AccessibilityEvent.TYPE_VIEW_FOCUSED;
-    when(eventMock.getEventType()).thenReturn(focusEventType);
+        Mockito.verify<Consumer<AccessibilityNodeInfo?>?>(
+            onAppChangedListenerMock,
+            Mockito.times(2)
+        ).accept(rootNodeMock)
+    }
 
-    testSubject.addOnFocusEventListener(onFocusEventListenerMock);
-    testSubject.onAccessibilityEvent(eventMock, rootNodeMock);
+    @Test
+    fun onFocusEventListenerFiresOnFocusEvent() {
+        val focusEventType = AccessibilityEvent.TYPE_VIEW_FOCUSED
+        Mockito.`when`<Int?>(eventMock!!.getEventType()).thenReturn(focusEventType)
 
-    verify(onFocusEventListenerMock, times(1)).accept(eventMock);
-  }
+        testSubject!!.addOnFocusEventListener(onFocusEventListenerMock)
+        testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-  @Test
-  public void onFocusEventListenerDoesNotFiresOnOtherEvent() {
-    int trivialEventType = -1;
-    when(eventMock.getEventType()).thenReturn(trivialEventType);
+        Mockito.verify<Consumer<AccessibilityEvent?>?>(onFocusEventListenerMock, Mockito.times(1))
+            .accept(eventMock)
+    }
 
-    testSubject.addOnFocusEventListener(onFocusEventListenerMock);
-    testSubject.onAccessibilityEvent(eventMock, rootNodeMock);
+    @Test
+    fun onFocusEventListenerDoesNotFiresOnOtherEvent() {
+        val trivialEventType = -1
+        Mockito.`when`<Int?>(eventMock!!.getEventType()).thenReturn(trivialEventType)
 
-    verify(onFocusEventListenerMock, times(0)).accept(eventMock);
-  }
+        testSubject!!.addOnFocusEventListener(onFocusEventListenerMock)
+        testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-  @Test
-  public void onRedrawEventListenerFiresOnRedrawEvents() {
-    testSubject.addOnRedrawEventListener(onRedrawEventListenerMock);
+        Mockito.verify<Consumer<AccessibilityEvent?>?>(onFocusEventListenerMock, Mockito.times(0))
+            .accept(eventMock)
+    }
 
-    AccessibilityEventDispatcher.redrawEventTypes.forEach(
-        eventType -> {
-          when(eventMock.getEventType()).thenReturn(eventType);
-          testSubject.onAccessibilityEvent(eventMock, rootNodeMock);
-          reset(eventMock);
-        });
+    @Test
+    fun onRedrawEventListenerFiresOnRedrawEvents() {
+        testSubject!!.addOnRedrawEventListener(onRedrawEventListenerMock)
 
-    verify(onRedrawEventListenerMock, times(4)).accept(eventMock);
-  }
+        AccessibilityEventDispatcher.redrawEventTypes.forEach(
+            Consumer { eventType: Int? ->
+                Mockito.`when`<Int?>(eventMock!!.getEventType()).thenReturn(eventType)
+                testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
+                Mockito.reset<AccessibilityEvent?>(eventMock)
+            })
 
-  @Test
-  public void onRedrawEventListenerDoesNotFiresOnOtherEvent() {
-    int trivialEventType = -1;
-    when(eventMock.getEventType()).thenReturn(trivialEventType);
+        Mockito.verify<Consumer<AccessibilityEvent?>?>(onRedrawEventListenerMock, Mockito.times(4))
+            .accept(eventMock)
+    }
 
-    testSubject.addOnRedrawEventListener(onRedrawEventListenerMock);
-    testSubject.onAccessibilityEvent(eventMock, rootNodeMock);
+    @Test
+    fun onRedrawEventListenerDoesNotFiresOnOtherEvent() {
+        val trivialEventType = -1
+        Mockito.`when`<Int?>(eventMock!!.getEventType()).thenReturn(trivialEventType)
 
-    verify(onRedrawEventListenerMock, times(0)).accept(eventMock);
-  }
+        testSubject!!.addOnRedrawEventListener(onRedrawEventListenerMock)
+        testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
+
+        Mockito.verify<Consumer<AccessibilityEvent?>?>(onRedrawEventListenerMock, Mockito.times(0))
+            .accept(eventMock)
+    }
 }

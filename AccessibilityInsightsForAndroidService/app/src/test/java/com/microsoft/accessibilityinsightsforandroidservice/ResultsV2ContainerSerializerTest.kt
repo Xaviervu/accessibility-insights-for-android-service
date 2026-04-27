@@ -1,111 +1,124 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import com.deque.axe.android.AxeResult
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonWriter
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAResultsSerializer
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFARulesSerializer
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.AdditionalAnswers
+import org.mockito.ArgumentMatchers
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.stubbing.Answer1
+import org.mockito.stubbing.Answer2
+import java.io.IOException
+import java.lang.reflect.Type
+import java.util.concurrent.atomic.AtomicReference
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class ResultsV2ContainerSerializerTest {
+    @Mock
+    var axeResultMock: AxeResult? = null
 
-import com.deque.axe.android.AxeResult;
-import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonWriter;
-import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAResultsSerializer;
-import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFARulesSerializer;
+    @Mock
+    var atfaRulesSerializer: ATFARulesSerializer? = null
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.AdditionalAnswers;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var atfaResultsSerializer: ATFAResultsSerializer? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class ResultsV2ContainerSerializerTest {
+    @Mock
+    var gsonBuilder: GsonBuilder? = null
 
-  @Mock AxeResult axeResultMock;
-  @Mock
-  ATFARulesSerializer atfaRulesSerializer;
-  @Mock
-  ATFAResultsSerializer atfaResultsSerializer;
-  @Mock GsonBuilder gsonBuilder;
-  @Mock JsonWriter jsonWriter;
-  @Mock Gson gson;
+    @Mock
+    var jsonWriter: JsonWriter? = null
 
-  final List<AccessibilityHierarchyCheckResult> atfaResults = Collections.emptyList();
-  final ResultsV2Container resultsV2Container = new ResultsV2Container();
+    @Mock
+    var gson: Gson? = null
 
-  TypeAdapter<ResultsV2Container> resultsContainerTypeAdapter;
-  ResultsV2ContainerSerializer testSubject;
+    val atfaResults: MutableList<AccessibilityHierarchyCheckResult?> =
+        mutableListOf<AccessibilityHierarchyCheckResult?>()
+    val resultsV2Container: ResultsV2Container = ResultsV2Container()
 
-  @Before
-  public void prepare() {
-    doAnswer(
-            AdditionalAnswers.answer(
-                (Type type, TypeAdapter<ResultsV2Container> typeAdapter) -> {
-                  resultsContainerTypeAdapter = typeAdapter;
-                  return gsonBuilder;
-                }))
-        .when(gsonBuilder)
-        .registerTypeAdapter(eq(ResultsV2Container.class), any());
+    var resultsContainerTypeAdapter: TypeAdapter<ResultsV2Container?>? = null
+    var testSubject: ResultsV2ContainerSerializer? = null
 
-    when(gsonBuilder.create()).thenReturn(gson);
-    resultsV2Container.AxeResult = axeResultMock;
-    resultsV2Container.ATFAResults = atfaResults;
-    testSubject =
-        new ResultsV2ContainerSerializer(atfaRulesSerializer, atfaResultsSerializer, gsonBuilder);
-  }
+    @Before
+    fun prepare() {
+        Mockito.doAnswer(
+            AdditionalAnswers.answer<GsonBuilder?, Type?, TypeAdapter<ResultsV2Container?>?>(
+                Answer2 { type: Type?, typeAdapter: TypeAdapter<ResultsV2Container?> ->
+                    resultsContainerTypeAdapter = typeAdapter
+                    gsonBuilder
+                })
+        )
+            .`when`<GsonBuilder?>(gsonBuilder)
+            .registerTypeAdapter(
+                ArgumentMatchers.eq<Class<ResultsV2Container?>?>(ResultsV2Container::class.java),
+                ArgumentMatchers.any<Any?>()
+            )
 
-  @Test
-  public void generatesExpectedJson() {
-    AtomicReference<ResultsV2Container> resultsContainer = new AtomicReference<>();
-    doAnswer(
-            AdditionalAnswers.answer(
-                (ResultsV2Container container) -> {
-                  resultsContainer.set(container);
-                  return "Test String";
-                }))
-        .when(gson)
-        .toJson(any(ResultsV2Container.class));
+        Mockito.`when`<Gson?>(gsonBuilder!!.create()).thenReturn(gson)
+        resultsV2Container.AxeResult = axeResultMock
+        resultsV2Container.ATFAResults = atfaResults
+        testSubject =
+            ResultsV2ContainerSerializer(
+                atfaRulesSerializer!!,
+                atfaResultsSerializer!!,
+                gsonBuilder!!
+            )
+    }
 
-    testSubject.createResultsJson(axeResultMock, atfaResults);
+    @Test
+    fun generatesExpectedJson() {
+        val resultsContainer = AtomicReference<ResultsV2Container?>()
+        Mockito.doAnswer(
+            AdditionalAnswers.answer<String?, ResultsV2Container?>(
+                Answer1 { container: ResultsV2Container? ->
+                    resultsContainer.set(container)
+                    "Test String"
+                })
+        )
+            .`when`<Gson?>(gson)
+            .toJson(ArgumentMatchers.any<ResultsV2Container?>(ResultsV2Container::class.java))
 
-    Assert.assertEquals(axeResultMock, resultsContainer.get().AxeResult);
-    Assert.assertEquals(atfaResults, resultsContainer.get().ATFAResults);
-  }
+        testSubject!!.createResultsJson(axeResultMock, atfaResults)
 
-  @Test
-  public void typeAdapterSerializes() throws IOException {
-    String axeJson = "axe scan result";
-    String atfaRulesJson = "atfa rules";
-    String atfaJson = "atfa scan results";
+        Assert.assertEquals(axeResultMock, resultsContainer.get()!!.AxeResult)
+        Assert.assertEquals(atfaResults, resultsContainer.get()!!.ATFAResults)
+    }
 
-    when(axeResultMock.toJson()).thenReturn(axeJson);
-    when(atfaRulesSerializer.serializeATFARules()).thenReturn(atfaRulesJson);
-    when(atfaResultsSerializer.serializeATFAResults(atfaResults)).thenReturn(atfaJson);
-    when(jsonWriter.name("AxeResults")).thenReturn(jsonWriter);
-    when(jsonWriter.name("ATFARules")).thenReturn(jsonWriter);
-    when(jsonWriter.name("ATFAResults")).thenReturn(jsonWriter);
+    @Test
+    @Throws(IOException::class)
+    fun typeAdapterSerializes() {
+        val axeJson = "axe scan result"
+        val atfaRulesJson = "atfa rules"
+        val atfaJson = "atfa scan results"
 
-    resultsContainerTypeAdapter.write(jsonWriter, resultsV2Container);
+        Mockito.`when`<String?>(axeResultMock!!.toJson()).thenReturn(axeJson)
+        Mockito.`when`<String>(atfaRulesSerializer!!.serializeATFARules()).thenReturn(atfaRulesJson)
+        Mockito.`when`<String>(atfaResultsSerializer!!.serializeATFAResults(atfaResults))
+            .thenReturn(atfaJson)
+        Mockito.`when`<JsonWriter?>(jsonWriter!!.name("AxeResults")).thenReturn(jsonWriter)
+        Mockito.`when`<JsonWriter?>(jsonWriter!!.name("ATFARules")).thenReturn(jsonWriter)
+        Mockito.`when`<JsonWriter?>(jsonWriter!!.name("ATFAResults")).thenReturn(jsonWriter)
 
-    verify(jsonWriter, times(1)).beginObject();
-    verify(jsonWriter, times(1)).jsonValue(axeJson);
-    verify(jsonWriter, times(1)).jsonValue(atfaRulesJson);
-    verify(jsonWriter, times(1)).jsonValue(atfaJson);
-    verify(jsonWriter, times(1)).endObject();
-    verify(axeResultMock, times(1)).toJson();
-  }
+        resultsContainerTypeAdapter!!.write(jsonWriter, resultsV2Container)
+
+        Mockito.verify<JsonWriter?>(jsonWriter, Mockito.times(1)).beginObject()
+        Mockito.verify<JsonWriter?>(jsonWriter, Mockito.times(1)).jsonValue(axeJson)
+        Mockito.verify<JsonWriter?>(jsonWriter, Mockito.times(1)).jsonValue(atfaRulesJson)
+        Mockito.verify<JsonWriter?>(jsonWriter, Mockito.times(1)).jsonValue(atfaJson)
+        Mockito.verify<JsonWriter?>(jsonWriter, Mockito.times(1)).endObject()
+        Mockito.verify<AxeResult?>(axeResultMock, Mockito.times(1)).toJson()
+    }
 }

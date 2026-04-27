@@ -1,76 +1,75 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.accessibility.AccessibilityNodeInfo
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class RootNodeFinderTest {
+    @Mock
+    var sourceMock: AccessibilityNodeInfo? = null
 
-import android.view.accessibility.AccessibilityNodeInfo;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var parentMock: AccessibilityNodeInfo? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class RootNodeFinderTest {
+    @Mock
+    var grandparentMock: AccessibilityNodeInfo? = null
 
-  @Mock AccessibilityNodeInfo sourceMock;
-  @Mock AccessibilityNodeInfo parentMock;
-  @Mock AccessibilityNodeInfo grandparentMock;
+    var testSubject: RootNodeFinder? = null
 
-  RootNodeFinder testSubject;
+    @Before
+    fun prepare() {
+        testSubject = RootNodeFinder()
+    }
 
-  @Before
-  public void prepare() {
-    testSubject = new RootNodeFinder();
-  }
+    @Test
+    fun returnNullIfSourceIsNull() {
+        Assert.assertNull(testSubject!!.getRootNodeFromSource(null))
+    }
 
-  @Test
-  public void returnNullIfSourceIsNull() {
-    Assert.assertNull(testSubject.getRootNodeFromSource(null));
-  }
+    @Test
+    fun rootNodeExistsIfSourceExists() {
+        Assert.assertNotNull(testSubject!!.getRootNodeFromSource(sourceMock))
+    }
 
-  @Test
-  public void rootNodeExistsIfSourceExists() {
-    Assert.assertNotNull(testSubject.getRootNodeFromSource(sourceMock));
-  }
+    @Test
+    fun rootNodeIsSource() {
+        val rootNode = testSubject!!.getRootNodeFromSource(sourceMock)
+        Assert.assertEquals(rootNode, sourceMock)
+    }
 
-  @Test
-  public void rootNodeIsSource() {
-    AccessibilityNodeInfo rootNode = testSubject.getRootNodeFromSource(sourceMock);
-    Assert.assertEquals(rootNode, sourceMock);
-  }
+    @Test
+    fun rootNodeIsSourceParent() {
+        Mockito.`when`<AccessibilityNodeInfo?>(sourceMock!!.getParent()).thenReturn(parentMock)
 
-  @Test
-  public void rootNodeIsSourceParent() {
-    when(sourceMock.getParent()).thenReturn(parentMock);
+        val rootNode = testSubject!!.getRootNodeFromSource(sourceMock)
+        Assert.assertEquals(rootNode, parentMock)
+    }
 
-    AccessibilityNodeInfo rootNode = testSubject.getRootNodeFromSource(sourceMock);
-    Assert.assertEquals(rootNode, parentMock);
-  }
+    @Test
+    fun rootNodeIsSourceAncestor() {
+        Mockito.`when`<AccessibilityNodeInfo?>(sourceMock!!.getParent()).thenReturn(parentMock)
+        Mockito.`when`<AccessibilityNodeInfo?>(parentMock!!.getParent()).thenReturn(grandparentMock)
 
-  @Test
-  public void rootNodeIsSourceAncestor() {
-    when(sourceMock.getParent()).thenReturn(parentMock);
-    when(parentMock.getParent()).thenReturn(grandparentMock);
+        val rootNode = testSubject!!.getRootNodeFromSource(sourceMock)
+        Assert.assertEquals(rootNode, grandparentMock)
+    }
 
-    AccessibilityNodeInfo rootNode = testSubject.getRootNodeFromSource(sourceMock);
-    Assert.assertEquals(rootNode, grandparentMock);
-  }
+    @Test
+    fun uneededNodesGetRecycled() {
+        Mockito.`when`<AccessibilityNodeInfo?>(sourceMock!!.getParent()).thenReturn(parentMock)
+        Mockito.`when`<AccessibilityNodeInfo?>(parentMock!!.getParent()).thenReturn(grandparentMock)
 
-  @Test
-  public void uneededNodesGetRecycled() {
-    when(sourceMock.getParent()).thenReturn(parentMock);
-    when(parentMock.getParent()).thenReturn(grandparentMock);
-
-    AccessibilityNodeInfo rootNode = testSubject.getRootNodeFromSource(sourceMock);
-    verify(sourceMock, never()).recycle();
-    verify(rootNode, never()).recycle();
-    verify(parentMock, times(1)).recycle();
-  }
+        val rootNode = testSubject!!.getRootNodeFromSource(sourceMock)
+        Mockito.verify<AccessibilityNodeInfo?>(sourceMock, Mockito.never()).recycle()
+        Mockito.verify<AccessibilityNodeInfo?>(rootNode, Mockito.never()).recycle()
+        Mockito.verify<AccessibilityNodeInfo?>(parentMock, Mockito.times(1)).recycle()
+    }
 }

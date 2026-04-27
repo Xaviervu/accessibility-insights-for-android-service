@@ -1,73 +1,72 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.accessibility.AccessibilityNodeInfo
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class DeviceConfigFactoryTest {
+    val samplePackageName: CharSequence = "test-package-name"
+    val packageNameUnavailable: String = "No application detected"
+    val sampleBuildModel: String = "test-build-model"
 
-import android.view.accessibility.AccessibilityNodeInfo;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var mockRootNode: AccessibilityNodeInfo? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class DeviceConfigFactoryTest {
-  final CharSequence samplePackageName = "test-package-name";
-  final String packageNameUnavailable = "No application detected";
-  final String sampleBuildModel = "test-build-model";
+    var testSubject: DeviceConfigFactory? = null
 
-  @Mock AccessibilityNodeInfo mockRootNode;
+    @Before
+    fun prepare() {
+        testSubject = DeviceConfigFactory(sampleBuildModel)
+    }
 
-  DeviceConfigFactory testSubject;
+    @Test
+    fun deviceConfigFactoryExists() {
+        Assert.assertNotNull(testSubject)
+    }
 
-  @Before
-  public void prepare() {
-    testSubject = new DeviceConfigFactory(sampleBuildModel);
-  }
+    @Test
+    fun getDeviceConfigReturnsNonNullDeviceConfig() {
+        Assert.assertNotNull(testSubject!!.getDeviceConfig(mockRootNode))
+    }
 
-  @Test
-  public void deviceConfigFactoryExists() {
-    Assert.assertNotNull(testSubject);
-  }
+    @Test
+    fun deviceConfigFactoryPropertiesExist() {
+        val deviceConfig = testSubject!!.getDeviceConfig(mockRootNode)
 
-  @Test
-  public void getDeviceConfigReturnsNonNullDeviceConfig() {
-    Assert.assertNotNull(testSubject.getDeviceConfig(mockRootNode));
-  }
+        Assert.assertNotNull(deviceConfig.deviceName)
+        Assert.assertEquals(sampleBuildModel, deviceConfig.deviceName)
+        Assert.assertNotNull(deviceConfig.packageName)
+        Assert.assertNotNull(deviceConfig.serviceVersion)
+    }
 
-  @Test
-  public void deviceConfigFactoryPropertiesExist() {
-    DeviceConfig deviceConfig = testSubject.getDeviceConfig(mockRootNode);
+    @Test
+    fun deviceConfigFactoryGetsProperPackageName() {
+        Mockito.`when`<CharSequence?>(mockRootNode!!.getPackageName()).thenReturn(samplePackageName)
 
-    Assert.assertNotNull(deviceConfig.deviceName);
-    Assert.assertEquals(sampleBuildModel, deviceConfig.deviceName);
-    Assert.assertNotNull(deviceConfig.packageName);
-    Assert.assertNotNull(deviceConfig.serviceVersion);
-  }
+        Assert.assertEquals(samplePackageName, getActualPackageName(mockRootNode))
+    }
 
-  @Test
-  public void deviceConfigFactoryGetsProperPackageName() {
-    when(mockRootNode.getPackageName()).thenReturn(samplePackageName);
+    @Test
+    fun deviceConfigFactoryGetsNoPackageNameWhenPackageNameIsNull() {
+        Mockito.`when`<CharSequence?>(mockRootNode!!.getPackageName()).thenReturn(null)
 
-    Assert.assertEquals(samplePackageName, getActualPackageName(mockRootNode));
-  }
+        Assert.assertEquals(packageNameUnavailable, getActualPackageName(mockRootNode))
+    }
 
-  @Test
-  public void deviceConfigFactoryGetsNoPackageNameWhenPackageNameIsNull() {
-    when(mockRootNode.getPackageName()).thenReturn(null);
+    @Test
+    fun deviceConfigFactoryGetsNoPackageNameWhenRootNodeIsNull() {
+        Assert.assertEquals(packageNameUnavailable, getActualPackageName(null))
+    }
 
-    Assert.assertEquals(packageNameUnavailable, getActualPackageName(mockRootNode));
-  }
-
-  @Test
-  public void deviceConfigFactoryGetsNoPackageNameWhenRootNodeIsNull() {
-    Assert.assertEquals(packageNameUnavailable, getActualPackageName(null));
-  }
-
-  private String getActualPackageName(AccessibilityNodeInfo rootNode) {
-    return testSubject.getDeviceConfig(rootNode).packageName;
-  }
+    private fun getActualPackageName(rootNode: AccessibilityNodeInfo?): String? {
+        return testSubject!!.getDeviceConfig(rootNode).packageName
+    }
 }

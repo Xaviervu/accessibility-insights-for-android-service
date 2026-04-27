@@ -19,9 +19,9 @@ class ScreenshotActivity : Activity() {
         startActivityForResult(mediaManager.createScreenCaptureIntent(), SCREENSHOT)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == SCREENSHOT) {
-            if (resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK && data != null) {
                 set(mediaManager.getMediaProjection(resultCode, data))
             }
         }

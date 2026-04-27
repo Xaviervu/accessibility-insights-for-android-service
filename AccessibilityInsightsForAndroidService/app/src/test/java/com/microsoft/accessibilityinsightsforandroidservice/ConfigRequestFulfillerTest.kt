@@ -1,96 +1,108 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.os.CancellationSignal
+import android.view.accessibility.AccessibilityNodeInfo
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class ConfigRequestFulfillerTest {
+    @Mock
+    var rootNodeFinder: RootNodeFinder? = null
 
-import android.os.CancellationSignal;
-import android.view.accessibility.AccessibilityNodeInfo;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var eventHelper: EventHelper? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class ConfigRequestFulfillerTest {
+    @Mock
+    var deviceConfigFactory: DeviceConfigFactory? = null
 
-  @Mock RootNodeFinder rootNodeFinder;
-  @Mock EventHelper eventHelper;
-  @Mock DeviceConfigFactory deviceConfigFactory;
-  @Mock AccessibilityNodeInfo sourceNodeMock;
-  @Mock AccessibilityNodeInfo rootNodeMock;
-  @Mock DeviceConfig deviceConfig;
-  @Mock CancellationSignal cancellationSignal;
+    @Mock
+    var sourceNodeMock: AccessibilityNodeInfo? = null
 
-  String configJson = "test config";
+    @Mock
+    var rootNodeMock: AccessibilityNodeInfo? = null
 
-  ConfigRequestFulfiller testSubject;
+    @Mock
+    var deviceConfig: DeviceConfig? = null
 
-  @Before
-  public void prepare() {
-    testSubject = new ConfigRequestFulfiller(rootNodeFinder, eventHelper, deviceConfigFactory);
-  }
+    @Mock
+    var cancellationSignal: CancellationSignal? = null
 
-  @Test
-  public void configRequestFulfillerExists() {
-    Assert.assertNotNull(testSubject);
-  }
+    var configJson: String = "test config"
 
-  @Test
-  public void writesCorrectResponse() {
-    setupSuccessfulRequest();
+    var testSubject: ConfigRequestFulfiller? = null
 
-    assertEquals(configJson, testSubject.fulfillRequest(cancellationSignal));
-  }
+    @Before
+    fun prepare() {
+        testSubject = ConfigRequestFulfiller(rootNodeFinder!!, eventHelper!!, deviceConfigFactory!!)
+    }
 
-  @Test
-  public void recyclesNodes() {
-    setupSuccessfulRequest();
+    @Test
+    fun configRequestFulfillerExists() {
+        Assert.assertNotNull(testSubject)
+    }
 
-    testSubject.fulfillRequest(cancellationSignal);
+    @Test
+    fun writesCorrectResponse() {
+        setupSuccessfulRequest()
 
-    verify(rootNodeMock, times(1)).recycle();
-    verify(sourceNodeMock, times(1)).recycle();
-  }
+        Assert.assertEquals(configJson, testSubject!!.fulfillRequest(cancellationSignal!!))
+    }
 
-  @Test
-  public void recyclesNodeOnceIfRootEqualsSource() {
-    setupSuccessfulRequest();
-    reset(rootNodeFinder);
-    reset(deviceConfigFactory);
-    when(rootNodeFinder.getRootNodeFromSource(any())).thenReturn(sourceNodeMock);
-    when(deviceConfigFactory.getDeviceConfig(sourceNodeMock)).thenReturn(deviceConfig);
+    @Test
+    fun recyclesNodes() {
+        setupSuccessfulRequest()
 
-    testSubject.fulfillRequest(cancellationSignal);
+        testSubject!!.fulfillRequest(cancellationSignal!!)
 
-    verifyNoInteractions(rootNodeMock);
-    verify(sourceNodeMock, times(1)).recycle();
-  }
+        Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.times(1)).recycle()
+        Mockito.verify<AccessibilityNodeInfo?>(sourceNodeMock, Mockito.times(1)).recycle()
+    }
 
-  @Test
-  public void doesNotRecycleSourceIfRestoreLastSourceSucceeds() {
-    setupSuccessfulRequest();
-    when(eventHelper.restoreLastSource(sourceNodeMock)).thenReturn(true);
+    @Test
+    fun recyclesNodeOnceIfRootEqualsSource() {
+        setupSuccessfulRequest()
+        Mockito.reset<RootNodeFinder?>(rootNodeFinder)
+        Mockito.reset<DeviceConfigFactory?>(deviceConfigFactory)
+        Mockito.`when`<AccessibilityNodeInfo?>(
+            rootNodeFinder!!.getRootNodeFromSource(
+                ArgumentMatchers.any<AccessibilityNodeInfo?>()
+            )
+        ).thenReturn(sourceNodeMock)
+        Mockito.`when`<DeviceConfig>(deviceConfigFactory!!.getDeviceConfig(sourceNodeMock))
+            .thenReturn(deviceConfig)
 
-    testSubject.fulfillRequest(cancellationSignal);
-    verify(rootNodeMock, times(1)).recycle();
-    verify(sourceNodeMock, never()).recycle();
-  }
+        testSubject!!.fulfillRequest(cancellationSignal!!)
 
-  private void setupSuccessfulRequest() {
-    when(eventHelper.claimLastSource()).thenReturn(sourceNodeMock);
-    when(rootNodeFinder.getRootNodeFromSource(sourceNodeMock)).thenReturn(rootNodeMock);
-    when(deviceConfigFactory.getDeviceConfig(rootNodeMock)).thenReturn(deviceConfig);
-    when(deviceConfig.toJson()).thenReturn(configJson);
-  }
+        Mockito.verifyNoInteractions(rootNodeMock)
+        Mockito.verify<AccessibilityNodeInfo?>(sourceNodeMock, Mockito.times(1)).recycle()
+    }
+
+    @Test
+    fun doesNotRecycleSourceIfRestoreLastSourceSucceeds() {
+        setupSuccessfulRequest()
+        Mockito.`when`<Boolean?>(eventHelper!!.restoreLastSource(sourceNodeMock)).thenReturn(true)
+
+        testSubject!!.fulfillRequest(cancellationSignal!!)
+        Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.times(1)).recycle()
+        Mockito.verify<AccessibilityNodeInfo?>(sourceNodeMock, Mockito.never()).recycle()
+    }
+
+    private fun setupSuccessfulRequest() {
+        Mockito.`when`<AccessibilityNodeInfo?>(eventHelper!!.claimLastSource())
+            .thenReturn(sourceNodeMock)
+        Mockito.`when`<AccessibilityNodeInfo?>(rootNodeFinder!!.getRootNodeFromSource(sourceNodeMock))
+            .thenReturn(rootNodeMock)
+        Mockito.`when`<DeviceConfig>(deviceConfigFactory!!.getDeviceConfig(rootNodeMock))
+            .thenReturn(deviceConfig)
+        Mockito.`when`<String?>(deviceConfig!!.toJson()).thenReturn(configJson)
+    }
 }

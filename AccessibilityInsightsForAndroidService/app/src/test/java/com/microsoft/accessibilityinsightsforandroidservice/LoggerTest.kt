@@ -1,125 +1,129 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.util.Log
+import com.microsoft.accessibilityinsightsforandroidservice.Logger.logDebug
+import com.microsoft.accessibilityinsightsforandroidservice.Logger.logError
+import com.microsoft.accessibilityinsightsforandroidservice.Logger.logInfo
+import com.microsoft.accessibilityinsightsforandroidservice.Logger.logVerbose
+import com.microsoft.accessibilityinsightsforandroidservice.Logger.logWarning
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.MockedStatic
+import org.mockito.MockedStatic.Verification
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import android.util.Log;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+@RunWith(MockitoJUnitRunner::class)
+class LoggerTest {
+    val logTag: String = "logTag"
+    val logMessage: String = "log message"
 
-@RunWith(MockitoJUnitRunner.class)
-public class LoggerTest {
+    var originalEnableLogging: Boolean = false
+    var logStaticMock: MockedStatic<Log?>? = null
 
-  final String logTag = "logTag";
-  final String logMessage = "log message";
+    @Before
+    fun prepare() {
+        logStaticMock = Mockito.mockStatic<Log?>(Log::class.java)
+        originalEnableLogging = Logger.ENABLE_LOGGING
+    }
 
-  boolean originalEnableLogging;
-  MockedStatic<Log> logStaticMock;
+    @After
+    fun cleanUp() {
+        Logger.ENABLE_LOGGING = originalEnableLogging
+        logStaticMock!!.close()
+    }
 
-  @Before
-  public void prepare() {
-    logStaticMock = Mockito.mockStatic(Log.class);
-    originalEnableLogging = Logger.ENABLE_LOGGING;
-  }
+    @Test
+    fun logVerboseDebugOn() {
+        Logger.ENABLE_LOGGING = true
 
-  @After
-  public void cleanUp() {
-    Logger.ENABLE_LOGGING = originalEnableLogging;
-    logStaticMock.close();
-  }
+        logVerbose(logTag, logMessage)
 
-  @Test
-  public void logVerboseDebugOn() {
-    Logger.ENABLE_LOGGING = true;
+        logStaticMock!!.verify(Verification { Log.v(logTag, logMessage) })
+    }
 
-    Logger.logVerbose(logTag, logMessage);
+    @Test
+    fun logVerboseDebugOff() {
+        Logger.ENABLE_LOGGING = false
 
-    logStaticMock.verify(() -> Log.v(logTag, logMessage));
-  }
+        logVerbose(logTag, logMessage)
 
-  @Test
-  public void logVerboseDebugOff() {
-    Logger.ENABLE_LOGGING = false;
+        logStaticMock!!.verifyNoMoreInteractions()
+    }
 
-    Logger.logVerbose(logTag, logMessage);
+    @Test
+    fun logDebugDebugOn() {
+        Logger.ENABLE_LOGGING = true
 
-    logStaticMock.verifyNoMoreInteractions();
-  }
+        logDebug(logTag, logMessage)
 
-  @Test
-  public void logDebugDebugOn() {
-    Logger.ENABLE_LOGGING = true;
+        logStaticMock!!.verify(Verification { Log.d(logTag, logMessage) })
+    }
 
-    Logger.logDebug(logTag, logMessage);
+    @Test
+    fun logDebugDebugOff() {
+        Logger.ENABLE_LOGGING = false
 
-    logStaticMock.verify(() -> Log.d(logTag, logMessage));
-  }
+        logDebug(logTag, logMessage)
 
-  @Test
-  public void logDebugDebugOff() {
-    Logger.ENABLE_LOGGING = false;
+        logStaticMock!!.verifyNoMoreInteractions()
+    }
 
-    Logger.logDebug(logTag, logMessage);
+    @Test
+    fun logErrorDebugOn() {
+        Logger.ENABLE_LOGGING = true
 
-    logStaticMock.verifyNoMoreInteractions();
-  }
+        logError(logTag, logMessage)
 
-  @Test
-  public void logErrorDebugOn() {
-    Logger.ENABLE_LOGGING = true;
+        logStaticMock!!.verify(Verification { Log.e(logTag, logMessage) })
+    }
 
-    Logger.logError(logTag, logMessage);
+    @Test
+    fun logErrorDebugOff() {
+        Logger.ENABLE_LOGGING = false
 
-    logStaticMock.verify(() -> Log.e(logTag, logMessage));
-  }
+        logError(logTag, logMessage)
 
-  @Test
-  public void logErrorDebugOff() {
-    Logger.ENABLE_LOGGING = false;
+        logStaticMock!!.verifyNoMoreInteractions()
+    }
 
-    Logger.logError(logTag, logMessage);
+    @Test
+    fun logInfoDebugOn() {
+        Logger.ENABLE_LOGGING = true
 
-    logStaticMock.verifyNoMoreInteractions();
-  }
+        logInfo(logTag, logMessage)
 
-  @Test
-  public void logInfoDebugOn() {
-    Logger.ENABLE_LOGGING = true;
+        logStaticMock!!.verify(Verification { Log.i(logTag, logMessage) })
+    }
 
-    Logger.logInfo(logTag, logMessage);
+    @Test
+    fun logInfoDebugOff() {
+        Logger.ENABLE_LOGGING = false
 
-    logStaticMock.verify(() -> Log.i(logTag, logMessage));
-  }
+        logInfo(logTag, logMessage)
 
-  @Test
-  public void logInfoDebugOff() {
-    Logger.ENABLE_LOGGING = false;
+        logStaticMock!!.verifyNoMoreInteractions()
+    }
 
-    Logger.logInfo(logTag, logMessage);
+    @Test
+    fun logWarningDebugOn() {
+        Logger.ENABLE_LOGGING = true
 
-    logStaticMock.verifyNoMoreInteractions();
-  }
+        logWarning(logTag, logMessage)
 
-  @Test
-  public void logWarningDebugOn() {
-    Logger.ENABLE_LOGGING = true;
+        logStaticMock!!.verify(Verification { Log.w(logTag, logMessage) })
+    }
 
-    Logger.logWarning(logTag, logMessage);
+    @Test
+    fun logWarningDebugOff() {
+        Logger.ENABLE_LOGGING = false
 
-    logStaticMock.verify(() -> Log.w(logTag, logMessage));
-  }
+        logWarning(logTag, logMessage)
 
-  @Test
-  public void logWarningDebugOff() {
-    Logger.ENABLE_LOGGING = false;
-
-    Logger.logWarning(logTag, logMessage);
-
-    logStaticMock.verifyNoMoreInteractions();
-  }
+        logStaticMock!!.verifyNoMoreInteractions()
+    }
 }

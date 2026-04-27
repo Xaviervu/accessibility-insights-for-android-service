@@ -1,226 +1,300 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Bitmap
+import android.os.CancellationSignal
+import android.os.OperationCanceledException
+import android.view.accessibility.AccessibilityNodeInfo
+import com.deque.axe.android.AxeResult
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult
+import com.google.android.apps.common.testing.accessibility.framework.utils.contrast.BitmapImage
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.function.ThrowingRunnable
+import org.junit.runner.RunWith
+import org.mockito.AdditionalAnswers
+import org.mockito.ArgumentMatchers
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.invocation.InvocationOnMock
+import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.stubbing.Answer
+import org.mockito.stubbing.VoidAnswer1
+import java.util.function.Consumer
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class ResultV2RequestFulfillerTest {
+    @Mock
+    var rootNodeFinder: RootNodeFinder? = null
 
-import android.graphics.Bitmap;
-import android.os.CancellationSignal;
-import android.os.OperationCanceledException;
-import android.view.accessibility.AccessibilityNodeInfo;
-import com.deque.axe.android.AxeResult;
-import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult;
-import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner;
-import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner;
+    @Mock
+    var eventHelper: EventHelper? = null
 
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.AdditionalAnswers;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var axeScanner: AxeScanner? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class ResultV2RequestFulfillerTest {
+    @Mock
+    var atfaScanner: ATFAScanner? = null
 
-  @Mock RootNodeFinder rootNodeFinder;
-  @Mock EventHelper eventHelper;
-  @Mock
-  AxeScanner axeScanner;
-  @Mock
-  ATFAScanner atfaScanner;
-  @Mock ScreenshotController screenshotController;
-  @Mock Bitmap screenshotMock;
-  @Mock AccessibilityNodeInfo sourceNode;
-  @Mock AccessibilityNodeInfo rootNode;
-  @Mock AxeResult axeResultMock;
-  @Mock ResultsV2ContainerSerializer resultsV2ContainerSerializer;
-  @Mock CancellationSignal cancellationSignal;
+    @Mock
+    var screenshotController: ScreenshotController? = null
 
-  final List<AccessibilityHierarchyCheckResult> atfaResults = Collections.emptyList();
-  final String scanResultJson = "axe scan result";
+    @Mock
+    var screenshotMock: Bitmap? = null
 
-  ResultV2RequestFulfiller testSubject;
+    @Mock
+    var sourceNode: AccessibilityNodeInfo? = null
 
-  @Before
-  public void prepare() {
-    setupScreenshotParameter(screenshotMock);
-    testSubject =
-        new ResultV2RequestFulfiller(
-            rootNodeFinder,
-            eventHelper,
-            axeScanner,
-            atfaScanner,
-            screenshotController,
-            resultsV2ContainerSerializer);
-  }
+    @Mock
+    var rootNode: AccessibilityNodeInfo? = null
 
-  @Test
-  public void resultRequestFulfillerExists() {
-    Assert.assertNotNull(testSubject);
-  }
+    @Mock
+    var axeResultMock: AxeResult? = null
 
-  @Test
-  public void callsGetScreenshotWithMediaProjection() throws Exception {
-    setupSuccessfulRequest();
+    @Mock
+    var resultsV2ContainerSerializer: ResultsV2ContainerSerializer? = null
 
-    testSubject.fulfillRequest(cancellationSignal);
+    @Mock
+    var cancellationSignal: CancellationSignal? = null
 
-    verify(screenshotController, times(1)).getScreenshotWithMediaProjection(any());
-  }
+    val atfaResults: MutableList<AccessibilityHierarchyCheckResult?> =
+        mutableListOf<AccessibilityHierarchyCheckResult?>()
+    val scanResultJson: String = "axe scan result"
 
-  @Test
-  public void writesSuccessfulResponse() throws Exception {
-    setupSuccessfulRequest();
+    var testSubject: ResultV2RequestFulfiller? = null
 
-    assertEquals(scanResultJson, testSubject.fulfillRequest(cancellationSignal));
-  }
-
-  @Test
-  public void recyclesNodes() throws Exception {
-    setupSuccessfulRequest();
-
-    testSubject.fulfillRequest(cancellationSignal);
-
-    verify(rootNode, times(1)).recycle();
-    verify(sourceNode, times(1)).recycle();
-  }
-
-  @Test
-  public void recyclesNodeOnceIfRootEqualsSource() throws Exception {
-    setupSuccessfulRequest();
-    reset(rootNodeFinder);
-    reset(axeScanner);
-    when(rootNodeFinder.getRootNodeFromSource(any())).thenReturn(sourceNode);
-    when(axeScanner.scanWithAxe(eq(sourceNode), any())).thenReturn(axeResultMock);
-
-    testSubject.fulfillRequest(cancellationSignal);
-
-    verifyNoInteractions(rootNode);
-    verify(sourceNode, times(1)).recycle();
-  }
-
-  @Test
-  public void throwsExceptionIfNoScreenshot() throws Exception {
-    setupSuccessfulRequest();
-    reset(screenshotController);
-    setupScreenshotParameter(null);
-
-    assertThrows(
-        "Could not acquire screenshot. Has the user granted screen recording permissions?",
-        Exception.class,
-        () -> testSubject.fulfillRequest(cancellationSignal));
-  }
-
-  @Test
-  public void throwsExceptionIfNoRootNode() {
-    when(rootNodeFinder.getRootNodeFromSource(null)).thenReturn(null);
-
-    assertThrows(
-        "Unable to locate root node to scan",
-        Exception.class,
-        () -> testSubject.fulfillRequest(cancellationSignal));
-  }
-
-  @Test
-  public void throwsExceptionIfScanFailed() throws ViewChangedException {
-    when(eventHelper.claimLastSource()).thenReturn(sourceNode);
-    when(rootNodeFinder.getRootNodeFromSource(any())).thenReturn(rootNode);
-    when(axeScanner.scanWithAxe(eq(rootNode), any())).thenReturn(null);
-
-    assertThrows(
-        "Scanner returned no data",
-        Exception.class,
-        () -> testSubject.fulfillRequest(cancellationSignal));
-  }
-
-  @Test
-  public void doesNotRecycleSourceIfRestoreLastSourceSucceeds() throws Exception {
-    setupSuccessfulRequest();
-    when(eventHelper.restoreLastSource(sourceNode)).thenReturn(true);
-
-    testSubject.fulfillRequest(cancellationSignal);
-
-    verify(rootNode, times(1)).recycle();
-    verify(sourceNode, never()).recycle();
-  }
-
-  @Test
-  public void supportsCancellationBetweenScreenshotAndFirstScan() throws Exception {
-    setupSuccessfulRequest();
-    reset(screenshotController);
-    doAnswer(
-            AdditionalAnswers.answerVoid(
-                (Consumer<Bitmap> bitmapConsumer) -> {
-                  simulateCancellation();
-                  bitmapConsumer.accept(screenshotMock);
-                }))
-        .when(screenshotController)
-        .getScreenshotWithMediaProjection(any());
-
-    assertThrows(
-        OperationCanceledException.class, () -> testSubject.fulfillRequest(cancellationSignal));
-
-    verifyNoInteractions(axeScanner);
-    verifyNoInteractions(atfaScanner);
-  }
-
-  @Test
-  public void supportsCancellationBetweenScans() throws Exception {
-    setupSuccessfulRequest();
-    reset(axeScanner);
-    when(axeScanner.scanWithAxe(eq(rootNode), any()))
-        .thenAnswer(
-            invocation -> {
-              simulateCancellation();
-              return axeResultMock;
-            });
-    assertThrows(
-        OperationCanceledException.class, () -> testSubject.fulfillRequest(cancellationSignal));
-
-    verifyNoInteractions(atfaScanner);
-  }
-
-  private void simulateCancellation() {
-    doThrow(new OperationCanceledException()).when(cancellationSignal).throwIfCanceled();
-  }
-
-  private void setupSuccessfulRequest() {
-    when(eventHelper.claimLastSource()).thenReturn(sourceNode);
-    when(rootNodeFinder.getRootNodeFromSource(any())).thenReturn(rootNode);
-    try {
-      when(axeScanner.scanWithAxe(eq(rootNode), any())).thenReturn(axeResultMock);
-    } catch (ViewChangedException e) {
-      Assert.fail(e.getMessage());
+    @Before
+    fun prepare() {
+        setupScreenshotParameter(screenshotMock)
+        testSubject =
+            ResultV2RequestFulfiller(
+                rootNodeFinder!!,
+                eventHelper!!,
+                axeScanner!!,
+                atfaScanner!!,
+                screenshotController!!,
+                resultsV2ContainerSerializer!!
+            )
     }
-    when(atfaScanner.scanWithATFA(eq(sourceNode), any())).thenReturn(atfaResults);
-    when(resultsV2ContainerSerializer.createResultsJson(axeResultMock, atfaResults))
-        .thenReturn(scanResultJson);
-  }
 
-  private void setupScreenshotParameter(Bitmap value) {
-    doAnswer(
-            AdditionalAnswers.answerVoid(
-                (Consumer<Bitmap> bitmapConsumer) -> {
-                  bitmapConsumer.accept(value);
-                }))
-        .when(screenshotController)
-        .getScreenshotWithMediaProjection(any());
-  }
+    @Test
+    fun resultRequestFulfillerExists() {
+        Assert.assertNotNull(testSubject)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun callsGetScreenshotWithMediaProjection() {
+        setupSuccessfulRequest()
+
+        testSubject!!.fulfillRequest(cancellationSignal!!)
+
+        Mockito.verify<ScreenshotController?>(screenshotController, Mockito.times(1))
+            .getScreenshotWithMediaProjection(ArgumentMatchers.any<Consumer<Bitmap?>>())
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun writesSuccessfulResponse() {
+        setupSuccessfulRequest()
+
+        Assert.assertEquals(scanResultJson, testSubject!!.fulfillRequest(cancellationSignal!!))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun recyclesNodes() {
+        setupSuccessfulRequest()
+
+        testSubject!!.fulfillRequest(cancellationSignal!!)
+
+        Mockito.verify<AccessibilityNodeInfo?>(rootNode, Mockito.times(1)).recycle()
+        Mockito.verify<AccessibilityNodeInfo?>(sourceNode, Mockito.times(1)).recycle()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun recyclesNodeOnceIfRootEqualsSource() {
+        setupSuccessfulRequest()
+        Mockito.reset<RootNodeFinder?>(rootNodeFinder)
+        Mockito.reset<AxeScanner?>(axeScanner)
+        Mockito.`when`<AccessibilityNodeInfo?>(
+            rootNodeFinder!!.getRootNodeFromSource(
+                ArgumentMatchers.any<AccessibilityNodeInfo?>()
+            )
+        ).thenReturn(sourceNode)
+        Mockito.`when`<AxeResult>(
+            axeScanner!!.scanWithAxe(
+                ArgumentMatchers.eq<AccessibilityNodeInfo?>(
+                    sourceNode
+                ), ArgumentMatchers.any<Bitmap>()
+            )
+        ).thenReturn(axeResultMock)
+
+        testSubject!!.fulfillRequest(cancellationSignal!!)
+
+        Mockito.verifyNoInteractions(rootNode)
+        Mockito.verify<AccessibilityNodeInfo?>(sourceNode, Mockito.times(1)).recycle()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun throwsExceptionIfNoScreenshot() {
+        setupSuccessfulRequest()
+        Mockito.reset<ScreenshotController?>(screenshotController)
+        setupScreenshotParameter(null)
+
+        Assert.assertThrows<Exception?>(
+            "Could not acquire screenshot. Has the user granted screen recording permissions?",
+            Exception::class.java,
+            ThrowingRunnable { testSubject!!.fulfillRequest(cancellationSignal!!) })
+    }
+
+    @Test
+    fun throwsExceptionIfNoRootNode() {
+        Mockito.`when`<AccessibilityNodeInfo?>(rootNodeFinder!!.getRootNodeFromSource(null))
+            .thenReturn(null)
+
+        Assert.assertThrows<Exception?>(
+            "Unable to locate root node to scan",
+            Exception::class.java,
+            ThrowingRunnable { testSubject!!.fulfillRequest(cancellationSignal!!) })
+    }
+
+    @Test
+    @Throws(ViewChangedException::class)
+    fun throwsExceptionIfScanFailed() {
+        Mockito.`when`<AccessibilityNodeInfo?>(eventHelper!!.claimLastSource())
+            .thenReturn(sourceNode)
+        Mockito.`when`<AccessibilityNodeInfo?>(
+            rootNodeFinder!!.getRootNodeFromSource(
+                ArgumentMatchers.any<AccessibilityNodeInfo?>()
+            )
+        ).thenReturn(rootNode)
+        Mockito.`when`<AxeResult>(
+            axeScanner!!.scanWithAxe(
+                ArgumentMatchers.eq<AccessibilityNodeInfo?>(
+                    rootNode
+                ), ArgumentMatchers.any<Bitmap>()
+            )
+        ).thenReturn(null)
+
+        Assert.assertThrows<Exception?>(
+            "Scanner returned no data",
+            Exception::class.java,
+            ThrowingRunnable { testSubject!!.fulfillRequest(cancellationSignal!!) })
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun doesNotRecycleSourceIfRestoreLastSourceSucceeds() {
+        setupSuccessfulRequest()
+        Mockito.`when`<Boolean?>(eventHelper!!.restoreLastSource(sourceNode)).thenReturn(true)
+
+        testSubject!!.fulfillRequest(cancellationSignal!!)
+
+        Mockito.verify<AccessibilityNodeInfo?>(rootNode, Mockito.times(1)).recycle()
+        Mockito.verify<AccessibilityNodeInfo?>(sourceNode, Mockito.never()).recycle()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun supportsCancellationBetweenScreenshotAndFirstScan() {
+        setupSuccessfulRequest()
+        Mockito.reset<ScreenshotController?>(screenshotController)
+        Mockito.doAnswer(
+            AdditionalAnswers.answerVoid<Consumer<Bitmap?>?>(
+                VoidAnswer1 { bitmapConsumer: Consumer<Bitmap?>? ->
+                    simulateCancellation()
+                    bitmapConsumer!!.accept(screenshotMock)
+                })
+        )
+            .`when`<ScreenshotController?>(screenshotController)
+            .getScreenshotWithMediaProjection(ArgumentMatchers.any<Consumer<Bitmap?>>())
+
+        Assert.assertThrows<OperationCanceledException?>(
+            OperationCanceledException::class.java,
+            ThrowingRunnable { testSubject!!.fulfillRequest(cancellationSignal!!) })
+
+        Mockito.verifyNoInteractions(axeScanner)
+        Mockito.verifyNoInteractions(atfaScanner)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun supportsCancellationBetweenScans() {
+        setupSuccessfulRequest()
+        Mockito.reset<AxeScanner?>(axeScanner)
+        Mockito.`when`<AxeResult>(
+            axeScanner!!.scanWithAxe(
+                ArgumentMatchers.eq<AccessibilityNodeInfo?>(
+                    rootNode
+                ), ArgumentMatchers.any<Bitmap>()
+            )
+        )
+            .thenAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    simulateCancellation()
+                    axeResultMock
+                })
+        Assert.assertThrows<OperationCanceledException?>(
+            OperationCanceledException::class.java,
+            ThrowingRunnable { testSubject!!.fulfillRequest(cancellationSignal!!) })
+
+        Mockito.verifyNoInteractions(atfaScanner)
+    }
+
+    private fun simulateCancellation() {
+        Mockito.doThrow(OperationCanceledException())
+            .`when`<CancellationSignal?>(cancellationSignal).throwIfCanceled()
+    }
+
+    private fun setupSuccessfulRequest() {
+        Mockito.`when`<AccessibilityNodeInfo?>(eventHelper!!.claimLastSource())
+            .thenReturn(sourceNode)
+        Mockito.`when`<AccessibilityNodeInfo?>(
+            rootNodeFinder!!.getRootNodeFromSource(
+                ArgumentMatchers.any<AccessibilityNodeInfo?>()
+            )
+        ).thenReturn(rootNode)
+        try {
+            Mockito.`when`<AxeResult>(
+                axeScanner!!.scanWithAxe(
+                    ArgumentMatchers.eq<AccessibilityNodeInfo?>(
+                        rootNode
+                    ), ArgumentMatchers.any<Bitmap>()
+                )
+            ).thenReturn(axeResultMock)
+        } catch (e: ViewChangedException) {
+            Assert.fail(e.message)
+        }
+        Mockito.`when`<MutableList<AccessibilityHierarchyCheckResult?>>(
+            atfaScanner!!.scanWithATFA(
+                ArgumentMatchers.eq<AccessibilityNodeInfo?>(sourceNode),
+                ArgumentMatchers.any<BitmapImage?>()
+            )
+        ).thenReturn(atfaResults)
+        Mockito.`when`<String>(
+            resultsV2ContainerSerializer!!.createResultsJson(
+                axeResultMock,
+                atfaResults
+            )
+        )
+            .thenReturn(scanResultJson)
+    }
+
+    private fun setupScreenshotParameter(value: Bitmap?) {
+        Mockito.doAnswer(
+            AdditionalAnswers.answerVoid<Consumer<Bitmap?>?>(
+                VoidAnswer1 { bitmapConsumer: Consumer<Bitmap?>? ->
+                    bitmapConsumer!!.accept(value)
+                })
+        )
+            .`when`<ScreenshotController?>(screenshotController)
+            .getScreenshotWithMediaProjection(ArgumentMatchers.any<Consumer<Bitmap?>>())
+    }
 }

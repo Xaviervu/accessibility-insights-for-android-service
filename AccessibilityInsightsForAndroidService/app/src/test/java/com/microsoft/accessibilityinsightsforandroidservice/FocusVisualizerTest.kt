@@ -1,52 +1,58 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.accessibility.AccessibilityNodeInfo
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockedConstruction
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.mockito.Mockito.verify;
+@RunWith(MockitoJUnitRunner::class)
+class FocusVisualizerTest {
+    var testSubject: FocusVisualizer? = null
 
-import android.view.accessibility.AccessibilityNodeInfo;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var focusVisualizerStylesMock: FocusVisualizerStyles? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class FocusVisualizerTest {
-  FocusVisualizer testSubject;
+    @Mock
+    var focusVisualizationCanvasMock: FocusVisualizationCanvas? = null
 
-  @Mock FocusVisualizerStyles focusVisualizerStylesMock;
-  @Mock FocusVisualizationCanvas focusVisualizationCanvasMock;
-  @Mock AccessibilityNodeInfo accessibilityEventMock;
+    @Mock
+    var accessibilityEventMock: AccessibilityNodeInfo? = null
 
-  MockedConstruction<FocusElementHighlight> focusElementHighlightConstructionMock;
-  MockedConstruction<FocusElementLine> focusElementLineConstructionMock;
+    var focusElementHighlightConstructionMock: MockedConstruction<FocusElementHighlight?>? = null
+    var focusElementLineConstructionMock: MockedConstruction<FocusElementLine?>? = null
 
-  @Before
-  public void prepare() throws Exception {
-    focusElementHighlightConstructionMock = Mockito.mockConstruction(FocusElementHighlight.class);
-    focusElementLineConstructionMock = Mockito.mockConstruction(FocusElementLine.class);
+    @Before
+    @Throws(Exception::class)
+    fun prepare() {
+        focusElementHighlightConstructionMock =
+            Mockito.mockConstruction<FocusElementHighlight?>(FocusElementHighlight::class.java)
+        focusElementLineConstructionMock =
+            Mockito.mockConstruction<FocusElementLine?>(FocusElementLine::class.java)
 
-    testSubject = new FocusVisualizer(focusVisualizerStylesMock, focusVisualizationCanvasMock);
-  }
+        testSubject = FocusVisualizer(focusVisualizerStylesMock!!, focusVisualizationCanvasMock!!)
+    }
 
-  @After
-  public void cleanUp() throws Exception {
-    focusElementLineConstructionMock.close();
-    focusElementHighlightConstructionMock.close();
-  }
+    @After
+    @Throws(Exception::class)
+    fun cleanUp() {
+        focusElementLineConstructionMock!!.close()
+        focusElementHighlightConstructionMock!!.close()
+    }
 
-  @Test
-  public void returnsNotNull() {
-    Assert.assertNotNull(testSubject);
-  }
+    @Test
+    fun returnsNotNull() {
+        Assert.assertNotNull(testSubject)
+    }
 
-  /* TODO: fix Whitebox cases
+    /* TODO: fix Whitebox cases
 
   @Test
   public void addNewFocusedElementCreatesElementOnFirstCall() {
@@ -113,10 +119,9 @@ public class FocusVisualizerTest {
   }
 
      */
-
-  @Test
-  public void refreshHighlightsCallsRedraw() {
-    testSubject.refreshHighlights();
-    verify(focusVisualizationCanvasMock).redraw();
-  }
+    @Test
+    fun refreshHighlightsCallsRedraw() {
+        testSubject!!.refreshHighlights()
+        Mockito.verify<FocusVisualizationCanvas?>(focusVisualizationCanvasMock).redraw()
+    }
 }

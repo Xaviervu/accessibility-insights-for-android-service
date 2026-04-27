@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.util.DisplayMetrics
 
-import android.util.DisplayMetrics;
-
-public class DisplayMetricsStub extends DisplayMetrics {
-  public int densityDpi = 111;
-  public int heightPixels = 222;
-  public int widthPixels = 333;
+class DisplayMetricsStub : DisplayMetrics() {
+    var densityDpi: Int = 111
+    var heightPixels: Int = 222
+    var widthPixels: Int = 333
 }

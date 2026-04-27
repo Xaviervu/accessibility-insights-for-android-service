@@ -1,89 +1,89 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Bitmap
+import android.util.Base64
+import com.deque.axe.android.colorcontrast.AxeColor
+import com.deque.axe.android.wrappers.AxeRect
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockedStatic.Verification
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import java.io.ByteArrayOutputStream
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class ScreenshotAxeImageTest {
+    @Mock
+    var bitmapMock: Bitmap? = null
 
-import android.graphics.Bitmap;
-import android.util.Base64;
-import com.deque.axe.android.colorcontrast.AxeColor;
-import com.deque.axe.android.wrappers.AxeRect;
-import java.io.ByteArrayOutputStream;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var byteArrayOutputStreamProviderMock: ByteArrayOutputStreamProvider? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScreenshotAxeImageTest {
+    @Mock
+    var byteArrayOutputStreamMock: ByteArrayOutputStream? = null
 
-  @Mock Bitmap bitmapMock;
-  @Mock ByteArrayOutputStreamProvider byteArrayOutputStreamProviderMock;
-  @Mock ByteArrayOutputStream byteArrayOutputStreamMock;
+    var sampleWidth: Int = 0
+    var sampleHeight: Int = 0
+    var testSubject: ScreenshotAxeImage? = null
 
-  int sampleWidth;
-  int sampleHeight;
-  ScreenshotAxeImage testSubject;
+    @Before
+    fun prepare() {
+        sampleHeight = 100
+        sampleWidth = 50
 
-  @Before
-  public void prepare() {
-    sampleHeight = 100;
-    sampleWidth = 50;
+        Mockito.`when`<Int?>(bitmapMock!!.getWidth()).thenReturn(sampleWidth)
+        Mockito.`when`<Int?>(bitmapMock!!.getHeight()).thenReturn(sampleHeight)
 
-    when(bitmapMock.getWidth()).thenReturn(sampleWidth);
-    when(bitmapMock.getHeight()).thenReturn(sampleHeight);
-
-    testSubject = new ScreenshotAxeImage(bitmapMock, byteArrayOutputStreamProviderMock);
-  }
-
-  @Test
-  public void screenShotAxeImageExists() {
-    Assert.assertNotNull(testSubject);
-  }
-
-  @Test
-  public void pixelReturnsCorrectColor() {
-    int givenX = 10;
-    int givenY = 20;
-    int colorIntStub = 100;
-
-    when(bitmapMock.getPixel(givenX, givenY)).thenReturn(colorIntStub);
-
-    AxeColor returnedAxeColor = testSubject.pixel(givenX, givenY);
-
-    Assert.assertEquals(returnedAxeColor, new AxeColor(colorIntStub));
-  }
-
-  @Test
-  public void frameReturnsCorrectRect() {
-    AxeRect expectedRect = new AxeRect(0, sampleWidth - 1, 0, sampleHeight - 1);
-
-    Assert.assertEquals(testSubject.frame(), expectedRect);
-  }
-
-  @Test
-  public void toBase64PngReturnsCorrectString() {
-    byte[] byteArrayStub = new byte[1];
-    String expectedString = "some string";
-
-    try (MockedStatic<Base64> base64StaticMock = Mockito.mockStatic(Base64.class)) {
-      when(byteArrayOutputStreamProviderMock.get()).thenReturn(byteArrayOutputStreamMock);
-      when(byteArrayOutputStreamMock.toByteArray()).thenReturn(byteArrayStub);
-      base64StaticMock
-          .when(() -> Base64.encodeToString(byteArrayStub, Base64.NO_WRAP))
-          .thenReturn(expectedString);
-
-      Assert.assertEquals(testSubject.toBase64Png(), expectedString);
-
-      verify(bitmapMock, times(1))
-          .compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStreamMock);
+        testSubject = ScreenshotAxeImage(bitmapMock!!, byteArrayOutputStreamProviderMock!!)
     }
-  }
+
+    @Test
+    fun screenShotAxeImageExists() {
+        Assert.assertNotNull(testSubject)
+    }
+
+    @Test
+    fun pixelReturnsCorrectColor() {
+        val givenX = 10
+        val givenY = 20
+        val colorIntStub = 100
+
+        Mockito.`when`<Int?>(bitmapMock!!.getPixel(givenX, givenY)).thenReturn(colorIntStub)
+
+        val returnedAxeColor = testSubject!!.pixel(givenX, givenY)
+
+        Assert.assertEquals(returnedAxeColor, AxeColor(colorIntStub))
+    }
+
+    @Test
+    fun frameReturnsCorrectRect() {
+        val expectedRect = AxeRect(0, sampleWidth - 1, 0, sampleHeight - 1)
+
+        Assert.assertEquals(testSubject!!.frame(), expectedRect)
+    }
+
+    @Test
+    fun toBase64PngReturnsCorrectString() {
+        val byteArrayStub = ByteArray(1)
+        val expectedString = "some string"
+
+        Mockito.mockStatic<Base64?>(Base64::class.java).use { base64StaticMock ->
+            Mockito.`when`<ByteArrayOutputStream>(byteArrayOutputStreamProviderMock!!.get())
+                .thenReturn(byteArrayOutputStreamMock)
+            Mockito.`when`<ByteArray?>(byteArrayOutputStreamMock!!.toByteArray())
+                .thenReturn(byteArrayStub)
+            base64StaticMock
+                .`when`<Any?>(Verification { Base64.encodeToString(byteArrayStub, Base64.NO_WRAP) })
+                .thenReturn(expectedString)
+
+            Assert.assertEquals(testSubject!!.toBase64Png(), expectedString)
+            Mockito.verify<Bitmap?>(bitmapMock, Mockito.times(1))
+                .compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStreamMock!!)
+        }
+    }
 }

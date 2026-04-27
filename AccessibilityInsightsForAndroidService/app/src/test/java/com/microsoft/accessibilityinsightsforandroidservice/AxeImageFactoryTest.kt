@@ -1,34 +1,33 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Bitmap
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeImageFactory
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.junit.MockitoJUnitRunner
 
-import android.graphics.Bitmap;
+@RunWith(MockitoJUnitRunner::class)
+class AxeImageFactoryTest {
+    @Mock
+    var byteArrayOutputStreamProviderMock: ByteArrayOutputStreamProvider? = null
 
-import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeImageFactory;
+    @Mock
+    var screenshotMock: Bitmap? = null
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    var testSubject: AxeImageFactory? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class AxeImageFactoryTest {
+    @Before
+    fun prepare() {
+        testSubject = AxeImageFactory(byteArrayOutputStreamProviderMock!!)
+    }
 
-  @Mock ByteArrayOutputStreamProvider byteArrayOutputStreamProviderMock;
-  @Mock Bitmap screenshotMock;
-
-  AxeImageFactory testSubject;
-
-  @Before
-  public void prepare() {
-    testSubject = new AxeImageFactory(byteArrayOutputStreamProviderMock);
-  }
-
-  @Test
-  public void axeImageIsNotNull() {
-    Assert.assertNotNull(testSubject.createAxeImage(screenshotMock));
-  }
+    @Test
+    fun axeImageIsNotNull() {
+        Assert.assertNotNull(testSubject!!.createAxeImage(screenshotMock))
+    }
 }

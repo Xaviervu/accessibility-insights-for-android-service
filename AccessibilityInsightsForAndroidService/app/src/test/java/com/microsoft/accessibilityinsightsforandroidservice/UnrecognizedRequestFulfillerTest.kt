@@ -1,41 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.os.CancellationSignal
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.function.ThrowingRunnable
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.junit.Assert.assertThrows;
+@RunWith(MockitoJUnitRunner::class)
+class UnrecognizedRequestFulfillerTest {
+    val requestMethod: String = "Test request method"
 
-import android.os.CancellationSignal;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var cancellationSignal: CancellationSignal? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class UnrecognizedRequestFulfillerTest {
-  final String requestMethod = "Test request method";
+    var testSubject: UnrecognizedRequestFulfiller? = null
 
-  @Mock CancellationSignal cancellationSignal;
+    @Before
+    fun prepare() {
+        testSubject = UnrecognizedRequestFulfiller(requestMethod)
+    }
 
-  UnrecognizedRequestFulfiller testSubject;
+    @Test
+    fun unrecognizedResponseFulfillerExists() {
+        Assert.assertNotNull(testSubject)
+    }
 
-  @Before
-  public void prepare() {
-    testSubject = new UnrecognizedRequestFulfiller(requestMethod);
-  }
-
-  @Test
-  public void unrecognizedResponseFulfillerExists() {
-    Assert.assertNotNull(testSubject);
-  }
-
-  @Test
-  public void fulfillsRequestByThrowingPinnedException() {
-    assertThrows(
-        "Unrecognized request: Test request method",
-        RuntimeException.class,
-        () -> testSubject.fulfillRequest(cancellationSignal));
-  }
+    @Test
+    fun fulfillsRequestByThrowingPinnedException() {
+        Assert.assertThrows<RuntimeException?>(
+            "Unrecognized request: Test request method",
+            RuntimeException::class.java,
+            ThrowingRunnable { testSubject!!.fulfillRequest(cancellationSignal!!) })
+    }
 }

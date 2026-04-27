@@ -1,86 +1,89 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.accessibility.AccessibilityNodeInfo
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class EventHelperTest {
+    @Mock
+    var mockSwapper: ThreadSafeSwapper<AccessibilityNodeInfo?>? = null
 
-import android.view.accessibility.AccessibilityNodeInfo;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var mockNodeInfo: AccessibilityNodeInfo? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class EventHelperTest {
-  @Mock ThreadSafeSwapper<AccessibilityNodeInfo> mockSwapper;
+    @Mock
+    var mockLastNodeInfo: AccessibilityNodeInfo? = null
 
-  @Mock AccessibilityNodeInfo mockNodeInfo;
+    var testSubject: EventHelper? = null
 
-  @Mock AccessibilityNodeInfo mockLastNodeInfo;
+    @Before
+    fun prepare() {
+        testSubject = EventHelper(mockSwapper!!)
+    }
 
-  EventHelper testSubject;
+    @Test
+    fun eventHelperExists() {
+        Assert.assertNotNull(testSubject)
+    }
 
-  @Before
-  public void prepare() {
-    testSubject = new EventHelper(mockSwapper);
-  }
+    @Test
+    fun claimLastSourceReturnsExpectedNodeInfo() {
+        Mockito.`when`<AccessibilityNodeInfo?>(mockSwapper!!.swap(null)).thenReturn(mockNodeInfo)
 
-  @Test
-  public void eventHelperExists() {
-    Assert.assertNotNull(testSubject);
-  }
+        val actualResponse = testSubject!!.claimLastSource()
 
-  @Test
-  public void claimLastSourceReturnsExpectedNodeInfo() {
-    when(mockSwapper.swap(null)).thenReturn(mockNodeInfo);
+        Assert.assertEquals(mockNodeInfo, actualResponse)
+    }
 
-    AccessibilityNodeInfo actualResponse = testSubject.claimLastSource();
+    @Test
+    fun claimLastSourceCallsSwapWithNullObjectOnlyOnce() {
+        testSubject!!.claimLastSource()
 
-    Assert.assertEquals(mockNodeInfo, actualResponse);
-  }
+        Mockito.verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(1))
+            .swap(null)
+    }
 
-  @Test
-  public void claimLastSourceCallsSwapWithNullObjectOnlyOnce() {
-    testSubject.claimLastSource();
+    @Test
+    fun restoreLastSourceCallsSetIfCurrentlyNullOnlyOnce() {
+        testSubject!!.restoreLastSource(mockNodeInfo)
 
-    verify(mockSwapper, times(1)).swap(null);
-  }
+        Mockito.verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(1))
+            .setIfCurrentlyNull(mockNodeInfo)
+    }
 
-  @Test
-  public void restoreLastSourceCallsSetIfCurrentlyNullOnlyOnce() {
-    testSubject.restoreLastSource(mockNodeInfo);
+    @Test
+    fun recordEventProperlyHandlesNonNullEventSource() {
+        Mockito.`when`<AccessibilityNodeInfo?>(mockSwapper!!.swap(mockNodeInfo))
+            .thenReturn(mockLastNodeInfo)
 
-    verify(mockSwapper, times(1)).setIfCurrentlyNull(mockNodeInfo);
-  }
+        testSubject!!.recordEvent(mockNodeInfo)
 
-  @Test
-  public void recordEventProperlyHandlesNonNullEventSource() {
-    when(mockSwapper.swap(mockNodeInfo)).thenReturn(mockLastNodeInfo);
+        Mockito.verify<AccessibilityNodeInfo?>(mockLastNodeInfo, Mockito.times(1)).recycle()
+    }
 
-    testSubject.recordEvent(mockNodeInfo);
+    @Test
+    fun recordEventProperlyHandlesNullEventSource() {
+        testSubject!!.recordEvent(null)
 
-    verify(mockLastNodeInfo, times(1)).recycle();
-  }
+        Mockito.verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(0))
+            .swap(mockNodeInfo)
+        Mockito.verify<AccessibilityNodeInfo?>(mockLastNodeInfo, Mockito.times(0)).recycle()
+    }
 
-  @Test
-  public void recordEventProperlyHandlesNullEventSource() {
-    testSubject.recordEvent(null);
+    @Test
+    fun recordEventProperlyHandlesNullLastSource() {
+        Mockito.`when`<AccessibilityNodeInfo?>(mockSwapper!!.swap(mockNodeInfo)).thenReturn(null)
 
-    verify(mockSwapper, times(0)).swap(mockNodeInfo);
-    verify(mockLastNodeInfo, times(0)).recycle();
-  }
+        testSubject!!.recordEvent(mockNodeInfo)
 
-  @Test
-  public void recordEventProperlyHandlesNullLastSource() {
-    when(mockSwapper.swap(mockNodeInfo)).thenReturn(null);
-
-    testSubject.recordEvent(mockNodeInfo);
-
-    verify(mockLastNodeInfo, times(0)).recycle();
-  }
+        Mockito.verify<AccessibilityNodeInfo?>(mockLastNodeInfo, Mockito.times(0)).recycle()
+    }
 }

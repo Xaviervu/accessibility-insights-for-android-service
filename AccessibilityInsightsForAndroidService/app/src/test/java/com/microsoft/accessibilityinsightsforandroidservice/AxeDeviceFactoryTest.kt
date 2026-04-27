@@ -1,50 +1,50 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.util.DisplayMetrics
+import android.view.accessibility.AccessibilityNodeInfo
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeDeviceFactory
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import java.util.function.Supplier
 
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class AxeDeviceFactoryTest {
+    @Mock
+    var deviceConfigFactoryMock: DeviceConfigFactory? = null
 
-import android.util.DisplayMetrics;
-import android.view.accessibility.AccessibilityNodeInfo;
+    @Mock
+    var rootNodeMock: AccessibilityNodeInfo? = null
+    var deviceName: String = "test-device-name"
+    var packageName: String = "test-package-name"
+    var serviceVersion: String = "test-service-version"
+    var deviceConfig: DeviceConfig? = null
+    var displayMetrics: DisplayMetrics? = null
 
-import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeDeviceFactory;
+    var testSubject: AxeDeviceFactory? = null
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Before
+    fun prepare() {
+        deviceConfig = DeviceConfig(deviceName, packageName, serviceVersion)
+        Mockito.`when`<DeviceConfig>(deviceConfigFactoryMock!!.getDeviceConfig(rootNodeMock))
+            .thenReturn(deviceConfig)
 
-@RunWith(MockitoJUnitRunner.class)
-public class AxeDeviceFactoryTest {
+        displayMetrics = DisplayMetrics()
+        displayMetrics!!.density = 1f
+        displayMetrics!!.heightPixels = 2
+        displayMetrics!!.widthPixels = 3
 
-  @Mock DeviceConfigFactory deviceConfigFactoryMock;
-  @Mock AccessibilityNodeInfo rootNodeMock;
-  String deviceName = "test-device-name";
-  String packageName = "test-package-name";
-  String serviceVersion = "test-service-version";
-  DeviceConfig deviceConfig;
-  DisplayMetrics displayMetrics;
+        testSubject = AxeDeviceFactory(deviceConfigFactoryMock!!, Supplier { displayMetrics!! })
+    }
 
-  AxeDeviceFactory testSubject;
-
-  @Before
-  public void prepare() {
-    deviceConfig = new DeviceConfig(deviceName, packageName, serviceVersion);
-    when(deviceConfigFactoryMock.getDeviceConfig(rootNodeMock)).thenReturn(deviceConfig);
-
-    displayMetrics = new DisplayMetrics();
-    displayMetrics.density = 1;
-    displayMetrics.heightPixels = 2;
-    displayMetrics.widthPixels = 3;
-
-    testSubject = new AxeDeviceFactory(deviceConfigFactoryMock, () -> displayMetrics);
-  }
-
-  @Test
-  public void axeDeviceIsNotNull() {
-    Assert.assertNotNull(testSubject.createAxeDevice(rootNodeMock));
-  }
+    @Test
+    fun axeDeviceIsNotNull() {
+        Assert.assertNotNull(testSubject!!.createAxeDevice(rootNodeMock))
+    }
 }

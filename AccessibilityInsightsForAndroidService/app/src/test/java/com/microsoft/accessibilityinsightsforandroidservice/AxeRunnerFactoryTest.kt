@@ -1,28 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRunnerFactory
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.junit.MockitoJUnitRunner
 
-import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRunnerFactory;
+@RunWith(MockitoJUnitRunner::class)
+class AxeRunnerFactoryTest {
+    var testSubject: AxeRunnerFactory? = null
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Before
+    fun prepare() {
+        testSubject = AxeRunnerFactory()
+    }
 
-@RunWith(MockitoJUnitRunner.class)
-public class AxeRunnerFactoryTest {
-
-  AxeRunnerFactory testSubject;
-
-  @Before
-  public void prepare() {
-    testSubject = new AxeRunnerFactory();
-  }
-
-  @Test
-  public void axeRunnerIsNotNull() {
-    Assert.assertNotNull(testSubject.createAxeRunner());
-  }
+    @Test
+    fun axeRunnerIsNotNull() {
+        Assert.assertNotNull(testSubject!!.createAxeRunner())
+    }
 }

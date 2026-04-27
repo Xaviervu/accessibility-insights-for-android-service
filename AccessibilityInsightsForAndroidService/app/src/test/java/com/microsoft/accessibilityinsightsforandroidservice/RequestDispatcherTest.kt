@@ -1,125 +1,151 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.os.CancellationSignal
+import com.microsoft.accessibilityinsightsforandroidservice.Logger.logVerbose
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockedStatic
+import org.mockito.MockedStatic.Verification
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+@RunWith(MockitoJUnitRunner::class)
+class RequestDispatcherTest {
+    @Mock
+    var screenshotController: ScreenshotController? = null
 
-import android.os.CancellationSignal;
+    @Mock
+    var axeScanner: AxeScanner? = null
 
-import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner;
-import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner;
+    @Mock
+    var atfaScanner: ATFAScanner? = null
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+    @Mock
+    var rootNodeFinder: RootNodeFinder? = null
 
-@RunWith(MockitoJUnitRunner.class)
-public class RequestDispatcherTest {
-  @Mock ScreenshotController screenshotController;
-  @Mock
-  AxeScanner axeScanner;
-  @Mock
-  ATFAScanner atfaScanner;
-  @Mock RootNodeFinder rootNodeFinder;
-  @Mock EventHelper eventHelper;
-  @Mock DeviceConfigFactory deviceConfigFactory;
-  @Mock FocusVisualizationStateManager focusVisualizationStateManager;
-  @Mock ResultsV2ContainerSerializer resultsV2ContainerSerializer;
-  @Mock CancellationSignal cancellationSignal;
+    @Mock
+    var eventHelper: EventHelper? = null
 
-  @Mock RequestFulfiller requestFulfillerMock;
-  RequestDispatcher testSubject;
+    @Mock
+    var deviceConfigFactory: DeviceConfigFactory? = null
 
-  MockedStatic<Logger> loggerStaticMock;
+    @Mock
+    var focusVisualizationStateManager: FocusVisualizationStateManager? = null
 
-  @Before
-  public void prepare() {
-    loggerStaticMock = Mockito.mockStatic(Logger.class);
-    testSubject =
-        new RequestDispatcher(
-            rootNodeFinder,
-            screenshotController,
-            eventHelper,
-            axeScanner,
-            atfaScanner,
-            deviceConfigFactory,
-            focusVisualizationStateManager,
-            resultsV2ContainerSerializer);
-  }
+    @Mock
+    var resultsV2ContainerSerializer: ResultsV2ContainerSerializer? = null
 
-  @After
-  public void cleanUp() {
-    loggerStaticMock.close();
-  }
+    @Mock
+    var cancellationSignal: CancellationSignal? = null
 
-  private void setupMockRequestFulfiller() throws Exception {
-    testSubject = Mockito.spy(testSubject);
-    when(testSubject.getRequestFulfiller("mock method")).thenReturn(requestFulfillerMock);
-    when(requestFulfillerMock.fulfillRequest(cancellationSignal)).thenReturn("mock response");
-  }
+    @Mock
+    var requestFulfillerMock: RequestFulfiller? = null
+    var testSubject: RequestDispatcher? = null
 
-  @Test
-  public void requestLogsMethod() throws Exception {
-    setupMockRequestFulfiller();
+    var loggerStaticMock: MockedStatic<Logger?>? = null
 
-    testSubject.request("mock method", cancellationSignal);
+    @Before
+    fun prepare() {
+        loggerStaticMock = Mockito.mockStatic<Logger?>(Logger::class.java)
+        testSubject =
+            RequestDispatcher(
+                rootNodeFinder!!,
+                screenshotController!!,
+                eventHelper!!,
+                axeScanner!!,
+                atfaScanner!!,
+                deviceConfigFactory!!,
+                focusVisualizationStateManager!!,
+                resultsV2ContainerSerializer!!
+            )
+    }
 
-    loggerStaticMock.verify(
-        () -> Logger.logVerbose("RequestDispatcher", "Handling request for method mock method"));
-  }
+    @After
+    fun cleanUp() {
+        loggerStaticMock!!.close()
+    }
 
-  @Test
-  public void requestDispatchesToGetRequestFulfiller() throws Exception {
-    // This is testing an implementation detail, but doing so vastly simplifies all the test cases
-    // to follow
-    setupMockRequestFulfiller();
+    @Throws(Exception::class)
+    private fun setupMockRequestFulfiller() {
+        testSubject = Mockito.spy<RequestDispatcher>(testSubject)
+        Mockito.`when`<RequestFulfiller>(testSubject!!.getRequestFulfiller("mock method"))
+            .thenReturn(requestFulfillerMock)
+        Mockito.`when`<String>(requestFulfillerMock!!.fulfillRequest(cancellationSignal!!))
+            .thenReturn("mock response")
+    }
 
-    String response = testSubject.request("mock method", cancellationSignal);
+    @Test
+    @Throws(Exception::class)
+    fun requestLogsMethod() {
+        setupMockRequestFulfiller()
 
-    assertEquals("mock response", response);
-  }
+        testSubject!!.request("mock method", cancellationSignal!!)
 
-  @Test
-  public void requestConfigDispatchesToConfigRequestFulfiller() {
-    assertTrue(testSubject.getRequestFulfiller("/config") instanceof ConfigRequestFulfiller);
-  }
+        loggerStaticMock!!.verify(
+            Verification {
+                logVerbose(
+                    "RequestDispatcher",
+                    "Handling request for method mock method"
+                )
+            })
+    }
 
-  @Test
-  public void requestResultDispatchesToResultV2RequestFulfiller() {
-    assertTrue(testSubject.getRequestFulfiller("/result") instanceof ResultV2RequestFulfiller);
-  }
+    @Test
+    @Throws(Exception::class)
+    fun requestDispatchesToGetRequestFulfiller() {
+        // This is testing an implementation detail, but doing so vastly simplifies all the test cases
+        // to follow
+        setupMockRequestFulfiller()
 
-  @Test
-  public void requestFocusTrackingEnableDispatchesToTabStopsRequestFulfiller() {
-    assertTrue(
-        testSubject.getRequestFulfiller("/FocusTracking/Enable")
-            instanceof TabStopsRequestFulfiller);
-  }
+        val response = testSubject!!.request("mock method", cancellationSignal!!)
 
-  @Test
-  public void requestFocusTrackingDisableDispatchesToTabStopsRequestFulfiller() {
-    assertTrue(
-        testSubject.getRequestFulfiller("/FocusTracking/Disable")
-            instanceof TabStopsRequestFulfiller);
-  }
+        Assert.assertEquals("mock response", response)
+    }
 
-  @Test
-  public void requestFocusTrackingResetDispatchesToTabStopsRequestFulfiller() {
-    assertTrue(
-        testSubject.getRequestFulfiller("/FocusTracking/Reset")
-            instanceof TabStopsRequestFulfiller);
-  }
+    @Test
+    fun requestConfigDispatchesToConfigRequestFulfiller() {
+        Assert.assertTrue(testSubject!!.getRequestFulfiller("/config") is ConfigRequestFulfiller)
+    }
 
-  @Test
-  public void requestForUnknownMethodDispatchesToUnrecognizedRequestFulfiller() {
-    assertTrue(testSubject.getRequestFulfiller("/unknown") instanceof UnrecognizedRequestFulfiller);
-  }
+    @Test
+    fun requestResultDispatchesToResultV2RequestFulfiller() {
+        Assert.assertTrue(testSubject!!.getRequestFulfiller("/result") is ResultV2RequestFulfiller)
+    }
+
+    @Test
+    fun requestFocusTrackingEnableDispatchesToTabStopsRequestFulfiller() {
+        Assert.assertTrue(
+            testSubject!!.getRequestFulfiller("/FocusTracking/Enable")
+                    is TabStopsRequestFulfiller
+        )
+    }
+
+    @Test
+    fun requestFocusTrackingDisableDispatchesToTabStopsRequestFulfiller() {
+        Assert.assertTrue(
+            testSubject!!.getRequestFulfiller("/FocusTracking/Disable")
+                    is TabStopsRequestFulfiller
+        )
+    }
+
+    @Test
+    fun requestFocusTrackingResetDispatchesToTabStopsRequestFulfiller() {
+        Assert.assertTrue(
+            testSubject!!.getRequestFulfiller("/FocusTracking/Reset")
+                    is TabStopsRequestFulfiller
+        )
+    }
+
+    @Test
+    fun requestForUnknownMethodDispatchesToUnrecognizedRequestFulfiller() {
+        Assert.assertTrue(testSubject!!.getRequestFulfiller("/unknown") is UnrecognizedRequestFulfiller)
+    }
 }

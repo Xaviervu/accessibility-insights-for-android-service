@@ -1,28 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.content.Context
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScannerFactory
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.junit.MockitoJUnitRunner
 
-import android.content.Context;
+@RunWith(MockitoJUnitRunner::class)
+class ATFAScannerFactoryTest {
+    @Mock
+    var contextMock: Context? = null
 
-import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScannerFactory;
+    @Before
+    fun prepare() {
+    }
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-@RunWith(MockitoJUnitRunner.class)
-public class ATFAScannerFactoryTest {
-  @Mock Context contextMock;
-
-  @Before
-  public void prepare() {}
-
-  @Test
-  public void atfaScannerExists() {
-    Assert.assertNotNull(ATFAScannerFactory.createATFAScanner(contextMock));
-  }
+    @Test
+    fun atfaScannerExists() {
+        Assert.assertNotNull(ATFAScannerFactory.createATFAScanner(contextMock!!))
+    }
 }
