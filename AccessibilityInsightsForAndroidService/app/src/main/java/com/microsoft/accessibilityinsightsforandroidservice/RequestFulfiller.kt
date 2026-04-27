@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.os.CancellationSignal
 
-import android.os.CancellationSignal;
-
-public interface RequestFulfiller {
-  String fulfillRequest(CancellationSignal cancellationSignal) throws Exception;
+interface RequestFulfiller {
+    @Throws(Exception::class)
+    fun fulfillRequest(cancellationSignal: CancellationSignal): String
 }

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import com.deque.axe.android.AxeResult
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult
 
-import com.deque.axe.android.AxeResult;
-import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult;
-import java.util.List;
-
-public class ResultsV2Container {
-  public List<AccessibilityHierarchyCheckResult> ATFAResults;
-  public AxeResult AxeResult;
+class ResultsV2Container {
+    @JvmField
+    var ATFAResults: MutableList<AccessibilityHierarchyCheckResult?>? = null
+    @JvmField
+    var AxeResult: AxeResult? = null
 }

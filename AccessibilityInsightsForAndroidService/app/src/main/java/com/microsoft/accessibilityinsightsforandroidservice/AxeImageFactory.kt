@@ -1,23 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Bitmap
+import com.deque.axe.android.colorcontrast.AxeImage
 
-import android.graphics.Bitmap;
-import com.deque.axe.android.colorcontrast.AxeImage;
+class AxeImageFactory(private val byteArrayOutputStreamProvider: ByteArrayOutputStreamProvider) {
+    fun createAxeImage(screenshot: Bitmap?): AxeImage? {
+        if (screenshot == null) {
+            return null
+        }
 
-public class AxeImageFactory {
-  private ByteArrayOutputStreamProvider byteArrayOutputStreamProvider;
-
-  public AxeImageFactory(ByteArrayOutputStreamProvider byteArrayOutputStreamProvider) {
-    this.byteArrayOutputStreamProvider = byteArrayOutputStreamProvider;
-  }
-
-  public AxeImage createAxeImage(Bitmap screenshot) {
-    if (screenshot == null) {
-      return null;
+        return ScreenshotAxeImage(screenshot, byteArrayOutputStreamProvider)
     }
-
-    return new ScreenshotAxeImage(screenshot, byteArrayOutputStreamProvider);
-  }
 }

@@ -1,98 +1,97 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.accessibility.AccessibilityNodeInfo
 
-import android.view.accessibility.AccessibilityNodeInfo;
-import java.util.ArrayList;
+class FocusVisualizer(
+    private val styles: FocusVisualizerStyles,
+    private val focusVisualizationCanvas: FocusVisualizationCanvas
+) {
+    private val focusElementHighlights: ArrayList<FocusElementHighlight> = ArrayList<FocusElementHighlight>()
+    private val focusElementLines: ArrayList<FocusElementLine> = ArrayList<FocusElementLine>()
+    private var tabStopCount = 0
 
-public class FocusVisualizer {
-  private ArrayList<FocusElementHighlight> focusElementHighlights;
-  private ArrayList<FocusElementLine> focusElementLines;
-  private int tabStopCount;
-  private FocusVisualizerStyles styles;
-  private FocusVisualizationCanvas focusVisualizationCanvas;
-
-  public FocusVisualizer(
-      FocusVisualizerStyles focusVisualizerStyles,
-      FocusVisualizationCanvas focusVisualizationCanvas) {
-    this.focusElementHighlights = new ArrayList<>();
-    this.focusElementLines = new ArrayList<>();
-    this.tabStopCount = 0;
-    this.styles = focusVisualizerStyles;
-    this.focusVisualizationCanvas = focusVisualizationCanvas;
-  }
-
-  public void refreshHighlights() {
-    this.focusVisualizationCanvas.redraw();
-  }
-
-  public void addNewFocusedElement(AccessibilityNodeInfo eventSource) {
-    tabStopCount++;
-
-    AccessibilityNodeInfo previousEventSource = this.getPreviousEventSource();
-
-    if (this.focusElementHighlights.size() > 0) {
-      this.setPreviousElementHighlightNonCurrent(
-          this.focusElementHighlights.get(this.focusElementHighlights.size() - 1));
-    }
-    if (focusElementLines.size() > 0) {
-      this.setPreviousLineNonCurrent(this.focusElementLines.get(this.focusElementLines.size() - 1));
+    fun refreshHighlights() {
+        this.focusVisualizationCanvas.redraw()
     }
 
-    this.createFocusElementHighlight(eventSource);
-    this.createFocusElementLine(eventSource, previousEventSource);
+    fun addNewFocusedElement(eventSource: AccessibilityNodeInfo?) {
+        if (eventSource == null) return
+        tabStopCount++
 
-    this.setDrawItemsAndRedraw();
-  }
+        val previousEventSource = this.previousEventSource
 
-  public void resetVisualizations() {
-    this.tabStopCount = 0;
-    this.focusElementHighlights.clear();
-    this.focusElementLines.clear();
-    this.setDrawItemsAndRedraw();
-  }
+        if (this.focusElementHighlights.isNotEmpty()) {
+            this.setPreviousElementHighlightNonCurrent(
+                this.focusElementHighlights[this.focusElementHighlights.size - 1]
+            )
+        }
+        if (focusElementLines.isNotEmpty()) {
+            this.setPreviousLineNonCurrent(this.focusElementLines[this.focusElementLines.size - 1])
+        }
 
-  private void setPreviousLineNonCurrent(FocusElementLine line) {
-    line.setPaint(this.styles.getNonCurrentLinePaints());
-  }
+        this.createFocusElementHighlight(eventSource)
+        this.createFocusElementLine(eventSource, previousEventSource)
 
-  private void setPreviousElementHighlightNonCurrent(FocusElementHighlight focusElementHighlight) {
-    focusElementHighlight.setAsNonCurrentElement();
-    focusElementHighlight.setPaints(this.styles.getNonCurrentElementPaints());
-  }
-
-  private void createFocusElementLine(
-      AccessibilityNodeInfo eventSource, AccessibilityNodeInfo previousEventSource) {
-    FocusElementLine focusElementLine =
-        new FocusElementLine(
-            eventSource,
-            previousEventSource,
-            this.styles.getCurrentLinePaints(),
-            this.focusVisualizationCanvas);
-    this.focusElementLines.add(focusElementLine);
-  }
-
-  private void createFocusElementHighlight(AccessibilityNodeInfo eventSource) {
-    FocusElementHighlight focusElementHighlight =
-        new FocusElementHighlight(
-            eventSource,
-            this.styles.getCurrentElementPaints(),
-            this.styles.focusElementHighlightRadius,
-            this.tabStopCount,
-            this.focusVisualizationCanvas);
-    this.focusElementHighlights.add(focusElementHighlight);
-  }
-
-  private AccessibilityNodeInfo getPreviousEventSource() {
-    if (this.focusElementHighlights.size() == 0) {
-      return null;
+        this.setDrawItemsAndRedraw()
     }
-    return this.focusElementHighlights.get(this.focusElementHighlights.size() - 1).getEventSource();
-  }
 
-  private void setDrawItemsAndRedraw() {
-    this.focusVisualizationCanvas.setDrawItems(this.focusElementHighlights, this.focusElementLines);
-    this.focusVisualizationCanvas.redraw();
-  }
+    fun resetVisualizations() {
+        this.tabStopCount = 0
+        this.focusElementHighlights.clear()
+        this.focusElementLines.clear()
+        this.setDrawItemsAndRedraw()
+    }
+
+    private fun setPreviousLineNonCurrent(line: FocusElementLine) {
+        line.setPaint(this.styles.nonCurrentLinePaints)
+    }
+
+    private fun setPreviousElementHighlightNonCurrent(focusElementHighlight: FocusElementHighlight) {
+        focusElementHighlight.setAsNonCurrentElement()
+        focusElementHighlight.setPaints(this.styles.nonCurrentElementPaints)
+    }
+
+    private fun createFocusElementLine(
+        eventSource: AccessibilityNodeInfo?, previousEventSource: AccessibilityNodeInfo?
+    ) {
+        val focusElementLine =
+            FocusElementLine(
+                eventSource,
+                previousEventSource,
+                this.styles.currentLinePaints,
+                this.focusVisualizationCanvas
+            )
+        this.focusElementLines.add(focusElementLine)
+    }
+
+    private fun createFocusElementHighlight(eventSource: AccessibilityNodeInfo) {
+        val focusElementHighlight =
+            FocusElementHighlight(
+                eventSource,
+                this.styles.currentElementPaints,
+                this.styles.focusElementHighlightRadius,
+                this.tabStopCount,
+                this.focusVisualizationCanvas
+            )
+        this.focusElementHighlights.add(focusElementHighlight)
+    }
+
+    private val previousEventSource: AccessibilityNodeInfo?
+        get() {
+            if (this.focusElementHighlights.isEmpty()) {
+                return null
+            }
+            return this.focusElementHighlights[this.focusElementHighlights.size - 1]
+                .eventSource
+        }
+
+    private fun setDrawItemsAndRedraw() {
+        this.focusVisualizationCanvas.setDrawItems(
+            this.focusElementHighlights,
+            this.focusElementLines
+        )
+        this.focusVisualizationCanvas.redraw()
+    }
 }

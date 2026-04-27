@@ -1,37 +1,33 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import java.util.function.Consumer
 
-import java.util.ArrayList;
-import java.util.function.Consumer;
+class DeviceOrientationHandler(private var orientation: Int) {
+    private val onOrientationChangedListeners: ArrayList<Consumer<Int?>?>
 
-public class DeviceOrientationHandler {
-  private int orientation;
-  private ArrayList<Consumer<Integer>> onOrientationChangedListeners;
-
-  public DeviceOrientationHandler(int orientation) {
-    this.orientation = orientation;
-    this.onOrientationChangedListeners = new ArrayList<>();
-  }
-
-  public void subscribe(Consumer<Integer> listener) {
-    this.onOrientationChangedListeners.add(listener);
-  }
-
-  public void setOrientation(int orientation) {
-    if (this.orientation == orientation) {
-      return;
+    init {
+        this.onOrientationChangedListeners = ArrayList<Consumer<Int?>?>()
     }
 
-    this.orientation = orientation;
-    this.emitChanged(orientation);
-  }
+    fun subscribe(listener: Consumer<Int?>?) {
+        this.onOrientationChangedListeners.add(listener)
+    }
 
-  private void emitChanged(int orientation) {
-    this.onOrientationChangedListeners.forEach(
-        listener -> {
-          listener.accept(orientation);
-        });
-  }
+    fun setOrientation(orientation: Int) {
+        if (this.orientation == orientation) {
+            return
+        }
+
+        this.orientation = orientation
+        this.emitChanged(orientation)
+    }
+
+    private fun emitChanged(orientation: Int) {
+        this.onOrientationChangedListeners.forEach(
+            Consumer { listener: Consumer<Int?>? ->
+                listener!!.accept(orientation)
+            })
+    }
 }

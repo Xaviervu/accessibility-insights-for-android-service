@@ -1,36 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import java.io.BufferedReader
+import java.io.IOException
 
-import java.io.BufferedReader;
-import java.io.IOException;
+class RequestReader(private val reader: BufferedReader) {
+    @Throws(IOException::class)
+    fun readRequest(): String {
+        val buffer = StringBuffer()
+        var intC = reader.read()
+        while (intC != -1) {
+            val c = intC.toChar()
+            if (c == '\n') {
+                break
+            }
+            if (buffer.length >= maxLineLength) {
+                throw IOException("input too long")
+            }
+            buffer.append(c)
+            intC = reader.read()
+        }
 
-public class RequestReader {
-
-  private BufferedReader reader;
-  private static final int maxLineLength = 256;
-
-  public RequestReader(BufferedReader reader) {
-    this.reader = reader;
-  }
-
-  public String readRequest() throws IOException {
-
-    StringBuffer buffer = new StringBuffer();
-    int intC = reader.read();
-    while (intC != -1) {
-      char c = (char) intC;
-      if (c == '\n') {
-        break;
-      }
-      if (buffer.length() >= maxLineLength) {
-        throw new IOException("input too long");
-      }
-      buffer.append(c);
-      intC = reader.read();
+        return buffer.toString()
     }
 
-    return buffer.toString();
-  }
+    companion object {
+        private const val maxLineLength = 256
+    }
 }

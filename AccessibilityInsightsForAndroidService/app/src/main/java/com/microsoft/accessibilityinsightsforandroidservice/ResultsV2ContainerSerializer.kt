@@ -1,57 +1,55 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import com.deque.axe.android.AxeResult
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
+import java.io.IOException
 
-import com.deque.axe.android.AxeResult;
-import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
-import java.util.List;
+class ResultsV2ContainerSerializer(
+    private val atfaRulesSerializer: ATFARulesSerializer,
+    private val atfaResultsSerializer: ATFAResultsSerializer,
+    gsonBuilder: GsonBuilder
+) {
+    private val gson: Gson
+    private val resultsContainerTypeAdapter: TypeAdapter<ResultsV2Container> =
+        object : TypeAdapter<ResultsV2Container>() {
+            @Throws(IOException::class)
+            override fun write(out: JsonWriter, value: ResultsV2Container) {
+                out.beginObject()
+                out.name("AxeResults").jsonValue(value.AxeResult?.toJson())
+                out.name("ATFARules").jsonValue(atfaRulesSerializer.serializeATFARules())
+                out.name("ATFAResults")
+                    .jsonValue(atfaResultsSerializer.serializeATFAResults(value.ATFAResults))
+                out.endObject()
+            }
 
-public class ResultsV2ContainerSerializer {
-  private final ATFARulesSerializer atfaRulesSerializer;
-  private final ATFAResultsSerializer atfaResultsSerializer;
-  private final Gson gson;
-  private final TypeAdapter<ResultsV2Container> resultsContainerTypeAdapter =
-      new TypeAdapter<ResultsV2Container>() {
-        @Override
-        public void write(JsonWriter out, ResultsV2Container value) throws IOException {
-          out.beginObject();
-          out.name("AxeResults").jsonValue(value.AxeResult.toJson());
-          out.name("ATFARules").jsonValue(atfaRulesSerializer.serializeATFARules());
-          out.name("ATFAResults")
-              .jsonValue(atfaResultsSerializer.serializeATFAResults(value.ATFAResults));
-          out.endObject();
+            override fun read(`in`: JsonReader?): ResultsV2Container? {
+                return null
+            }
         }
 
-        @Override
-        public ResultsV2Container read(JsonReader in) {
-          return null;
-        }
-      };
+    init {
+        this.gson =
+            gsonBuilder
+                .registerTypeAdapter(
+                    ResultsV2Container::class.java,
+                    this.resultsContainerTypeAdapter
+                )
+                .create()
+    }
 
-  public ResultsV2ContainerSerializer(
-      ATFARulesSerializer atfaRulesSerializer,
-      ATFAResultsSerializer atfaResultsSerializer,
-      GsonBuilder gsonBuilder) {
-    this.atfaRulesSerializer = atfaRulesSerializer;
-    this.atfaResultsSerializer = atfaResultsSerializer;
-    this.gson =
-        gsonBuilder
-            .registerTypeAdapter(ResultsV2Container.class, this.resultsContainerTypeAdapter)
-            .create();
-  }
-
-  public String createResultsJson(
-      AxeResult axeResult, List<AccessibilityHierarchyCheckResult> atfaResults) {
-    ResultsV2Container container = new ResultsV2Container();
-    container.ATFAResults = atfaResults;
-    container.AxeResult = axeResult;
-    return gson.toJson(container);
-  }
+    fun createResultsJson(
+        axeResult: AxeResult?, atfaResults: MutableList<AccessibilityHierarchyCheckResult?>?
+    ): String {
+        val container = ResultsV2Container()
+        container.ATFAResults = atfaResults
+        container.AxeResult = axeResult
+        return gson.toJson(container)
+    }
 }

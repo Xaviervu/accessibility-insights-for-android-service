@@ -1,81 +1,86 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
+import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.view.View;
-import android.view.accessibility.AccessibilityNodeInfo;
-import java.util.HashMap;
+class FocusElementLine(
+    private val eventSource: AccessibilityNodeInfo?,
+    private val previousEventSource: AccessibilityNodeInfo?,
+    private var paints: HashMap<String, Paint>,
+    private val view: View
+) {
+    lateinit var paintVar: HashMap<String, Paint>
+    private var yOffset = 0
+    private var xStart = 0
+    private var yStart = 0
+    private var xEnd = 0
+    private var yEnd = 0
+    private val currentRect: Rect
+    private val prevRect: Rect
 
-public class FocusElementLine {
-  private AccessibilityNodeInfo eventSource;
-  private AccessibilityNodeInfo previousEventSource;
-  private int yOffset;
-  private int xStart;
-  private int yStart;
-  private int xEnd;
-  private int yEnd;
-  private HashMap<String, Paint> paints;
-  private Rect currentRect;
-  private Rect prevRect;
-  private View view;
-
-  public FocusElementLine(
-      AccessibilityNodeInfo eventSource,
-      AccessibilityNodeInfo previousEventSource,
-      HashMap<String, Paint> Paints,
-      View view) {
-    this.view = view;
-    this.eventSource = eventSource;
-    this.previousEventSource = previousEventSource;
-    this.paints = Paints;
-    this.currentRect = new Rect();
-    this.prevRect = new Rect();
-  }
-
-  public void drawLine(Canvas canvas) {
-    if (this.eventSource == null || this.previousEventSource == null) {
-      return;
+    init {
+        this.currentRect = Rect()
+        this.prevRect = Rect()
     }
 
-    if (!this.eventSource.refresh() || !this.previousEventSource.refresh()) {
-      return;
+    fun drawLine(canvas: Canvas) {
+        if (this.eventSource == null || this.previousEventSource == null) {
+            return
+        }
+
+        if (!this.eventSource.refresh() || !this.previousEventSource.refresh()) {
+            return
+        }
+
+        this.updateWithNewCoordinates()
+        this.drawConnectingLine(
+            this.xStart,
+            this.yStart,
+            this.xEnd,
+            this.yEnd,
+            this.paints.get("backgroundLine")!!,
+            canvas
+        )
+        this.drawConnectingLine(
+            this.xStart,
+            this.yStart,
+            this.xEnd,
+            this.yEnd,
+            this.paints.get("foregroundLine")!!,
+            canvas
+        )
     }
 
-    this.updateWithNewCoordinates();
-    this.drawConnectingLine(
-        this.xStart, this.yStart, this.xEnd, this.yEnd, this.paints.get("backgroundLine"), canvas);
-    this.drawConnectingLine(
-        this.xStart, this.yStart, this.xEnd, this.yEnd, this.paints.get("foregroundLine"), canvas);
-  }
+    private fun setCoordinates() {
+        this.eventSource!!.getBoundsInScreen(this.currentRect)
+        this.currentRect.offset(0, this.yOffset)
 
-  private void setCoordinates() {
-    this.eventSource.getBoundsInScreen(this.currentRect);
-    this.currentRect.offset(0, this.yOffset);
+        this.previousEventSource!!.getBoundsInScreen(this.prevRect)
+        this.prevRect.offset(0, this.yOffset)
 
-    this.previousEventSource.getBoundsInScreen(this.prevRect);
-    this.prevRect.offset(0, this.yOffset);
+        this.xStart = currentRect.centerX()
+        this.yStart = currentRect.centerY()
+        this.xEnd = prevRect.centerX()
+        this.yEnd = prevRect.centerY()
+    }
 
-    this.xStart = currentRect.centerX();
-    this.yStart = currentRect.centerY();
-    this.xEnd = prevRect.centerX();
-    this.yEnd = prevRect.centerY();
-  }
+    private fun drawConnectingLine(
+        xStart: Int, yStart: Int, xEnd: Int, yEnd: Int, paint: Paint, canvas: Canvas
+    ) {
+        canvas.drawLine(xStart.toFloat(), yStart.toFloat(), xEnd.toFloat(), yEnd.toFloat(), paint)
+    }
 
-  private void drawConnectingLine(
-      int xStart, int yStart, int xEnd, int yEnd, Paint paint, Canvas canvas) {
-    canvas.drawLine(xStart, yStart, xEnd, yEnd, paint);
-  }
+    fun setPaint(paints: HashMap<String, Paint>) {
+        this.paints = paints
+    }
 
-  public void setPaint(HashMap<String, Paint> paints) {
-    this.paints = paints;
-  }
-
-  private void updateWithNewCoordinates() {
-    this.yOffset = OffsetHelper.getYOffset(this.view);
-    this.setCoordinates();
-  }
+    private fun updateWithNewCoordinates() {
+        this.yOffset = OffsetHelper.getYOffset(this.view)
+        this.setCoordinates()
+    }
 }

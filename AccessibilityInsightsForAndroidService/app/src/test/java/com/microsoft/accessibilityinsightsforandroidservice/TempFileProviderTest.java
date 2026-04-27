@@ -54,7 +54,7 @@ public class TempFileProviderTest {
   void makeFileLookOld(File file) {
     // We subtract one second because setLastModified is documented as being accurate to 1s
     file.setLastModified(
-        new Date().getTime() - TempFileProvider.tempFileLifetimeMillis - 60 * 1000);
+        new Date().getTime() - TempFileProvider.TEMP_FILE_LIFETIME_MILLIS - 60 * 1000);
   }
 
   @Before
@@ -150,7 +150,7 @@ public class TempFileProviderTest {
     makeFileLookOld(oldFile);
 
     WorkSpec workSpec = getLastWorkManagerRequest();
-    assertEquals(TempFileProvider.tempFileLifetimeMillis, workSpec.initialDelay);
+    assertEquals(TempFileProvider.TEMP_FILE_LIFETIME_MILLIS, workSpec.initialDelay);
     assertEquals(TempFileProvider.CleanWorker.class.getName(), workSpec.workerClassName);
 
     WorkerParameters workerParameters = createStubWorkerParameters(workSpec);

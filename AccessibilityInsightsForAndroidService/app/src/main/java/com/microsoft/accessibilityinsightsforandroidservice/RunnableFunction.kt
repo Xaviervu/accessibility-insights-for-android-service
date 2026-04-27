@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
-
-@FunctionalInterface
-public interface RunnableFunction {
-  void run();
+fun interface RunnableFunction {
+    fun run()
 }

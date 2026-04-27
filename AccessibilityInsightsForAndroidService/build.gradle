@@ -4,6 +4,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+    ext.kotlin_version = '1.9.22'
     repositories {
         mavenCentral()
         google()
@@ -11,11 +12,12 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:9.0.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 plugins {
-    id "com.diffplug.spotless" version "6.25.0"
+    id "com.diffplug.spotless" version "8.4.0"
 }
 
 allprojects {
@@ -31,6 +33,11 @@ spotless {
         googleJavaFormat()
         target '**/*.java'
         targetExclude '**/AccessibilityInsightsForAndroidService.java','**/AccessibilityNodeInfoSorter.java'
+        licenseHeader '// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT License.\n\n'
+    }
+    kotlin {
+        ktlint()
+        target '**/*.kt'
         licenseHeader '// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT License.\n\n'
     }
 }

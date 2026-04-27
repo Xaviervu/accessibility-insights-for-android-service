@@ -1,34 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Comparable
+import kotlin.Int
 
-import java.util.Objects;
+class OrderedValue<T>(@JvmField val value: T, @JvmField val order: Long) : Comparable<OrderedValue<T>> {
+    override fun compareTo(other: OrderedValue<T>): Int {
+        return this.order.compareTo(other.order)
+    }
 
-public class OrderedValue<T> implements Comparable<OrderedValue<T>> {
-  public final long order;
-  public final T value;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val that = o as OrderedValue<*>
+        return order == that.order
+    }
 
-  public OrderedValue(T value, long order) {
-    this.value = value;
-    this.order = order;
-  }
-
-  @Override
-  public int compareTo(OrderedValue<T> other) {
-    return Long.compare(this.order, other.order);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    OrderedValue<?> that = (OrderedValue<?>) o;
-    return order == that.order;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(order);
-  }
+    override fun hashCode(): Int {
+        return Objects.hash(order)
+    }
 }

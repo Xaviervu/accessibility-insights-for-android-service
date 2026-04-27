@@ -14,210 +14,242 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.content.res.Configuration
+import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
+import android.util.DisplayMetrics
+import android.view.WindowManager
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import com.google.gson.GsonBuilder
+import java.util.function.Consumer
+import java.util.function.Supplier
 
-import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.AccessibilityServiceInfo;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ServiceInfo;
-import android.content.res.Configuration;
-import android.os.Build;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.util.DisplayMetrics;
-import android.view.WindowManager;
-import android.view.accessibility.AccessibilityEvent;
+@SuppressLint("AccessibilityPolicy")
+class AccessibilityInsightsForAndroidService : AccessibilityService() {
+    private val axeScanner: AxeScanner
+    private val atfaScanner: ATFAScanner
+    private val eventHelper: EventHelper
+    private val deviceConfigFactory: DeviceConfigFactory = DeviceConfigFactory()
+    private val onScreenshotAvailableProvider = OnScreenshotAvailableProvider()
+    private val bitmapProvider = BitmapProvider()
+    private var screenshotHandlerThread: HandlerThread? = null
+    private var screenshotController: ScreenshotController? = null
+    private var activeWindowId = -1 // Set initial state to an invalid ID
+    private lateinit var focusVisualizationStateManager: FocusVisualizationStateManager
+    private lateinit var focusVisualizer: FocusVisualizer
+    private lateinit var focusVisualizerController: FocusVisualizerController
+    private lateinit var focusVisualizationCanvas: FocusVisualizationCanvas
+    private lateinit var accessibilityEventDispatcher: AccessibilityEventDispatcher
+    private lateinit var deviceOrientationHandler: DeviceOrientationHandler
+    private lateinit var tempFileProvider: TempFileProvider
 
-import com.google.gson.GsonBuilder;
-
-public class AccessibilityInsightsForAndroidService extends AccessibilityService {
-  private static final String TAG = "AccessibilityInsightsForAndroidService";
-  private static final String NOTIFICATION_CHANNEL_ID = "accessibility_insights_service";
-  private static final int NOTIFICATION_ID = 1;
-  private final AxeScanner axeScanner;
-  private final ATFAScanner atfaScanner;
-  private final EventHelper eventHelper;
-  private final DeviceConfigFactory deviceConfigFactory;
-  private final OnScreenshotAvailableProvider onScreenshotAvailableProvider =
-      new OnScreenshotAvailableProvider();
-  private final BitmapProvider bitmapProvider = new BitmapProvider();
-  private HandlerThread screenshotHandlerThread = null;
-  private ScreenshotController screenshotController = null;
-  private int activeWindowId = -1; // Set initial state to an invalid ID
-  private FocusVisualizationStateManager focusVisualizationStateManager;
-  private FocusVisualizer focusVisualizer;
-  private FocusVisualizerController focusVisualizerController;
-  private FocusVisualizationCanvas focusVisualizationCanvas;
-  private AccessibilityEventDispatcher accessibilityEventDispatcher;
-  private DeviceOrientationHandler deviceOrientationHandler;
-  private TempFileProvider tempFileProvider;
-
-  public AccessibilityInsightsForAndroidService() {
-    deviceConfigFactory = new DeviceConfigFactory();
-    axeScanner =
-        AxeScannerFactory.createAxeScanner(deviceConfigFactory, this::getRealDisplayMetrics);
-    atfaScanner = ATFAScannerFactory.createATFAScanner(this);
-    eventHelper = new EventHelper(new ThreadSafeSwapper<>());
-  }
-
-  private DisplayMetrics getRealDisplayMetrics() {
-    // Correct screen metrics are only accessible within the context of the running
-    // service. They're not available when the service initializes, hence the callback
-    return DisplayMetricsHelper.getRealDisplayMetrics(this);
-  }
-
-  private void stopScreenshotHandlerThread() {
-    if (screenshotHandlerThread != null) {
-      screenshotHandlerThread.quit();
-      screenshotHandlerThread = null;
+    init {
+        axeScanner =
+            AxeScannerFactory.createAxeScanner(
+                deviceConfigFactory
+            ) { this.realDisplayMetrics }
+        atfaScanner = ATFAScannerFactory.createATFAScanner(this)
+        eventHelper = EventHelper(ThreadSafeSwapper<AccessibilityNodeInfo?>())
     }
 
-    screenshotController = null;
-  }
+    private val realDisplayMetrics: DisplayMetrics
+        get() =// Correct screen metrics are only accessible within the context of the running
+            // service. They're not available when the service initializes, hence the callback
+            DisplayMetricsHelper.getRealDisplayMetrics(this)
 
-  @Override
-  protected void onServiceConnected() {
-    Logger.logVerbose(TAG, "*** onServiceConnected");
+    private fun stopScreenshotHandlerThread() {
+        if (screenshotHandlerThread != null) {
+            screenshotHandlerThread!!.quit()
+            screenshotHandlerThread = null
+        }
 
-    this.startForegroundService();
-    this.startScreenshotActivity();
-
-    AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-    info.eventTypes = AccessibilityEvent.TYPES_ALL_MASK;
-    info.feedbackType = AccessibilityEvent.TYPES_ALL_MASK;
-    info.notificationTimeout = 0;
-    info.flags =
-        AccessibilityServiceInfo.DEFAULT
-            | AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
-
-    setServiceInfo(info);
-
-    stopScreenshotHandlerThread();
-    screenshotHandlerThread = new HandlerThread("ScreenshotHandlerThread");
-    screenshotHandlerThread.start();
-    Handler screenshotHandler = new Handler(screenshotHandlerThread.getLooper());
-
-    screenshotController =
-        new ScreenshotController(
-            this::getRealDisplayMetrics,
-            screenshotHandler,
-            onScreenshotAvailableProvider,
-            bitmapProvider,
-            MediaProjectionHolder::get);
-
-    SynchronizedRequestDispatcher.SharedInstance.teardown();
-    tempFileProvider = new TempFileProvider(getApplicationContext());
-    tempFileProvider.cleanOldFilesBestEffort();
-
-    WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-    focusVisualizationStateManager = new FocusVisualizationStateManager();
-    LayoutParamGenerator layoutParamGenerator = new LayoutParamGenerator(this::getRealDisplayMetrics);
-    focusVisualizationCanvas = new FocusVisualizationCanvas(this);
-    focusVisualizer = new FocusVisualizer(new FocusVisualizerStyles(), focusVisualizationCanvas);
-    focusVisualizerController = new FocusVisualizerController(focusVisualizer, focusVisualizationStateManager, new UIThreadRunner(), windowManager, layoutParamGenerator, focusVisualizationCanvas, new DateProvider());
-    accessibilityEventDispatcher = new AccessibilityEventDispatcher();
-    deviceOrientationHandler = new DeviceOrientationHandler(getResources().getConfiguration().orientation);
-    RootNodeFinder rootNodeFinder = new RootNodeFinder();
-    ResultsV2ContainerSerializer resultsV2ContainerSerializer = new ResultsV2ContainerSerializer(
-        new ATFARulesSerializer(),
-        new ATFAResultsSerializer(new GsonBuilder()),
-        new GsonBuilder());
-
-    setupFocusVisualizationListeners();
-
-    RequestDispatcher requestDispatcher = new RequestDispatcher(rootNodeFinder, screenshotController, eventHelper, axeScanner, atfaScanner, deviceConfigFactory, focusVisualizationStateManager, resultsV2ContainerSerializer);
-    SynchronizedRequestDispatcher.SharedInstance.setup(requestDispatcher);
-  }
-
-  private void startForegroundService() {
-    NotificationManager notificationManager =
-        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      NotificationChannel channel =
-          new NotificationChannel(
-              NOTIFICATION_CHANNEL_ID,
-              getString(R.string.accessibility_service_label),
-              NotificationManager.IMPORTANCE_LOW);
-      notificationManager.createNotificationChannel(channel);
+        screenshotController = null
     }
 
-    Notification.Builder builder;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
-    } else {
-      builder = new Notification.Builder(this);
+    override fun onServiceConnected() {
+        Logger.logVerbose(TAG, "*** onServiceConnected")
+
+        this.startForegroundService()
+        this.startScreenshotActivity()
+
+        val info = AccessibilityServiceInfo()
+        info.eventTypes = AccessibilityEvent.TYPES_ALL_MASK
+        info.feedbackType = AccessibilityEvent.TYPES_ALL_MASK
+        info.notificationTimeout = 0
+        info.flags =
+            (AccessibilityServiceInfo.DEFAULT
+                    or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS)
+
+        setServiceInfo(info)
+
+        stopScreenshotHandlerThread()
+        screenshotHandlerThread = HandlerThread("ScreenshotHandlerThread")
+        screenshotHandlerThread!!.start()
+        val screenshotHandler = Handler(screenshotHandlerThread!!.getLooper())
+
+        screenshotController =
+            ScreenshotController(
+                { this.realDisplayMetrics },
+                screenshotHandler,
+                onScreenshotAvailableProvider,
+                bitmapProvider,
+                { MediaProjectionHolder.get() })
+
+        SynchronizedRequestDispatcher.SharedInstance.teardown()
+        tempFileProvider = TempFileProvider(applicationContext)
+        tempFileProvider.cleanOldFilesBestEffort()
+
+        val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        focusVisualizationStateManager = FocusVisualizationStateManager()
+        val layoutParamGenerator = LayoutParamGenerator { this.realDisplayMetrics }
+        focusVisualizationCanvas = FocusVisualizationCanvas(this)
+        focusVisualizer = FocusVisualizer(FocusVisualizerStyles(), focusVisualizationCanvas)
+        focusVisualizerController = FocusVisualizerController(
+            focusVisualizer,
+            focusVisualizationStateManager,
+            UIThreadRunner(),
+            windowManager,
+            layoutParamGenerator,
+            focusVisualizationCanvas,
+            DateProvider()
+        )
+        accessibilityEventDispatcher = AccessibilityEventDispatcher()
+        deviceOrientationHandler =
+            DeviceOrientationHandler(resources.configuration.orientation)
+        val rootNodeFinder = RootNodeFinder()
+        val resultsV2ContainerSerializer = ResultsV2ContainerSerializer(
+            ATFARulesSerializer(),
+            ATFAResultsSerializer(GsonBuilder()),
+            GsonBuilder()
+        )
+
+        setupFocusVisualizationListeners()
+
+        val requestDispatcher = RequestDispatcher(
+            rootNodeFinder,
+            screenshotController!!,
+            eventHelper,
+            axeScanner,
+            atfaScanner,
+            deviceConfigFactory,
+            focusVisualizationStateManager,
+            resultsV2ContainerSerializer
+        )
+        SynchronizedRequestDispatcher.SharedInstance.setup(requestDispatcher)
     }
 
-    Notification notification =
-        builder
-            .setContentTitle(getString(R.string.accessibility_service_label))
-            .setSmallIcon(R.mipmap.blue_launcher)
-            .build();
+    private fun startForegroundService() {
+        val notificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel =
+                NotificationChannel(
+                    NOTIFICATION_CHANNEL_ID,
+                    getString(R.string.accessibility_service_label),
+                    NotificationManager.IMPORTANCE_LOW
+                )
+            notificationManager.createNotificationChannel(channel)
+        }
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+        } else {
+            Notification.Builder(this)
+        }
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      startForeground(
-          NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
-    } else {
-      startForeground(NOTIFICATION_ID, notification);
-    }
-  }
+        val notification =
+            builder
+                .setContentTitle(getString(R.string.accessibility_service_label))
+                .setSmallIcon(R.mipmap.blue_launcher)
+                .build()
 
-  private void setupFocusVisualizationListeners() {
-    accessibilityEventDispatcher.addOnRedrawEventListener(focusVisualizerController::onRedrawEvent);
-    accessibilityEventDispatcher.addOnFocusEventListener(focusVisualizerController::onFocusEvent);
-    accessibilityEventDispatcher.addOnAppChangedListener(focusVisualizerController::onAppChanged);
-    deviceOrientationHandler.subscribe(focusVisualizerController::onOrientationChanged);
-  }
-
-  @Override
-  public boolean onUnbind(Intent intent) {
-    Logger.logVerbose(TAG, "*** onUnbind");
-    SynchronizedRequestDispatcher.SharedInstance.teardown();
-    tempFileProvider.cleanOldFilesBestEffort();
-    stopScreenshotHandlerThread();
-    MediaProjectionHolder.cleanUp();
-    stopForeground(true);
-    return false;
-  }
-
-  @Override
-  public void onAccessibilityEvent(AccessibilityEvent event) {
-    accessibilityEventDispatcher.onAccessibilityEvent(event, getRootInActiveWindow());
-
-    // This logic ensures that we only track events from the active window, as
-    // described under "Retrieving window content" of the Android service docs at
-    // https://www.android-doc.com/reference/android/accessibilityservice/AccessibilityService.html
-    int windowId = event.getWindowId();
-
-    int eventType = event.getEventType();
-    if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-        || eventType == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER
-        || eventType == AccessibilityEvent.TYPE_VIEW_HOVER_EXIT) {
-      activeWindowId = windowId;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
-    if (activeWindowId == windowId) {
-      eventHelper.recordEvent(getRootInActiveWindow());
+    private fun setupFocusVisualizationListeners() {
+        accessibilityEventDispatcher.addOnRedrawEventListener(Consumer { event: AccessibilityEvent ->
+            focusVisualizerController.onRedrawEvent(
+                event
+            )
+        })
+        accessibilityEventDispatcher.addOnFocusEventListener(Consumer { event: AccessibilityEvent ->
+            focusVisualizerController.onFocusEvent(
+                event
+            )
+        })
+        accessibilityEventDispatcher.addOnAppChangedListener(Consumer { nodeInfo: AccessibilityNodeInfo ->
+            focusVisualizerController.onAppChanged(
+                nodeInfo
+            )
+        })
+        deviceOrientationHandler.subscribe { orientation: Int? ->
+            focusVisualizerController.onOrientationChanged(
+                orientation
+            )
+        }
     }
-  }
 
-  @Override
-  public void onConfigurationChanged(Configuration newConfig) {
-    super.onConfigurationChanged(newConfig);
-    this.deviceOrientationHandler.setOrientation(newConfig.orientation);
-  }
+    override fun onUnbind(intent: Intent?): Boolean {
+        Logger.logVerbose(TAG, "*** onUnbind")
+        SynchronizedRequestDispatcher.SharedInstance.teardown()
+        tempFileProvider.cleanOldFilesBestEffort()
+        stopScreenshotHandlerThread()
+        MediaProjectionHolder.cleanUp()
+        stopForeground(true)
+        return false
+    }
 
-  @Override
-  public void onInterrupt() {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        accessibilityEventDispatcher.onAccessibilityEvent(event, rootInActiveWindow)
 
-  private void startScreenshotActivity() {
-    Intent startScreenshot = new Intent(this, ScreenshotActivity.class);
-    startScreenshot.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    startActivity(startScreenshot);
-  }
+        // This logic ensures that we only track events from the active window, as
+        // described under "Retrieving window content" of the Android service docs at
+        // https://www.android-doc.com/reference/android/accessibilityservice/AccessibilityService.html
+        val windowId = event.windowId
+
+        val eventType = event.eventType
+        if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || eventType == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER || eventType == AccessibilityEvent.TYPE_VIEW_HOVER_EXIT) {
+            activeWindowId = windowId
+        }
+
+        if (activeWindowId == windowId) {
+            eventHelper.recordEvent(rootInActiveWindow)
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        this.deviceOrientationHandler.setOrientation(newConfig.orientation)
+    }
+
+    override fun onInterrupt() {}
+
+    private fun startScreenshotActivity() {
+        val startScreenshot = Intent(this, ScreenshotActivity::class.java)
+        startScreenshot.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(startScreenshot)
+    }
+
+    companion object {
+        private const val TAG = "AccessibilityInsightsForAndroidService"
+        private const val NOTIFICATION_CHANNEL_ID = "accessibility_insights_service"
+        private const val NOTIFICATION_ID = 1
+    }
 }

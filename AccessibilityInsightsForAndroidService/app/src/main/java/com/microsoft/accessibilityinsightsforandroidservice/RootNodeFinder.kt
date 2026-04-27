@@ -1,32 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.accessibility.AccessibilityNodeInfo
 
-import android.view.accessibility.AccessibilityNodeInfo;
+class RootNodeFinder {
+    fun getRootNodeFromSource(source: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
+        var rootNode: AccessibilityNodeInfo? = null
 
-public class RootNodeFinder {
-  public AccessibilityNodeInfo getRootNodeFromSource(AccessibilityNodeInfo source) {
-    AccessibilityNodeInfo rootNode = null;
+        if (source != null) {
+            var currentNode: AccessibilityNodeInfo? = source
 
-    if (source != null) {
-      AccessibilityNodeInfo currentNode = source;
+            while (true) {
+                val parent = currentNode!!.getParent()
 
-      while (true) {
-        AccessibilityNodeInfo parent = currentNode.getParent();
+                if (parent == null) {
+                    rootNode = currentNode
+                    break
+                }
 
-        if (parent == null) {
-          rootNode = currentNode;
-          break;
+                if (source !== currentNode) { // Don't recycle the source!
+                    currentNode.recycle()
+                }
+                currentNode = parent
+            }
         }
 
-        if (source != currentNode) { // Don't recycle the source!
-          currentNode.recycle();
-        }
-        currentNode = parent;
-      }
+        return rootNode
     }
-
-    return rootNode;
-  }
 }

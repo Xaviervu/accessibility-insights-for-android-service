@@ -1,25 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.media.projection.MediaProjection
 
-import android.media.projection.MediaProjection;
+object MediaProjectionHolder {
+    private var sharedMediaProjection: MediaProjection? = null
 
-public class MediaProjectionHolder {
-  private static MediaProjection sharedMediaProjection = null;
-
-  public static void cleanUp() {
-    if (sharedMediaProjection != null) {
-      sharedMediaProjection.stop();
-      sharedMediaProjection = null;
+    fun cleanUp() {
+            sharedMediaProjection?.stop()
+            sharedMediaProjection = null
     }
-  }
 
-  public static MediaProjection get() {
-    return sharedMediaProjection;
-  }
+    @JvmStatic
+    fun get(): MediaProjection? {
+        return sharedMediaProjection
+    }
 
-  public static void set(MediaProjection projection) {
-    sharedMediaProjection = projection;
-  }
+    @JvmStatic
+    fun set(projection: MediaProjection?) {
+        sharedMediaProjection = projection
+    }
 }

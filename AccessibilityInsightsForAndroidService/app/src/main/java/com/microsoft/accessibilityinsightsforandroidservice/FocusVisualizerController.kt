@@ -1,104 +1,95 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.WindowManager
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import java.util.Date
+import java.util.function.Consumer
 
-import android.view.WindowManager;
-import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityNodeInfo;
-import java.util.Date;
+class FocusVisualizerController(
+    private val focusVisualizer: FocusVisualizer,
+    private val focusVisualizationStateManager: FocusVisualizationStateManager,
+    private val uiThreadRunner: UIThreadRunner,
+    private val windowManager: WindowManager,
+    private val layoutParamGenerator: LayoutParamGenerator,
+    private val focusVisualizationCanvas: FocusVisualizationCanvas?,
+    private val dateProvider: DateProvider
+) {
+    private var lastEventSource: AccessibilityNodeInfo? = null
+    private var lastOrientationChange: Date
+    private val maximumOrientationChangeDelay: Long = 1000
 
-public class FocusVisualizerController {
-  private FocusVisualizer focusVisualizer;
-  private FocusVisualizationStateManager focusVisualizationStateManager;
-  private UIThreadRunner uiThreadRunner;
-  private WindowManager windowManager;
-  private LayoutParamGenerator layoutParamGenerator;
-  private FocusVisualizationCanvas focusVisualizationCanvas;
-  private AccessibilityNodeInfo lastEventSource;
-  private DateProvider dateProvider;
-  private Date lastOrientationChange;
-  private long maximumOrientationChangeDelay = 1000;
-
-  public FocusVisualizerController(
-      FocusVisualizer focusVisualizer,
-      FocusVisualizationStateManager focusVisualizationStateManager,
-      UIThreadRunner uiThreadRunner,
-      WindowManager windowManager,
-      LayoutParamGenerator layoutParamGenerator,
-      FocusVisualizationCanvas focusVisualizationCanvas,
-      DateProvider dateProvider) {
-    this.focusVisualizer = focusVisualizer;
-    this.focusVisualizationStateManager = focusVisualizationStateManager;
-    this.uiThreadRunner = uiThreadRunner;
-    this.windowManager = windowManager;
-    this.layoutParamGenerator = layoutParamGenerator;
-    this.focusVisualizationCanvas = focusVisualizationCanvas;
-    this.dateProvider = dateProvider;
-    this.focusVisualizationStateManager.subscribe(this::onFocusVisualizationStateChange);
-    this.lastOrientationChange = dateProvider.get();
-  }
-
-  public void onFocusEvent(AccessibilityEvent event) {
-    lastEventSource = event.getSource();
-    if (focusVisualizationStateManager.getState() == false
-        || ignoreFocusEventDueToRecentOrientationChange()) {
-      return;
+    init {
+        this.focusVisualizationStateManager.subscribe(Consumer { enabled: Boolean? ->
+            this.onFocusVisualizationStateChange(
+                enabled!!
+            )
+        })
+        this.lastOrientationChange = dateProvider.get()
     }
 
-    focusVisualizer.addNewFocusedElement(event.getSource());
-  }
+    fun onFocusEvent(event: AccessibilityEvent) {
+        lastEventSource = event.source
+        if (!focusVisualizationStateManager.state || ignoreFocusEventDueToRecentOrientationChange()
+        ) {
+            return
+        }
 
-  public void onRedrawEvent(AccessibilityEvent event) {
-    if (focusVisualizationStateManager.getState() == false) {
-      return;
+        focusVisualizer.addNewFocusedElement(event.source)
     }
 
-    focusVisualizer.refreshHighlights();
-  }
+    fun onRedrawEvent(event: AccessibilityEvent?) {
+        if (!focusVisualizationStateManager.state) {
+            return
+        }
 
-  public void onAppChanged(AccessibilityNodeInfo nodeInfo) {
-    if (focusVisualizationStateManager.getState() == false) {
-      return;
+        focusVisualizer.refreshHighlights()
     }
 
-    focusVisualizer.resetVisualizations();
-  }
+    fun onAppChanged(nodeInfo: AccessibilityNodeInfo?) {
+        if (!focusVisualizationStateManager.state) {
+            return
+        }
 
-  public void onOrientationChanged(Integer orientation) {
-    if (focusVisualizationStateManager.getState() == false) {
-      return;
+        focusVisualizer.resetVisualizations()
     }
-    lastOrientationChange = dateProvider.get();
-    windowManager.updateViewLayout(focusVisualizationCanvas, layoutParamGenerator.get());
-    focusVisualizer.resetVisualizations();
-  }
 
-  private void onFocusVisualizationStateChange(boolean enabled) {
-    if (enabled) {
-      uiThreadRunner.run(this::addFocusVisualizationToScreen);
-    } else {
-      uiThreadRunner.run(this::removeFocusVisualizationToScreen);
+    fun onOrientationChanged(orientation: Int?) {
+        if (!focusVisualizationStateManager.state) {
+            return
+        }
+        lastOrientationChange = dateProvider.get()
+        windowManager.updateViewLayout(focusVisualizationCanvas, layoutParamGenerator.get())
+        focusVisualizer.resetVisualizations()
     }
-  }
 
-  private void addFocusVisualizationToScreen() {
-    if (lastEventSource != null) {
-      focusVisualizer.addNewFocusedElement(lastEventSource);
+    private fun onFocusVisualizationStateChange(enabled: Boolean) {
+        if (enabled) {
+            uiThreadRunner.run(Runnable { this.addFocusVisualizationToScreen() })
+        } else {
+            uiThreadRunner.run(Runnable { this.removeFocusVisualizationToScreen() })
+        }
     }
-    windowManager.addView(focusVisualizationCanvas, layoutParamGenerator.get());
-  }
 
-  private void removeFocusVisualizationToScreen() {
-    focusVisualizer.resetVisualizations();
-    windowManager.removeView(focusVisualizationCanvas);
-  }
+    private fun addFocusVisualizationToScreen() {
+        if (lastEventSource != null) {
+            focusVisualizer.addNewFocusedElement(lastEventSource)
+        }
+        windowManager.addView(focusVisualizationCanvas, layoutParamGenerator.get())
+    }
 
-  private boolean ignoreFocusEventDueToRecentOrientationChange() {
-    Date currentTime = dateProvider.get();
-    long cur = currentTime.getTime();
-    long last = lastOrientationChange.getTime();
-    long timeSinceLastOrientationChange = cur - last;
-    return timeSinceLastOrientationChange < maximumOrientationChangeDelay;
-  }
+    private fun removeFocusVisualizationToScreen() {
+        focusVisualizer.resetVisualizations()
+        windowManager.removeView(focusVisualizationCanvas)
+    }
+
+    private fun ignoreFocusEventDueToRecentOrientationChange(): Boolean {
+        val currentTime = dateProvider.get()
+        val cur = currentTime.time
+        val last = lastOrientationChange.time
+        val timeSinceLastOrientationChange = cur - last
+        return timeSinceLastOrientationChange < maximumOrientationChangeDelay
+    }
 }

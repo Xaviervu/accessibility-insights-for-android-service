@@ -1,81 +1,82 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import java.util.Arrays
+import java.util.function.Consumer
 
-import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityNodeInfo;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
+class AccessibilityEventDispatcher {
+    private var previousPackageName: CharSequence? = null
 
-public class AccessibilityEventDispatcher {
-  private static final String TAG = "AccessibilityEventDispatcher";
-  private CharSequence previousPackageName;
+    private val onAppChangedListeners: ArrayList<Consumer<AccessibilityNodeInfo?>?>
+    private val onFocusEventListeners: ArrayList<Consumer<AccessibilityEvent?>?>
+    private val onRedrawEventListeners: ArrayList<Consumer<AccessibilityEvent?>?>
 
-  private ArrayList<Consumer<AccessibilityNodeInfo>> onAppChangedListeners;
-  private ArrayList<Consumer<AccessibilityEvent>> onFocusEventListeners;
-  private ArrayList<Consumer<AccessibilityEvent>> onRedrawEventListeners;
-
-  public AccessibilityEventDispatcher() {
-    onAppChangedListeners = new ArrayList<Consumer<AccessibilityNodeInfo>>();
-    onFocusEventListeners = new ArrayList<Consumer<AccessibilityEvent>>();
-    onRedrawEventListeners = new ArrayList<Consumer<AccessibilityEvent>>();
-  }
-
-  public static List<Integer> redrawEventTypes =
-      Arrays.asList(
-          AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
-          AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
-          AccessibilityEvent.TYPE_VIEW_SCROLLED,
-          AccessibilityEvent.TYPE_WINDOWS_CHANGED);
-
-  public void onAccessibilityEvent(AccessibilityEvent event, AccessibilityNodeInfo rootNode) {
-    int eventType = event.getEventType();
-
-    if (rootNode != null
-        && (previousPackageName == null
-            || !previousPackageName.equals(rootNode.getPackageName()))) {
-      previousPackageName = rootNode.getPackageName();
-      this.callListeners(onAppChangedListeners, rootNode);
+    init {
+        onAppChangedListeners = ArrayList<Consumer<AccessibilityNodeInfo?>?>()
+        onFocusEventListeners = ArrayList<Consumer<AccessibilityEvent?>?>()
+        onRedrawEventListeners = ArrayList<Consumer<AccessibilityEvent?>?>()
     }
 
-    if (isFocusEvent(eventType)) {
-      this.callListeners(onFocusEventListeners, event);
-      return;
+    fun onAccessibilityEvent(event: AccessibilityEvent, rootNode: AccessibilityNodeInfo?) {
+        val eventType = event.getEventType()
+
+        if (rootNode != null
+            && (previousPackageName == null
+                    || previousPackageName != rootNode.getPackageName())
+        ) {
+            previousPackageName = rootNode.getPackageName()
+            this.callListeners<AccessibilityNodeInfo?>(onAppChangedListeners, rootNode)
+        }
+
+        if (isFocusEvent(eventType)) {
+            this.callListeners<AccessibilityEvent?>(onFocusEventListeners, event)
+            return
+        }
+
+        if (isRedrawEvent(eventType)) {
+            this.callListeners<AccessibilityEvent?>(onRedrawEventListeners, event)
+            return
+        }
     }
 
-    if (isRedrawEvent(eventType)) {
-      this.callListeners(onRedrawEventListeners, event);
-      return;
+    fun addOnFocusEventListener(listener: Consumer<AccessibilityEvent?>?) {
+        onFocusEventListeners.add(listener)
     }
-  }
 
-  public void addOnFocusEventListener(Consumer<AccessibilityEvent> listener) {
-    onFocusEventListeners.add(listener);
-  }
+    fun addOnRedrawEventListener(listener: Consumer<AccessibilityEvent?>?) {
+        onRedrawEventListeners.add(listener)
+    }
 
-  public void addOnRedrawEventListener(Consumer<AccessibilityEvent> listener) {
-    onRedrawEventListeners.add(listener);
-  }
+    fun addOnAppChangedListener(listener: Consumer<AccessibilityNodeInfo?>?) {
+        onAppChangedListeners.add(listener)
+    }
 
-  public void addOnAppChangedListener(Consumer<AccessibilityNodeInfo> listener) {
-    onAppChangedListeners.add(listener);
-  }
+    private fun isFocusEvent(eventType: Int): Boolean {
+        return eventType == AccessibilityEvent.TYPE_VIEW_FOCUSED
+    }
 
-  private boolean isFocusEvent(int eventType) {
-    return eventType == AccessibilityEvent.TYPE_VIEW_FOCUSED;
-  }
+    private fun isRedrawEvent(eventType: Int): Boolean {
+        return redrawEventTypes.contains(eventType)
+    }
 
-  private boolean isRedrawEvent(int eventType) {
-    return redrawEventTypes.contains(eventType);
-  }
+    private fun <T> callListeners(listeners: ArrayList<Consumer<T?>?>, newValue: T?) {
+        listeners.forEach(
+            Consumer { listener: Consumer<T?>? ->
+                listener!!.accept(newValue)
+            })
+    }
 
-  private <T> void callListeners(ArrayList<Consumer<T>> listeners, T newValue) {
-    listeners.forEach(
-        listener -> {
-          listener.accept(newValue);
-        });
-  }
+    companion object {
+        private const val TAG = "AccessibilityEventDispatcher"
+        @JvmField
+        var redrawEventTypes: MutableList<Int?> = Arrays.asList<Int?>(
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
+            AccessibilityEvent.TYPE_VIEW_SCROLLED,
+            AccessibilityEvent.TYPE_WINDOWS_CHANGED
+        )
+    }
 }

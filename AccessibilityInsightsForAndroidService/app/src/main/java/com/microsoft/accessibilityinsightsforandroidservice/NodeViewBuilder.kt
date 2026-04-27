@@ -1,105 +1,96 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Rect
+import android.os.Build
+import android.view.accessibility.AccessibilityNodeInfo
+import com.deque.axe.android.AxeView
+import com.deque.axe.android.wrappers.AxeRect
 
-import android.graphics.Rect;
-import android.view.accessibility.AccessibilityNodeInfo;
-import com.deque.axe.android.AxeView;
-import com.deque.axe.android.wrappers.AxeRect;
-import java.util.List;
+class NodeViewBuilder(
+    private val accessibilityNode: AccessibilityNodeInfo,
+    private val children: MutableList<AxeView>,
+    private val labeledBy: AxeView?,
+    boundsRectProvider: AxeRectProvider
+) : AxeView.Builder {
+    private val boundsRect: AxeRect
 
-public class NodeViewBuilder implements AxeView.Builder {
-  private final AccessibilityNodeInfo accessibilityNode;
-  private final List<AxeView> children;
-  private final AxeView labeledBy;
-  private final AxeRect boundsRect;
-
-  public AxeRect boundsInScreen() {
-    return boundsRect;
-  }
-
-  public String className() {
-    String rawClassName = safeToString(accessibilityNode.getClassName());
-    return (rawClassName == null)
-        ? "Class Name Not Specified--Inserted by Accessibility Insights"
-        : rawClassName;
-  }
-
-  public String contentDescription() {
-    return safeToString(accessibilityNode.getContentDescription());
-  }
-
-  public boolean isAccessibilityFocusable() {
-    return accessibilityNode.isFocusable();
-  }
-
-  public boolean isClickable() {
-    return accessibilityNode.isClickable();
-  }
-
-  public boolean isEnabled() {
-    return accessibilityNode.isEnabled();
-  }
-
-  public boolean isImportantForAccessibility() {
-    return accessibilityNode.isImportantForAccessibility();
-  }
-
-  public AxeView labeledBy() {
-    return labeledBy;
-  }
-
-  public String packageName() {
-    return safeToString(accessibilityNode.getPackageName());
-  }
-
-  public String paneTitle() {
-    return null;
-  }
-
-  public String text() {
-    return safeToString(accessibilityNode.getText());
-  }
-
-  public String viewIdResourceName() {
-    return accessibilityNode.getViewIdResourceName();
-  }
-
-  public List<AxeView> children() {
-    return children;
-  }
-
-  public String value() {
-    return null;
-  }
-
-  public String hintText() {
-    if (android.os.Build.VERSION.SDK_INT >= 26) {
-      return safeToString(accessibilityNode.getHintText());
-    }
-    return null;
-  }
-
-  public NodeViewBuilder(
-      AccessibilityNodeInfo node,
-      List<AxeView> children,
-      AxeView labeledBy,
-      AxeRectProvider boundsRectProvider) {
-    accessibilityNode = node;
-    this.children = children;
-    this.labeledBy = labeledBy;
-
-    Rect rect = new Rect();
-    accessibilityNode.getBoundsInScreen(rect);
-    boundsRect = boundsRectProvider.createAxeRect(rect.left, rect.right, rect.top, rect.bottom);
-  }
-
-  private String safeToString(CharSequence chars) {
-    if (chars == null) {
-      return null;
+    override fun boundsInScreen(): AxeRect {
+        return boundsRect
     }
 
-    return chars.toString();
-  }
+    override fun className(): String {
+        val rawClassName = safeToString(accessibilityNode.className)
+        return rawClassName ?: "Class Name Not Specified--Inserted by Accessibility Insights"
+    }
+
+    override fun contentDescription(): String? {
+        return safeToString(accessibilityNode.contentDescription)
+    }
+
+    override fun isAccessibilityFocusable(): Boolean {
+        return accessibilityNode.isFocusable
+    }
+
+    override fun isClickable(): Boolean {
+        return accessibilityNode.isClickable
+    }
+
+    override fun isEnabled(): Boolean {
+        return accessibilityNode.isEnabled
+    }
+
+    override fun isImportantForAccessibility(): Boolean {
+        return accessibilityNode.isImportantForAccessibility
+    }
+
+    override fun labeledBy(): AxeView? {
+        return labeledBy
+    }
+
+    override fun packageName(): String? {
+        return safeToString(accessibilityNode.packageName)
+    }
+
+    override fun paneTitle(): String? {
+        return null
+    }
+
+    override fun text(): String? {
+        return safeToString(accessibilityNode.getText())
+    }
+
+    override fun viewIdResourceName(): String? {
+        return accessibilityNode.viewIdResourceName
+    }
+
+    override fun children(): MutableList<AxeView> {
+        return children
+    }
+
+    override fun value(): String? {
+        return null
+    }
+
+    override fun hintText(): String? {
+        if (Build.VERSION.SDK_INT >= 26) {
+            return safeToString(accessibilityNode.hintText)
+        }
+        return null
+    }
+
+    init {
+        val rect = Rect()
+        accessibilityNode.getBoundsInScreen(rect)
+        boundsRect = boundsRectProvider.createAxeRect(rect.left, rect.right, rect.top, rect.bottom)
+    }
+
+    private fun safeToString(chars: CharSequence?): String? {
+        if (chars == null) {
+            return null
+        }
+
+        return chars.toString()
+    }
 }

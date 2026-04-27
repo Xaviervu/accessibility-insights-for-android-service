@@ -1,27 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.content.Context
+import android.content.res.Resources
+import android.util.DisplayMetrics
+import android.view.Display
+import android.view.WindowManager
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.util.DisplayMetrics;
-import android.view.Display;
-import android.view.WindowManager;
+object DisplayMetricsHelper {
+    @JvmStatic
+    fun getRealDisplayMetrics(context: Context): DisplayMetrics {
+        val displayMetrics = Resources.getSystem().displayMetrics // Default values
 
-public class DisplayMetricsHelper {
+        val display = getDefaultDisplay(context)
 
-  public static DisplayMetrics getRealDisplayMetrics(Context context) {
+        display.getRealMetrics(displayMetrics)
+        return displayMetrics
+    }
 
-    DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics(); // Default values
-
-    Display display = getDefaultDisplay(context);
-
-    display.getRealMetrics(displayMetrics);
-    return displayMetrics;
-  }
-
-  private static Display getDefaultDisplay(Context context) {
-    return ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-  }
+    private fun getDefaultDisplay(context: Context): Display {
+        return (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).getDefaultDisplay()
+    }
 }

@@ -1,112 +1,124 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
+import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.view.View;
-import android.view.accessibility.AccessibilityNodeInfo;
-import java.util.HashMap;
+class FocusElementHighlight(
+    @JvmField val eventSource: AccessibilityNodeInfo,
+    private var paints: HashMap<String, Paint>,
+    private val radius: Int,
+    private val tabStopCount: Int,
+    private val view: View
+) {
+    private var yOffset = 0
+    private var xCoordinate = 0
+    private var yCoordinate = 0
+    private val rect: Rect
+    private var isCurrentElement = true
 
-public class FocusElementHighlight {
-  private AccessibilityNodeInfo eventSource;
-  private int yOffset;
-  private int tabStopCount;
-  private int radius;
-  private int xCoordinate;
-  private int yCoordinate;
-  private HashMap<String, Paint> paints;
-  private Rect rect;
-  private View view;
-  private boolean isCurrentElement;
-  private static final String TAG = "FocusElementHighlight";
-
-  public FocusElementHighlight(
-      AccessibilityNodeInfo eventSource,
-      HashMap<String, Paint> currentPaints,
-      int radius,
-      int tabStopCount,
-      View view) {
-    this.view = view;
-    this.eventSource = eventSource;
-    this.tabStopCount = tabStopCount;
-    this.radius = radius;
-    this.rect = new Rect();
-    this.paints = currentPaints;
-    this.isCurrentElement = true;
-  }
-
-  private void setCoordinates() {
-    this.eventSource.getBoundsInScreen(this.rect);
-    this.rect.offset(0, this.yOffset);
-    this.xCoordinate = rect.centerX();
-    this.yCoordinate = rect.centerY();
-  }
-
-  public void drawElementHighlight(Canvas canvas) {
-    if (this.eventSource == null) {
-      return;
+    init {
+        this.rect = Rect()
     }
 
-    if (!this.eventSource.refresh()) {
-      return;
+    private fun setCoordinates() {
+        this.eventSource!!.getBoundsInScreen(this.rect)
+        this.rect.offset(0, this.yOffset)
+        this.xCoordinate = rect.centerX()
+        this.yCoordinate = rect.centerY()
     }
 
-    this.updateWithNewCoordinates();
+    fun drawElementHighlight(canvas: Canvas) {
+        if (this.eventSource == null) {
+            return
+        }
 
-    if (isCurrentElement) {
-      this.drawInnerCircle(
-          this.xCoordinate,
-          this.yCoordinate,
-          this.radius,
-          this.paints.get("transparentInnerCircle"),
-          canvas);
-    } else {
-      this.drawInnerCircle(
-          this.xCoordinate, this.yCoordinate, this.radius, this.paints.get("innerCircle"), canvas);
-      this.drawNumberInCircle(
-          this.xCoordinate, this.yCoordinate, this.tabStopCount, this.paints.get("number"), canvas);
+        if (!this.eventSource.refresh()) {
+            return
+        }
+
+        this.updateWithNewCoordinates()
+
+        if (isCurrentElement) {
+            this.drawInnerCircle(
+                this.xCoordinate,
+                this.yCoordinate,
+                this.radius,
+                this.paints.get("transparentInnerCircle")!!,
+                canvas
+            )
+        } else {
+            this.drawInnerCircle(
+                this.xCoordinate,
+                this.yCoordinate,
+                this.radius,
+                this.paints.get("innerCircle")!!,
+                canvas
+            )
+            this.drawNumberInCircle(
+                this.xCoordinate,
+                this.yCoordinate,
+                this.tabStopCount,
+                this.paints.get("number")!!,
+                canvas
+            )
+        }
+
+        this.drawOuterCircle(
+            this.xCoordinate,
+            this.yCoordinate,
+            this.radius,
+            this.paints.get("outerCircle")!!,
+            canvas
+        )
     }
 
-    this.drawOuterCircle(
-        this.xCoordinate, this.yCoordinate, this.radius, this.paints.get("outerCircle"), canvas);
-  }
+    private fun drawInnerCircle(
+        xCoordinate: Int, yCoordinate: Int, radius: Int, paint: Paint, canvas: Canvas
+    ) {
+        canvas.drawCircle(xCoordinate.toFloat(), yCoordinate.toFloat(), radius.toFloat(), paint)
+    }
 
-  private void drawInnerCircle(
-      int xCoordinate, int yCoordinate, int radius, Paint paint, Canvas canvas) {
-    canvas.drawCircle(xCoordinate, yCoordinate, radius, paint);
-  }
+    private fun drawOuterCircle(
+        xCoordinate: Int, yCoordinate: Int, radius: Int, paint: Paint, canvas: Canvas
+    ) {
+        canvas.drawCircle(
+            xCoordinate.toFloat(),
+            yCoordinate.toFloat(),
+            (radius + 3).toFloat(),
+            paint
+        )
+    }
 
-  private void drawOuterCircle(
-      int xCoordinate, int yCoordinate, int radius, Paint paint, Canvas canvas) {
-    canvas.drawCircle(xCoordinate, yCoordinate, radius + 3, paint);
-  }
+    private fun drawNumberInCircle(
+        xCoordinate: Int, yCoordinate: Int, tabStopCount: Int, paint: Paint, canvas: Canvas
+    ) {
+        canvas.drawText(
+            tabStopCount.toString(),
+            xCoordinate.toFloat(),
+            yCoordinate - ((paint.descent() + paint.ascent()) / 2),
+            paint
+        )
+    }
 
-  private void drawNumberInCircle(
-      int xCoordinate, int yCoordinate, int tabStopCount, Paint paint, Canvas canvas) {
-    canvas.drawText(
-        Integer.toString(tabStopCount),
-        xCoordinate,
-        yCoordinate - ((paint.descent() + paint.ascent()) / 2),
-        paint);
-  }
+    fun setPaints(paints: HashMap<String, Paint>) {
+        this.paints = paints
+    }
 
-  public void setPaints(HashMap<String, Paint> paints) {
-    this.paints = paints;
-  }
+    fun setAsNonCurrentElement() {
+        this.isCurrentElement = false
+    }
 
-  public void setAsNonCurrentElement() {
-    this.isCurrentElement = false;
-  }
+    private fun updateWithNewCoordinates() {
+        this.yOffset = OffsetHelper.getYOffset(this.view)
+        this.setCoordinates()
+    }
 
-  public AccessibilityNodeInfo getEventSource() {
-    return this.eventSource;
-  }
-
-  private void updateWithNewCoordinates() {
-    this.yOffset = OffsetHelper.getYOffset(this.view);
-    this.setCoordinates();
-  }
+    companion object {
+        private const val TAG = "FocusElementHighlight"
+    }
 }

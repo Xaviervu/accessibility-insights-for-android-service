@@ -1,156 +1,142 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.graphics.Color
+import android.graphics.DashPathEffect
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 
-import android.graphics.Color;
-import android.graphics.DashPathEffect;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import java.util.HashMap;
+class FocusVisualizerStyles {
+    private lateinit var currentLinePaint: Paint
+    private lateinit  var currentOuterCirclePaint: Paint
+    private lateinit var nonCurrentLinePaint: Paint
+    private lateinit var nonCurrentOuterCirclePaint: Paint
+    private lateinit  var innerCirclePaint: Paint
+    private lateinit var numberPaint: Paint
+    private lateinit var currentBackgroundLinePaint: Paint
+    private lateinit var nonCurrentBackgroundLinePaint: Paint
+    private lateinit var transparentInnerCirclePaint: Paint
 
-public class FocusVisualizerStyles {
-  private Paint currentLinePaint;
-  private Paint currentOuterCirclePaint;
-  private Paint nonCurrentLinePaint;
-  private Paint nonCurrentOuterCirclePaint;
-  private Paint innerCirclePaint;
-  private Paint numberPaint;
-  private Paint currentBackgroundLinePaint;
-  private Paint nonCurrentBackgroundLinePaint;
-  private Paint transparentInnerCirclePaint;
+    lateinit var currentElementPaints: HashMap<String, Paint>
+    private set
+    lateinit var nonCurrentElementPaints: HashMap<String, Paint>
+    private set
+    lateinit var currentLinePaints: HashMap<String, Paint>
+    private set
+    lateinit var nonCurrentLinePaints: HashMap<String, Paint>
+    private set
 
-  private HashMap<String, Paint> currentElementPaints;
-  private HashMap<String, Paint> nonCurrentElementPaints;
-  private HashMap<String, Paint> currentLinePaints;
-  private HashMap<String, Paint> nonCurrentLinePaints;
+    var focusElementHighlightRadius: Int = 50
 
-  public int focusElementHighlightRadius = 50;
+    init {
+        this.setCurrentOuterCirclePaint()
+        this.setInnerCirclePaint()
+        this.setNonCurrentLinePaint()
+        this.setNumberPaint()
+        this.setCurrentLinePaint()
+        this.setNonCurrentOuterCirclePaint()
+        this.setCurrentBackgroundLinePaint()
+        this.setNonCurrentBackgroundLinePaint()
+        this.setTransparentInnerCirclePaint()
 
-  public FocusVisualizerStyles() {
-    this.setCurrentOuterCirclePaint();
-    this.setInnerCirclePaint();
-    this.setNonCurrentLinePaint();
-    this.setNumberPaint();
-    this.setCurrentLinePaint();
-    this.setNonCurrentOuterCirclePaint();
-    this.setCurrentBackgroundLinePaint();
-    this.setNonCurrentBackgroundLinePaint();
-    this.setTransparentInnerCirclePaint();
+        this.setCurrentElementPaints()
+        this.setNonCurrentElementPaints()
+        this.setCurrentLinePaints()
+        this.setNonCurrentLinePaints()
+    }
 
-    this.setCurrentElementPaints();
-    this.setNonCurrentElementPaints();
-    this.setCurrentLinePaints();
-    this.setNonCurrentLinePaints();
-  }
+    private fun setCurrentElementPaints() {
+        this.currentElementPaints = HashMap()
+        this.currentElementPaints["outerCircle"] = this.currentOuterCirclePaint
+        this.currentElementPaints["innerCircle"] = this.innerCirclePaint
+        this.currentElementPaints["number"] = this.numberPaint
+        this.currentElementPaints["transparentInnerCircle"] = this.transparentInnerCirclePaint
+    }
 
-  private void setCurrentElementPaints() {
-    this.currentElementPaints = new HashMap<>();
-    this.currentElementPaints.put("outerCircle", this.currentOuterCirclePaint);
-    this.currentElementPaints.put("innerCircle", this.innerCirclePaint);
-    this.currentElementPaints.put("number", this.numberPaint);
-    this.currentElementPaints.put("transparentInnerCircle", this.transparentInnerCirclePaint);
-  }
+    private fun setNonCurrentElementPaints() {
+        this.nonCurrentElementPaints = HashMap()
+        this.nonCurrentElementPaints["outerCircle"] = this.nonCurrentOuterCirclePaint
+        this.nonCurrentElementPaints["innerCircle"] = this.innerCirclePaint
+        this.nonCurrentElementPaints["number"] = this.numberPaint
+    }
 
-  public HashMap<String, Paint> getCurrentElementPaints() {
-    return currentElementPaints;
-  }
+    private fun setCurrentLinePaints() {
+        this.currentLinePaints = HashMap()
+        this.currentLinePaints["foregroundLine"] = this.currentLinePaint
+        this.currentLinePaints["backgroundLine"] = this.currentBackgroundLinePaint
+    }
 
-  private void setNonCurrentElementPaints() {
-    this.nonCurrentElementPaints = new HashMap<>();
-    this.nonCurrentElementPaints.put("outerCircle", this.nonCurrentOuterCirclePaint);
-    this.nonCurrentElementPaints.put("innerCircle", this.innerCirclePaint);
-    this.nonCurrentElementPaints.put("number", this.numberPaint);
-  }
+    private fun setNonCurrentLinePaints() {
+        this.nonCurrentLinePaints = HashMap()
+        this.nonCurrentLinePaints["foregroundLine"] = this.nonCurrentLinePaint
+        this.nonCurrentLinePaints["backgroundLine"] = this.nonCurrentBackgroundLinePaint
+    }
 
-  public HashMap<String, Paint> getNonCurrentElementPaints() {
-    return nonCurrentElementPaints;
-  }
+    private fun setNonCurrentLinePaint() {
+        this.nonCurrentLinePaint = Paint()
+        this.nonCurrentLinePaint.style = Paint.Style.STROKE
+        this.nonCurrentLinePaint.setColor(Color.GRAY)
+        this.nonCurrentLinePaint.strokeWidth = 5f
+    }
 
-  private void setCurrentLinePaints() {
-    this.currentLinePaints = new HashMap<>();
-    this.currentLinePaints.put("foregroundLine", this.currentLinePaint);
-    this.currentLinePaints.put("backgroundLine", this.currentBackgroundLinePaint);
-  }
+    private fun setNonCurrentOuterCirclePaint() {
+        this.nonCurrentOuterCirclePaint = Paint()
+        this.nonCurrentOuterCirclePaint.style = Paint.Style.STROKE
+        this.nonCurrentOuterCirclePaint.setColor(Color.GRAY)
+        this.nonCurrentOuterCirclePaint.strokeWidth = 7f
+    }
 
-  public HashMap<String, Paint> getCurrentLinePaints() {
-    return currentLinePaints;
-  }
+    private fun setCurrentOuterCirclePaint() {
+        this.currentOuterCirclePaint = Paint()
+        this.currentOuterCirclePaint.style = Paint.Style.STROKE
+        this.currentOuterCirclePaint.setColor(Color.parseColor("#B4009E"))
+        this.currentOuterCirclePaint.strokeWidth = 7f
+    }
 
-  private void setNonCurrentLinePaints() {
-    this.nonCurrentLinePaints = new HashMap<>();
-    this.nonCurrentLinePaints.put("foregroundLine", this.nonCurrentLinePaint);
-    this.nonCurrentLinePaints.put("backgroundLine", this.nonCurrentBackgroundLinePaint);
-  }
+    private fun setInnerCirclePaint() {
+        this.innerCirclePaint = Paint()
+        this.innerCirclePaint.style = Paint.Style.FILL
+        this.innerCirclePaint.setColor(Color.WHITE)
+    }
 
-  public HashMap<String, Paint> getNonCurrentLinePaints() {
-    return nonCurrentLinePaints;
-  }
+    private fun setNumberPaint() {
+        this.numberPaint = Paint()
+        this.numberPaint.style = Paint.Style.FILL_AND_STROKE
+        this.numberPaint.textAlign = Paint.Align.CENTER
+        this.numberPaint.setColor(Color.BLACK)
+        this.numberPaint.strokeWidth = 2f
+        this.numberPaint.textSize = 45f
+    }
 
-  private void setNonCurrentLinePaint() {
-    this.nonCurrentLinePaint = new Paint();
-    this.nonCurrentLinePaint.setStyle(Paint.Style.STROKE);
-    this.nonCurrentLinePaint.setColor(Color.GRAY);
-    this.nonCurrentLinePaint.setStrokeWidth(5);
-  }
+    private fun setCurrentLinePaint() {
+        this.currentLinePaint = Paint()
+        this.currentLinePaint.style = Paint.Style.STROKE
+        this.currentLinePaint.setColor(Color.parseColor("#B4009E"))
+        this.currentLinePaint.strokeWidth = 7f
+        this.currentLinePaint.setPathEffect(DashPathEffect(floatArrayOf(20f, 5f), 0f))
+    }
 
-  private void setNonCurrentOuterCirclePaint() {
-    this.nonCurrentOuterCirclePaint = new Paint();
-    this.nonCurrentOuterCirclePaint.setStyle(Paint.Style.STROKE);
-    this.nonCurrentOuterCirclePaint.setColor(Color.GRAY);
-    this.nonCurrentOuterCirclePaint.setStrokeWidth(7);
-  }
+    private fun setCurrentBackgroundLinePaint() {
+        this.currentBackgroundLinePaint = Paint()
+        this.currentBackgroundLinePaint.style = Paint.Style.STROKE
+        this.currentBackgroundLinePaint.setColor(Color.WHITE)
+        this.currentBackgroundLinePaint.strokeWidth = 12f
+        this.currentBackgroundLinePaint.setPathEffect(DashPathEffect(floatArrayOf(24f, 1f), 2f))
+    }
 
-  private void setCurrentOuterCirclePaint() {
-    this.currentOuterCirclePaint = new Paint();
-    this.currentOuterCirclePaint.setStyle(Paint.Style.STROKE);
-    this.currentOuterCirclePaint.setColor(Color.parseColor("#B4009E"));
-    this.currentOuterCirclePaint.setStrokeWidth(7);
-  }
+    private fun setNonCurrentBackgroundLinePaint() {
+        this.nonCurrentBackgroundLinePaint = Paint()
+        this.nonCurrentBackgroundLinePaint.style = Paint.Style.STROKE
+        this.nonCurrentBackgroundLinePaint.setColor(Color.WHITE)
+        this.nonCurrentBackgroundLinePaint.strokeWidth = 12f
+    }
 
-  private void setInnerCirclePaint() {
-    this.innerCirclePaint = new Paint();
-    this.innerCirclePaint.setStyle(Paint.Style.FILL);
-    this.innerCirclePaint.setColor(Color.WHITE);
-  }
-
-  private void setNumberPaint() {
-    this.numberPaint = new Paint();
-    this.numberPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-    this.numberPaint.setTextAlign(Paint.Align.CENTER);
-    this.numberPaint.setColor(Color.BLACK);
-    this.numberPaint.setStrokeWidth(2);
-    this.numberPaint.setTextSize(45);
-  }
-
-  private void setCurrentLinePaint() {
-    this.currentLinePaint = new Paint();
-    this.currentLinePaint.setStyle(Paint.Style.STROKE);
-    this.currentLinePaint.setColor(Color.parseColor("#B4009E"));
-    this.currentLinePaint.setStrokeWidth(7);
-    this.currentLinePaint.setPathEffect(new DashPathEffect(new float[] {20, 5}, 0));
-  }
-
-  private void setCurrentBackgroundLinePaint() {
-    this.currentBackgroundLinePaint = new Paint();
-    this.currentBackgroundLinePaint.setStyle(Paint.Style.STROKE);
-    this.currentBackgroundLinePaint.setColor(Color.WHITE);
-    this.currentBackgroundLinePaint.setStrokeWidth(12);
-    this.currentBackgroundLinePaint.setPathEffect(new DashPathEffect(new float[] {24, 1}, 2));
-  }
-
-  private void setNonCurrentBackgroundLinePaint() {
-    this.nonCurrentBackgroundLinePaint = new Paint();
-    this.nonCurrentBackgroundLinePaint.setStyle(Paint.Style.STROKE);
-    this.nonCurrentBackgroundLinePaint.setColor(Color.WHITE);
-    this.nonCurrentBackgroundLinePaint.setStrokeWidth(12);
-  }
-
-  private void setTransparentInnerCirclePaint() {
-    this.transparentInnerCirclePaint = new Paint();
-    this.transparentInnerCirclePaint.setStyle(Paint.Style.FILL);
-    this.transparentInnerCirclePaint.setColor(Color.TRANSPARENT);
-    this.transparentInnerCirclePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-  }
+    private fun setTransparentInnerCirclePaint() {
+        this.transparentInnerCirclePaint = Paint()
+        this.transparentInnerCirclePaint.style = Paint.Style.FILL
+        this.transparentInnerCirclePaint.setColor(Color.TRANSPARENT)
+        this.transparentInnerCirclePaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+    }
 }

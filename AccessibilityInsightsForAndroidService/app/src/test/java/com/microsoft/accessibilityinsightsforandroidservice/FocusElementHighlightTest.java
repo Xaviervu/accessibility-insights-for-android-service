@@ -135,6 +135,6 @@ public class FocusElementHighlightTest {
 
   @Test
   public void getEventSourceReturnsAccessibilityNodeInfo() {
-    Assert.assertEquals(testSubject.getEventSource(), accessibilityNodeInfoMock);
+    Assert.assertEquals(testSubject.eventSource, accessibilityNodeInfoMock);
   }
 }

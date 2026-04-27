@@ -1,40 +1,36 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import java.util.function.Consumer
 
-import java.util.ArrayList;
-import java.util.function.Consumer;
+class FocusVisualizationStateManager {
+    private var enabled = false
+    private val onChangedListeners: ArrayList<Consumer<Boolean?>?>
 
-public class FocusVisualizationStateManager {
-  private boolean enabled = false;
-  private ArrayList<Consumer<Boolean>> onChangedListeners;
-
-  public FocusVisualizationStateManager() {
-    onChangedListeners = new ArrayList<Consumer<Boolean>>();
-  }
-
-  public void subscribe(Consumer<Boolean> listener) {
-    onChangedListeners.add(listener);
-  }
-
-  public void setState(boolean enabled) {
-    if (this.enabled == enabled) {
-      return;
+    init {
+        onChangedListeners = ArrayList<Consumer<Boolean?>?>()
     }
 
-    this.enabled = enabled;
-    this.emitChanged(enabled);
-  }
+    fun subscribe(listener: Consumer<Boolean?>?) {
+        onChangedListeners.add(listener)
+    }
 
-  public boolean getState() {
-    return this.enabled;
-  }
+    var state: Boolean
+        get() = this.enabled
+        set(enabled) {
+            if (this.enabled == enabled) {
+                return
+            }
 
-  private void emitChanged(boolean enabled) {
-    onChangedListeners.forEach(
-        listener -> {
-          listener.accept(enabled);
-        });
-  }
+            this.enabled = enabled
+            this.emitChanged(enabled)
+        }
+
+    private fun emitChanged(enabled: Boolean) {
+        onChangedListeners.forEach(
+            Consumer { listener: Consumer<Boolean?>? ->
+                listener!!.accept(enabled)
+            })
+    }
 }

@@ -1,59 +1,56 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.os.CancellationSignal
+import androidx.annotation.AnyThread
 
-import android.os.CancellationSignal;
-import androidx.annotation.AnyThread;
-import androidx.annotation.NonNull;
+class SynchronizedRequestDispatcher {
+    private var underlyingDispatcher: RequestDispatcher? = null
+    private val lock = Any()
+    private var teardownSignal: CancellationSignal? = CancellationSignal()
 
-public class SynchronizedRequestDispatcher {
-  public static final SynchronizedRequestDispatcher SharedInstance =
-      new SynchronizedRequestDispatcher();
-
-  private RequestDispatcher underlyingDispatcher = null;
-  private Object lock = new Object();
-  private CancellationSignal teardownSignal = new CancellationSignal();
-
-  @AnyThread
-  public void setup(@NonNull RequestDispatcher instance) {
-    synchronized (lock) {
-      if (this.underlyingDispatcher != null) {
-        throw new RuntimeException("Attempt to double-initialize instance");
-      }
-      this.teardownSignal = new CancellationSignal();
-      this.underlyingDispatcher = instance;
-    }
-  }
-
-  @AnyThread
-  public void teardown() {
-    CancellationSignal teardownSignal = this.teardownSignal;
-    if (teardownSignal != null) {
-      teardownSignal.cancel();
+    @AnyThread
+    fun setup(instance: RequestDispatcher) {
+        synchronized(lock) {
+            if (this.underlyingDispatcher != null) {
+                throw RuntimeException("Attempt to double-initialize instance")
+            }
+            this.teardownSignal = CancellationSignal()
+            this.underlyingDispatcher = instance
+        }
     }
 
-    synchronized (lock) {
-      this.underlyingDispatcher = null;
-      this.teardownSignal = null;
+    @AnyThread
+    fun teardown() {
+        val teardownSignal = this.teardownSignal
+        if (teardownSignal != null) {
+            teardownSignal.cancel()
+        }
+
+        synchronized(lock) {
+            this.underlyingDispatcher = null
+            this.teardownSignal = null
+        }
     }
-  }
 
-  @AnyThread
-  public String request(@NonNull String method, @NonNull CancellationSignal cancellationSignal)
-      throws Exception {
-    CancellationSignal combinedCancellationSignal = new CancellationSignal();
+    @AnyThread
+    @Throws(Exception::class)
+    fun request(method: String, cancellationSignal: CancellationSignal): String? {
+        val combinedCancellationSignal = CancellationSignal()
 
-    synchronized (lock) {
-      if (underlyingDispatcher == null) {
-        throw new Exception("Service is not running");
-      }
-
-      teardownSignal.setOnCancelListener(combinedCancellationSignal::cancel);
-      cancellationSignal.setOnCancelListener(combinedCancellationSignal::cancel);
-      combinedCancellationSignal.throwIfCanceled();
-
-      return underlyingDispatcher.request(method, combinedCancellationSignal);
+        synchronized(lock) {
+            if (underlyingDispatcher == null) {
+                throw Exception("Service is not running")
+            }
+            teardownSignal!!.setOnCancelListener(CancellationSignal.OnCancelListener { combinedCancellationSignal.cancel() })
+            cancellationSignal.setOnCancelListener(CancellationSignal.OnCancelListener { combinedCancellationSignal.cancel() })
+            combinedCancellationSignal.throwIfCanceled()
+            return underlyingDispatcher!!.request(method, combinedCancellationSignal)
+        }
     }
-  }
+
+    companion object {
+        val SharedInstance: SynchronizedRequestDispatcher = SynchronizedRequestDispatcher()
+    }
 }

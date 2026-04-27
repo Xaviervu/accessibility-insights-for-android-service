@@ -1,29 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+class ThreadSafeSwapper<T> {
+    private val lock_object = Any()
+    private var currentObject: T? = null
 
-public class ThreadSafeSwapper<T> {
-  private final Object lock_object = new Object();
-  private T currentObject;
-
-  public T swap(T newObject) {
-    synchronized (lock_object) {
-      T oldObject = currentObject;
-      currentObject = newObject;
-      return oldObject;
+    fun swap(newObject: T?): T? {
+        synchronized(lock_object) {
+            val oldObject = currentObject
+            currentObject = newObject
+            return oldObject
+        }
     }
-  }
 
-  public boolean setIfCurrentlyNull(T newObject) {
-    synchronized (lock_object) {
-      T oldObject = currentObject;
-      if (oldObject != null) {
-        return false;
-      }
+    fun setIfCurrentlyNull(newObject: T?): Boolean {
+        synchronized(lock_object) {
+            val oldObject = currentObject
+            if (oldObject != null) {
+                return false
+            }
 
-      currentObject = newObject;
-      return true;
+            currentObject = newObject
+            return true
+        }
     }
-  }
 }

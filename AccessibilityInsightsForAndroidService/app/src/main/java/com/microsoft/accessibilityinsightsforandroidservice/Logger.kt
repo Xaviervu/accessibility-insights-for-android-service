@@ -1,43 +1,48 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.accessibilityinsightsforandroidservice
 
-package com.microsoft.accessibilityinsightsforandroidservice;
+import android.util.Log
+import androidx.annotation.VisibleForTesting
+import com.google.android.apps.common.testing.accessibility.framework.BuildConfig
 
-import android.util.Log;
-import androidx.annotation.VisibleForTesting;
+object Logger {
+    @JvmField
+    @VisibleForTesting
+    var ENABLE_LOGGING: Boolean = BuildConfig.DEBUG
 
-import com.google.android.apps.common.testing.accessibility.framework.BuildConfig;
-
-public class Logger {
-  @VisibleForTesting public static boolean ENABLE_LOGGING = BuildConfig.DEBUG;
-
-  public static void logVerbose(String tag, String message) {
-    if (ENABLE_LOGGING) {
-      Log.v(tag, message);
+    @JvmStatic
+    fun logVerbose(tag: String?, message: String) {
+        if (ENABLE_LOGGING) {
+            Log.v(tag, message)
+        }
     }
-  }
 
-  public static void logDebug(String tag, String message) {
-    if (ENABLE_LOGGING) {
-      Log.d(tag, message);
+    @JvmStatic
+    fun logDebug(tag: String?, message: String) {
+        if (ENABLE_LOGGING) {
+            Log.d(tag, message)
+        }
     }
-  }
 
-  public static void logError(String tag, String message) {
-    if (ENABLE_LOGGING) {
-      Log.e(tag, message);
+    @JvmStatic
+    fun logError(tag: String?, message: String) {
+        if (ENABLE_LOGGING) {
+            Log.e(tag, message)
+        }
     }
-  }
 
-  public static void logInfo(String tag, String message) {
-    if (ENABLE_LOGGING) {
-      Log.i(tag, message);
+    @JvmStatic
+    fun logInfo(tag: String?, message: String) {
+        if (ENABLE_LOGGING) {
+            Log.i(tag, message)
+        }
     }
-  }
 
-  public static void logWarning(String tag, String message) {
-    if (ENABLE_LOGGING) {
-      Log.w(tag, message);
+    @JvmStatic
+    fun logWarning(tag: String?, message: String) {
+        if (ENABLE_LOGGING) {
+            Log.w(tag, message)
+        }
     }
-  }
 }
