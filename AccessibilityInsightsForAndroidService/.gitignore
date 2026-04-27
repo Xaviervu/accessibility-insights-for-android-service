@@ -3,15 +3,7 @@
 .externalNativeBuild
 .gradle
 *.iml
-/.idea/assetWizardSettings.xml
-/.idea/caches
-/.idea/jarRepositories.xml
-/.idea/libraries
-/.idea/modules.xml
-/.idea/navEditor.xml
-/.idea/workspace.xml
-/.idea/deploymentTargetDropDown.xml
-/.idea/runConfigurations.xml
+.idea/
 /build
 /captures
 /local.properties
