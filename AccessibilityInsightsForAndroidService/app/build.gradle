@@ -4,11 +4,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    namespace "com.microsoft.accessibilityinsightsforandroidservice"
+    compileSdkVersion 36
     defaultConfig {
         applicationId "com.microsoft.accessibilityinsightsforandroidservice"
         minSdkVersion 24
-        targetSdkVersion 28
+        targetSdkVersion 36
         versionCode project.hasProperty("apkVersionCode") ? project.findProperty("apkVersionCode").toInteger() : 1
         versionName project.findProperty("apkVersionName") ?: "DEVELOPMENT"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -18,62 +19,44 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
-            buildConfigField "Boolean", "DEBUG_MODE", "false"
         }
 
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable true
-            buildConfigField "Boolean", "DEBUG_MODE", "true"
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    lintOptions {
-        checkAllWarnings true
-        warningsAsErrors true
-        abortOnError true
-
-        // GradleDependency, NewerVersionAvailable, and OldTargetApi can start breaking
-        // build-over-build due to external dependency updates, so we treat them as non-fatal to
-        // ensure build reproducibility.
-        //
-        // UnknownNullness is grandfathered in as non-fatal only because it already had hundreds
-        // of true positives at the time we enabled warnings-as-errors. It would improve the
-        // codebase to fix all the warnings it generates and make it fatal.
-        warning 'GradleDependency', 'NewerVersionAvailable', 'OldTargetApi', 'UnknownNullness'
-
-        // ConvertToWebp is a false positive; it triggers against our launcher icon PNG files, even
-        // though the rule documentation explains that launcher icons must be PNGs and cannot be
-        // converted to Webp.
-        //
-        // GoogleAppIndexWarning is irrelevant to us; we don't ship to the store and don't care if
-        // it can index us, and it's intentional that we don't have a launchable home activity.
-        //
-        // SyntheticAccessor is a legitimate performance warning, but one which is not significant
-        // for a project of our small size (it's only relevant once a project starts bumping up
-        // against the 64K total method limit for jar files).
-        //
-        // UnsafeExperimentalUsageError and UnsafeExperimentalUsageWarning are incomplete,
-        // experimental rules that trigger other false positive warnings if enabled.
-        ignore 'ConvertToWebp', 'GoogleAppIndexingWarning', 'SyntheticAccessor', 'UnsafeExperimentalUsageError', 'UnsafeExperimentalUsageWarning'
+    buildFeatures {
+        buildConfig true
     }
-    tasks.withType(JavaCompile) {
-        configure(options) {
-            options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked' << '-Werror'
+    lint {
+        abortOnError true
+        checkAllWarnings true
+        ignore 'ConvertToWebp', 'GoogleAppIndexingWarning', 'SyntheticAccessor', 'UnsafeExperimentalUsageError', 'UnsafeExperimentalUsageWarning'
+        warning 'GradleDependency', 'NewerVersionAvailable', 'OldTargetApi', 'UnknownNullness'
+        warningsAsErrors true
+    }
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            configure(options) {
+                options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked'
+            }
         }
     }
 }
 
 dependencies {
     // Non-dev dependencies (redistributed with releases)
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'androidx.work:work-runtime:2.5.0'
+    implementation 'androidx.annotation:annotation:1.10.0'
+    implementation 'androidx.work:work-runtime:2.11.2'
+    implementation 'androidx.startup:startup-runtime:1.2.0'
     implementation 'com.deque.android:axe-android:0.2.0'
-    implementation('com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:3.1.1') {
+    implementation('com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:4.1.1') {
         // guava and android-test-framework use two different variations of this library ("checker" vs "checker-qual")
         // which provide identically named classes. This works okay as long as they happen to be compatible versions,
         // but causes errors along the lines of "Duplicate class org.checkerframework.*" when they happen to update
@@ -86,36 +69,36 @@ dependencies {
         // See https://github.com/android/android-test/issues/861 for more context.
         exclude group: 'org.checkerframework', module: 'checker'
     }
-    implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.google.guava:guava:31.1-android'
+    implementation 'com.google.code.gson:gson:2.14.0'
+    implementation 'com.google.guava:guava:33.6.0-android'
 
     // Dev dependencies (not redistributed)
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0')
-    lintClassPath 'org.apache.commons:commons-compress:1.22'
-    lintClassPath 'org.bouncycastle:bcpkix-jdk15on:1.70'
-    lintClassPath 'org.bouncycastle:bcprov-jdk15on:1.70'
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.7.0')
+    lintChecks 'org.apache.commons:commons-compress:1.28.0'
+    lintChecks 'org.bouncycastle:bcpkix-jdk15on:1.70'
+    lintChecks 'org.bouncycastle:bcprov-jdk15on:1.70'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-inline:5.1.1'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
     constraints {
-        lintClassPath('com.google.code.gson:gson') {
+        lintChecks('com.google.code.gson:gson') {
             version {
                 strictly '[2.8.9, 3.0.0['
             }
             because 'one of the default android linters has a transitive dependency on 2.8.5, and 2.8.9 contains a security fix'
         }
-        lintClassPath('org.jetbrains.kotlin:kotlin-reflect') {
+        lintChecks('org.jetbrains.kotlin:kotlin-reflect') {
             version {
                 strictly '[1.6.0, 1.7.0]'
             }
             because 'one of the linters has a transitive dependency on  1.3.72, and 1.6.0 contains a security fix'
         }
-        lintClassPath('org.jetbrains.kotlin:kotlin-stdlib-jdk7') {
+        lintChecks('org.jetbrains.kotlin:kotlin-stdlib-jdk7') {
             version {
                 strictly '[1.6.0, 1.7.0]'
             }
             because 'one of the linters has a transitive dependency on  1.3.72, and 1.6.0 contains a security fix'
         }
-        lintClassPath('org.jetbrains.kotlin:kotlin-stdlib-jdk8') {
+        lintChecks('org.jetbrains.kotlin:kotlin-stdlib-jdk8') {
             version {
                 strictly '[1.6.0, 1.7.0]'
             }
@@ -124,7 +107,7 @@ dependencies {
     }
 }
 
-configurations.all {
+configurations.configureEach {
     resolutionStrategy {
         force 'commons-codec:commons-codec:1.15'
         force 'junit:junit:4.13.2'

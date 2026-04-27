@@ -6,8 +6,10 @@ package com.microsoft.accessibilityinsightsforandroidservice;
 import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 
+import com.google.android.apps.common.testing.accessibility.framework.BuildConfig;
+
 public class Logger {
-  @VisibleForTesting public static boolean ENABLE_LOGGING = BuildConfig.DEBUG_MODE;
+  @VisibleForTesting public static boolean ENABLE_LOGGING = BuildConfig.DEBUG;
 
   public static void logVerbose(String tag, String message) {
     if (ENABLE_LOGGING) {

@@ -19,8 +19,14 @@ package com.microsoft.accessibilityinsightsforandroidservice;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.DisplayMetrics;
@@ -31,6 +37,8 @@ import com.google.gson.GsonBuilder;
 
 public class AccessibilityInsightsForAndroidService extends AccessibilityService {
   private static final String TAG = "AccessibilityInsightsForAndroidService";
+  private static final String NOTIFICATION_CHANNEL_ID = "accessibility_insights_service";
+  private static final int NOTIFICATION_ID = 1;
   private final AxeScanner axeScanner;
   private final ATFAScanner atfaScanner;
   private final EventHelper eventHelper;
@@ -76,6 +84,7 @@ public class AccessibilityInsightsForAndroidService extends AccessibilityService
   protected void onServiceConnected() {
     Logger.logVerbose(TAG, "*** onServiceConnected");
 
+    this.startForegroundService();
     this.startScreenshotActivity();
 
     AccessibilityServiceInfo info = new AccessibilityServiceInfo();
@@ -125,6 +134,39 @@ public class AccessibilityInsightsForAndroidService extends AccessibilityService
     SynchronizedRequestDispatcher.SharedInstance.setup(requestDispatcher);
   }
 
+  private void startForegroundService() {
+    NotificationManager notificationManager =
+        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      NotificationChannel channel =
+          new NotificationChannel(
+              NOTIFICATION_CHANNEL_ID,
+              getString(R.string.accessibility_service_label),
+              NotificationManager.IMPORTANCE_LOW);
+      notificationManager.createNotificationChannel(channel);
+    }
+
+    Notification.Builder builder;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+    } else {
+      builder = new Notification.Builder(this);
+    }
+
+    Notification notification =
+        builder
+            .setContentTitle(getString(R.string.accessibility_service_label))
+            .setSmallIcon(R.mipmap.blue_launcher)
+            .build();
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      startForeground(
+          NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
+    } else {
+      startForeground(NOTIFICATION_ID, notification);
+    }
+  }
+
   private void setupFocusVisualizationListeners() {
     accessibilityEventDispatcher.addOnRedrawEventListener(focusVisualizerController::onRedrawEvent);
     accessibilityEventDispatcher.addOnFocusEventListener(focusVisualizerController::onFocusEvent);
@@ -139,6 +181,7 @@ public class AccessibilityInsightsForAndroidService extends AccessibilityService
     tempFileProvider.cleanOldFilesBestEffort();
     stopScreenshotHandlerThread();
     MediaProjectionHolder.cleanUp();
+    stopForeground(true);
     return false;
   }
 

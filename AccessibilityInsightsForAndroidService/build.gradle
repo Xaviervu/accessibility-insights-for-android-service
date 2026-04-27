@@ -6,81 +6,30 @@
 buildscript {
     repositories {
         mavenCentral()
-        exclusiveContent {
-            forRepository {
-                google()
-            }
-            filter {
-                includeGroupByRegex("^androidx(\$|\\..*)")
-                includeGroupByRegex("^com\\.android(\$|\\..*)")
-                // Note: not all com.google.* cases come from google(), several are published
-                // to mavenCentral only (eg, gson, protobuf, findbugs, guava, jimfs)
-                includeGroup("com.google.android.apps.common.testing.accessibility.framework")
-                includeGroup("com.google.android.material")
-                includeGroup("com.google.test.platform")
-            }
-        }
-        exclusiveContent {
-            forRepository {
-                gradlePluginPortal()
-            }
-            filter {
-                includeGroup("org.jetbrains.trove4j")
-            }
-        }
+        google()
+        gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.1'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath 'com.android.tools.build:gradle:9.0.1'
     }
 }
 
 plugins {
-    id "com.diffplug.gradle.spotless" version "3.27.1"
+    id "com.diffplug.spotless" version "6.25.0"
 }
 
 allprojects {
     repositories {
         mavenCentral()
-        exclusiveContent {
-            forRepository {
-                google()
-            }
-            filter {
-                includeGroupByRegex("^androidx(\$|\\..*)")
-                includeGroupByRegex("^com\\.android(\$|\\..*)")
-                // Note: not all com.google.* cases come from google(), several are published
-                // to mavenCentral only (eg, gson, protobuf, findbugs, guava, jimfs)
-                includeGroup("com.google.android.apps.common.testing.accessibility.framework")
-                includeGroup("com.google.android.material")
-                includeGroup("com.google.test.platform")
-            }
-        }
-        exclusiveContent {
-            forRepository {
-                gradlePluginPortal()
-            }
-            filter {
-                includeGroup("org.jetbrains.trove4j")
-            }
-        }
+        google()
+        gradlePluginPortal()
     }
 }
-
-//task clean(type: Delete) {
-//    delete rootProject.buildDir
-//}
 
 spotless {
     java {
         googleJavaFormat()
         target '**/*.java'
-    }
-    java {
-        target '**/*.java'
-        // These files have an APACHE license header, which we need to keep
         targetExclude '**/AccessibilityInsightsForAndroidService.java','**/AccessibilityNodeInfoSorter.java'
         licenseHeader '// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT License.\n\n'
     }
