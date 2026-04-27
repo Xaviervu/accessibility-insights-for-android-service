@@ -50,7 +50,7 @@ class ATFAResultsSerializer(gsonBuilder: GsonBuilder) {
 
         private val ClassSerializer =
             JsonSerializer { src: Class<out AccessibilityCheck?>?, _: Type?, _: JsonSerializationContext? ->
-                JsonPrimitive(src!!.getSimpleName())
+                JsonPrimitive(src?.getSimpleName())
             }
     }
 }
