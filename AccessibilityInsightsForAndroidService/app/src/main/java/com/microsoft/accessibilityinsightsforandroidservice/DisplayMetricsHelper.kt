@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.content.Context
@@ -19,7 +20,6 @@ object DisplayMetricsHelper {
         return displayMetrics
     }
 
-    private fun getDefaultDisplay(context: Context): Display {
-        return (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).getDefaultDisplay()
-    }
+    private fun getDefaultDisplay(context: Context): Display =
+        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).getDefaultDisplay()
 }

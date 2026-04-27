@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -24,30 +25,30 @@ import java.util.function.Consumer
 @RunWith(MockitoJUnitRunner::class)
 class OnScreenshotAvailableTest {
     @Mock
-    var imageReaderMock: ImageReader? = null
+    lateinit var imageReaderMock: ImageReader
 
     @Mock
-    var bitmapConsumerMock: Consumer<Bitmap?>? = null
+    lateinit var bitmapConsumerMock: Consumer<Bitmap>
 
     @Mock
-    var imageMock: Image? = null
+    lateinit var imageMock: Image
 
     @Mock
-    var imagePlaneMock: Plane? = null
+    lateinit var imagePlaneMock: Plane
 
     @Mock
-    var bitmapProviderMock: BitmapProvider? = null
+    lateinit var bitmapProviderMock: BitmapProvider
 
     @Mock
-    var bitmapMock: Bitmap? = null
+    lateinit var bitmapMock: Bitmap
 
     var loggerStaticMock: MockedStatic<Logger?>? = null
 
-    var imagePlanesStub: Array<Plane?>?
+    lateinit var imagePlanesStub: Array<Plane>
     var testSubject: OnScreenshotAvailable? = null
     var widthStub: Int = 0
     var heightStub: Int = 0
-    var imagePlaneStubBuffer: ByteBuffer? = null
+    lateinit var imagePlaneStubBuffer: ByteBuffer
     var pixelStrideStub: Int = 0
     var rowStrideStub: Int = 0
 
@@ -62,10 +63,10 @@ class OnScreenshotAvailableTest {
         heightStub = 200
         pixelStrideStub = 4
         rowStrideStub = widthStub * pixelStrideStub
-        imagePlanesStub = arrayOfNulls<Plane>(1)
-        imagePlanesStub!![0] = imagePlaneMock
+        imagePlanesStub = arrayOf()
+        imagePlanesStub[0] = imagePlaneMock
 
-        testSubject = OnScreenshotAvailable(metricsStub, bitmapProviderMock!!, bitmapConsumerMock)
+        testSubject = OnScreenshotAvailable(metricsStub, bitmapProviderMock, bitmapConsumerMock)
     }
 
     @After
@@ -86,11 +87,12 @@ class OnScreenshotAvailableTest {
 
         setupMocksToCreateBitmap()
 
-        testSubject!!.onImageAvailable(imageReaderMock!!)
+        testSubject!!.onImageAvailable(imageReaderMock)
 
-        Mockito.verify<Bitmap?>(bitmapMock, Mockito.times(0))
-            .copyPixelsFromBuffer(imagePlaneStubBuffer!!)
-        Mockito.verify<Consumer<Bitmap?>?>(bitmapConsumerMock, Mockito.times(0)).accept(bitmapMock)
+        Mockito
+            .verify<Bitmap>(bitmapMock, Mockito.times(0))
+            .copyPixelsFromBuffer(imagePlaneStubBuffer)
+        Mockito.verify(bitmapConsumerMock, Mockito.times(0)).accept(bitmapMock)
     }
 
     @Test
@@ -101,22 +103,24 @@ class OnScreenshotAvailableTest {
 
         setupMocksToCreateBitmap()
 
-        testSubject!!.onImageAvailable(imageReaderMock!!)
+        testSubject!!.onImageAvailable(imageReaderMock)
 
-        Mockito.verify<Bitmap?>(bitmapMock, Mockito.times(0))
-            .copyPixelsFromBuffer(imagePlaneStubBuffer!!)
-        Mockito.verify<Consumer<Bitmap?>?>(bitmapConsumerMock, Mockito.times(0)).accept(bitmapMock)
+        Mockito
+            .verify(bitmapMock, Mockito.times(0))
+            .copyPixelsFromBuffer(imagePlaneStubBuffer)
+        Mockito.verify(bitmapConsumerMock, Mockito.times(0)).accept(bitmapMock)
     }
 
     @Test
     fun onImageAvailableWithUnpaddedImageBufferCreatesBitmapDirectlyFromSourceBuffer() {
         setupMocksToCreateBitmap()
 
-        testSubject!!.onImageAvailable(imageReaderMock!!)
+        testSubject!!.onImageAvailable(imageReaderMock)
 
-        Mockito.verify<Bitmap?>(bitmapMock, Mockito.times(1))
-            .copyPixelsFromBuffer(imagePlaneStubBuffer!!)
-        Mockito.verify<Consumer<Bitmap?>?>(bitmapConsumerMock, Mockito.times(1)).accept(bitmapMock)
+        Mockito
+            .verify(bitmapMock, Mockito.times(1))
+            .copyPixelsFromBuffer(imagePlaneStubBuffer)
+        Mockito.verify(bitmapConsumerMock, Mockito.times(1)).accept(bitmapMock)
     }
 
     @Test
@@ -133,49 +137,52 @@ class OnScreenshotAvailableTest {
 
         setupMocksToCreateBitmap()
 
-        testSubject!!.onImageAvailable(imageReaderMock!!)
+        testSubject!!.onImageAvailable(imageReaderMock)
 
-        Mockito.verify<Bitmap?>(bitmapMock, Mockito.times(1))
-            .copyPixelsFromBuffer(ArgumentMatchers.eq<ByteBuffer?>(bufferWithPaddingRemoved))
-        Mockito.verify<Consumer<Bitmap?>?>(bitmapConsumerMock, Mockito.times(1)).accept(bitmapMock)
+        Mockito
+            .verify(bitmapMock, Mockito.times(1))
+            .copyPixelsFromBuffer(ArgumentMatchers.eq(bufferWithPaddingRemoved))
+        Mockito.verify(bitmapConsumerMock, Mockito.times(1)).accept(bitmapMock)
     }
 
     @Test
     fun onImageAvailableProcessesImageOnlyOnce() {
         setupMocksToCreateBitmap()
-        testSubject!!.onImageAvailable(imageReaderMock!!)
+        testSubject!!.onImageAvailable(imageReaderMock)
         Mockito.reset<Any?>(
             imageReaderMock,
             bitmapConsumerMock,
             imageMock,
             imagePlaneMock,
             bitmapProviderMock,
-            bitmapMock
+            bitmapMock,
         )
 
-        testSubject!!.onImageAvailable(imageReaderMock!!)
+        testSubject!!.onImageAvailable(imageReaderMock)
 
-        Mockito.verify<Bitmap?>(bitmapMock, Mockito.times(0))
-            .copyPixelsFromBuffer(ArgumentMatchers.any<Buffer?>())
-        Mockito.verify<Consumer<Bitmap?>?>(bitmapConsumerMock, Mockito.times(0))
-            .accept(ArgumentMatchers.any<Bitmap?>())
+        Mockito
+            .verify(bitmapMock, Mockito.times(0))
+            .copyPixelsFromBuffer(ArgumentMatchers.any())
+        Mockito
+            .verify(bitmapConsumerMock, Mockito.times(0))
+            .accept(ArgumentMatchers.any())
     }
 
     private fun setupMocksToCreateBitmap() {
-        Mockito.`when`<Image?>(imageReaderMock!!.acquireLatestImage()).thenReturn(imageMock)
-        Mockito.`when`<Array<Plane?>?>(imageMock!!.getPlanes()).thenReturn(imagePlanesStub)
-        Mockito.`when`<Int?>(imagePlaneMock!!.getPixelStride()).thenReturn(pixelStrideStub)
-        Mockito.`when`<Int?>(imagePlaneMock!!.getRowStride()).thenReturn(rowStrideStub)
-        Mockito.`when`<Int?>(imageMock!!.getWidth()).thenReturn(widthStub)
-        Mockito.`when`<Int?>(imageMock!!.getHeight()).thenReturn(heightStub)
-        Mockito.`when`<ByteBuffer?>(imagePlaneMock!!.getBuffer()).thenReturn(imagePlaneStubBuffer)
-        Mockito.`when`<Bitmap>(
-            bitmapProviderMock!!.createBitmap(
-                widthStub,
-                heightStub,
-                Bitmap.Config.ARGB_8888
-            )
-        )
-            .thenReturn(bitmapMock)
+        Mockito.`when`(imageReaderMock.acquireLatestImage()).thenReturn(imageMock)
+        Mockito.`when`(imageMock.planes).thenReturn(imagePlanesStub)
+        Mockito.`when`(imagePlaneMock.pixelStride).thenReturn(pixelStrideStub)
+        Mockito.`when`(imagePlaneMock.rowStride).thenReturn(rowStrideStub)
+        Mockito.`when`(imageMock.width).thenReturn(widthStub)
+        Mockito.`when`(imageMock.height).thenReturn(heightStub)
+        Mockito.`when`(imagePlaneMock.buffer).thenReturn(imagePlaneStubBuffer)
+        Mockito
+            .`when`<Bitmap>(
+                bitmapProviderMock.createBitmap(
+                    widthStub,
+                    heightStub,
+                    Bitmap.Config.ARGB_8888,
+                ),
+            ).thenReturn(bitmapMock)
     }
 }

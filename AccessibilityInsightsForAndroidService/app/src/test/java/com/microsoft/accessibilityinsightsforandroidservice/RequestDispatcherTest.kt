@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.os.CancellationSignal
@@ -64,7 +65,7 @@ class RequestDispatcherTest {
                 atfaScanner!!,
                 deviceConfigFactory!!,
                 focusVisualizationStateManager!!,
-                resultsV2ContainerSerializer!!
+                resultsV2ContainerSerializer!!,
             )
     }
 
@@ -76,9 +77,11 @@ class RequestDispatcherTest {
     @Throws(Exception::class)
     private fun setupMockRequestFulfiller() {
         testSubject = Mockito.spy<RequestDispatcher>(testSubject)
-        Mockito.`when`<RequestFulfiller>(testSubject!!.getRequestFulfiller("mock method"))
+        Mockito
+            .`when`<RequestFulfiller>(testSubject!!.getRequestFulfiller("mock method"))
             .thenReturn(requestFulfillerMock)
-        Mockito.`when`<String>(requestFulfillerMock!!.fulfillRequest(cancellationSignal!!))
+        Mockito
+            .`when`<String>(requestFulfillerMock!!.fulfillRequest(cancellationSignal!!))
             .thenReturn("mock response")
     }
 
@@ -93,9 +96,10 @@ class RequestDispatcherTest {
             Verification {
                 logVerbose(
                     "RequestDispatcher",
-                    "Handling request for method mock method"
+                    "Handling request for method mock method",
                 )
-            })
+            },
+        )
     }
 
     @Test
@@ -124,7 +128,7 @@ class RequestDispatcherTest {
     fun requestFocusTrackingEnableDispatchesToTabStopsRequestFulfiller() {
         Assert.assertTrue(
             testSubject!!.getRequestFulfiller("/FocusTracking/Enable")
-                    is TabStopsRequestFulfiller
+                is TabStopsRequestFulfiller,
         )
     }
 
@@ -132,7 +136,7 @@ class RequestDispatcherTest {
     fun requestFocusTrackingDisableDispatchesToTabStopsRequestFulfiller() {
         Assert.assertTrue(
             testSubject!!.getRequestFulfiller("/FocusTracking/Disable")
-                    is TabStopsRequestFulfiller
+                is TabStopsRequestFulfiller,
         )
     }
 
@@ -140,7 +144,7 @@ class RequestDispatcherTest {
     fun requestFocusTrackingResetDispatchesToTabStopsRequestFulfiller() {
         Assert.assertTrue(
             testSubject!!.getRequestFulfiller("/FocusTracking/Reset")
-                    is TabStopsRequestFulfiller
+                is TabStopsRequestFulfiller,
         )
     }
 

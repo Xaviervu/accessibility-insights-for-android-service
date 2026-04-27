@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.os.CancellationSignal
@@ -72,12 +73,14 @@ class ConfigRequestFulfillerTest {
         setupSuccessfulRequest()
         Mockito.reset<RootNodeFinder?>(rootNodeFinder)
         Mockito.reset<DeviceConfigFactory?>(deviceConfigFactory)
-        Mockito.`when`<AccessibilityNodeInfo?>(
-            rootNodeFinder!!.getRootNodeFromSource(
-                ArgumentMatchers.any<AccessibilityNodeInfo?>()
-            )
-        ).thenReturn(sourceNodeMock)
-        Mockito.`when`<DeviceConfig>(deviceConfigFactory!!.getDeviceConfig(sourceNodeMock))
+        Mockito
+            .`when`<AccessibilityNodeInfo?>(
+                rootNodeFinder!!.getRootNodeFromSource(
+                    ArgumentMatchers.any<AccessibilityNodeInfo?>(),
+                ),
+            ).thenReturn(sourceNodeMock)
+        Mockito
+            .`when`<DeviceConfig>(deviceConfigFactory!!.getDeviceConfig(sourceNodeMock))
             .thenReturn(deviceConfig)
 
         testSubject!!.fulfillRequest(cancellationSignal!!)
@@ -97,11 +100,14 @@ class ConfigRequestFulfillerTest {
     }
 
     private fun setupSuccessfulRequest() {
-        Mockito.`when`<AccessibilityNodeInfo?>(eventHelper!!.claimLastSource())
+        Mockito
+            .`when`<AccessibilityNodeInfo?>(eventHelper!!.claimLastSource())
             .thenReturn(sourceNodeMock)
-        Mockito.`when`<AccessibilityNodeInfo?>(rootNodeFinder!!.getRootNodeFromSource(sourceNodeMock))
+        Mockito
+            .`when`<AccessibilityNodeInfo?>(rootNodeFinder!!.getRootNodeFromSource(sourceNodeMock))
             .thenReturn(rootNodeMock)
-        Mockito.`when`<DeviceConfig>(deviceConfigFactory!!.getDeviceConfig(rootNodeMock))
+        Mockito
+            .`when`<DeviceConfig>(deviceConfigFactory!!.getDeviceConfig(rootNodeMock))
             .thenReturn(deviceConfig)
         Mockito.`when`<String?>(deviceConfig!!.toJson()).thenReturn(configJson)
     }

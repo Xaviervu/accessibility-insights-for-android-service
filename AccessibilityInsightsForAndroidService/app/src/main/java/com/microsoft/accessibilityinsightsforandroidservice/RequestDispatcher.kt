@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.os.CancellationSignal
@@ -15,10 +16,13 @@ class RequestDispatcher(
     private val atfaScanner: ATFAScanner,
     private val deviceConfigFactory: DeviceConfigFactory,
     private val focusVisualizationStateManager: FocusVisualizationStateManager,
-    private val resultsV2ContainerSerializer: ResultsV2ContainerSerializer
+    private val resultsV2ContainerSerializer: ResultsV2ContainerSerializer,
 ) {
     @Throws(Exception::class)
-    fun request(method: String, cancellationSignal: CancellationSignal): String? {
+    fun request(
+        method: String,
+        cancellationSignal: CancellationSignal,
+    ): String? {
         logVerbose(TAG, "Handling request for method $method")
         return getRequestFulfiller(method).fulfillRequest(cancellationSignal)
     }
@@ -28,7 +32,7 @@ class RequestDispatcher(
             "/config" -> return ConfigRequestFulfiller(
                 rootNodeFinder,
                 eventHelper,
-                deviceConfigFactory
+                deviceConfigFactory,
             )
 
             "/result" -> return ResultV2RequestFulfiller(
@@ -37,17 +41,17 @@ class RequestDispatcher(
                 axeScanner,
                 atfaScanner,
                 screenshotController,
-                resultsV2ContainerSerializer
+                resultsV2ContainerSerializer,
             )
 
             "/FocusTracking/Enable" -> return TabStopsRequestFulfiller(
                 focusVisualizationStateManager,
-                true
+                true,
             )
 
             "/FocusTracking/Disable", "/FocusTracking/Reset" -> return TabStopsRequestFulfiller(
                 focusVisualizationStateManager,
-                false
+                false,
             )
 
             else -> return UnrecognizedRequestFulfiller(method)

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Rect
@@ -21,11 +22,11 @@ import org.mockito.stubbing.VoidAnswer1
 @RunWith(MockitoJUnitRunner::class)
 class NodeViewBuilderTest {
     @Mock
-    var node: AccessibilityNodeInfo? = null
+    lateinit var node: AccessibilityNodeInfo
 
     @Mock
-    var rectProvider: AxeRectProvider? = null
-    var children: MutableList<AxeView?>? = null
+    lateinit var rectProvider: AxeRectProvider
+    lateinit var children: MutableList<AxeView>
 
     private val boundsLeft = 0
     private val boundsRight = 1
@@ -37,22 +38,22 @@ class NodeViewBuilderTest {
 
     @Before
     fun prepare() {
-        children = ArrayList<AxeView?>()
-        Mockito.`when`<AxeRect>(
-            rectProvider!!.createAxeRect(
-                boundsLeft,
-                boundsRight,
-                boundsTop,
-                boundsBottom
-            )
-        )
-            .thenReturn(expectedBoundsRect)
-        Mockito.`when`<CharSequence?>(node!!.getClassName()).thenReturn("class name")
+        children = ArrayList()
+        Mockito
+            .`when`(
+                rectProvider.createAxeRect(
+                    boundsLeft,
+                    boundsRight,
+                    boundsTop,
+                    boundsBottom,
+                ),
+            ).thenReturn(expectedBoundsRect)
+        Mockito.`when`(node.className).thenReturn("class name")
     }
 
     @Test
     fun nodeViewIsNotNull() {
-        testSubject = NodeViewBuilder(node!!, children, null, rectProvider!!)
+        testSubject = NodeViewBuilder(node, children, null, rectProvider)
         Assert.assertNotNull(testSubject!!.build())
     }
 
@@ -60,7 +61,7 @@ class NodeViewBuilderTest {
     fun nodeViewHasCorrectBoundingRect() {
         setupBoundingRect()
 
-        testSubject = NodeViewBuilder(node!!, children, null, rectProvider!!)
+        testSubject = NodeViewBuilder(node, children, null, rectProvider)
         val axeView = testSubject!!.build()
 
         val boundingRect = axeView.boundsInScreen
@@ -71,17 +72,17 @@ class NodeViewBuilderTest {
 
     @Test
     fun nodeViewHasChildren() {
-        val child1 = Mockito.mock<AxeView?>(AxeView::class.java)
-        val child2 = Mockito.mock<AxeView?>(AxeView::class.java)
-        children!!.add(child1)
-        children!!.add(child2)
+        val child1 = Mockito.mock(AxeView::class.java)
+        val child2 = Mockito.mock(AxeView::class.java)
+        children.add(child1)
+        children.add(child2)
 
-        testSubject = NodeViewBuilder(node!!, children, null, rectProvider!!)
-        val axeView = testSubject!!.build()
+        testSubject = NodeViewBuilder(node, children, null, rectProvider)
+        val axeView = testSubject?.build()
 
-        val viewChildren = axeView.children
+        val viewChildren = axeView?.children
         Assert.assertNotNull(viewChildren)
-        Assert.assertFalse(viewChildren!!.isEmpty())
+        Assert.assertFalse(viewChildren?.isEmpty() == true)
         Assert.assertEquals(viewChildren, children)
     }
 
@@ -89,10 +90,10 @@ class NodeViewBuilderTest {
     fun nodeViewHasLabeledBy() {
         val labeledBy = Mockito.mock<AxeView?>(AxeView::class.java)
 
-        testSubject = NodeViewBuilder(node!!, children, labeledBy, rectProvider!!)
-        val axeView = testSubject!!.build()
+        testSubject = NodeViewBuilder(node, children, labeledBy, rectProvider)
+        val axeView = testSubject?.build()
 
-        val viewLabeledBy = axeView.labeledBy
+        val viewLabeledBy = axeView?.labeledBy
         Assert.assertNotNull(viewLabeledBy)
         Assert.assertSame(viewLabeledBy, labeledBy)
     }
@@ -100,26 +101,25 @@ class NodeViewBuilderTest {
     @Test
     fun nodeViewHasNullClassName() {
         val labeledBy = Mockito.mock<AxeView?>(AxeView::class.java)
-        Mockito.`when`<CharSequence?>(node!!.getClassName()).thenReturn(null)
+        Mockito.`when`<CharSequence?>(node.className).thenReturn(null)
 
-        testSubject = NodeViewBuilder(node!!, children, labeledBy, rectProvider!!)
+        testSubject = NodeViewBuilder(node, children, labeledBy, rectProvider)
         val axeView = testSubject!!.build()
 
         Assert.assertNotNull(axeView.className)
     }
 
     private fun setupBoundingRect() {
-        Mockito.doAnswer(
-            AdditionalAnswers.answerVoid<Any?>(
-                VoidAnswer1 { emptyRect: Any? ->
+        Mockito
+            .doAnswer(
+                AdditionalAnswers.answerVoid<Any?> { emptyRect: Any? ->
                     val rect = emptyRect as Rect
                     rect.left = boundsLeft
                     rect.top = boundsTop
                     rect.right = boundsRight
                     rect.bottom = boundsBottom
-                })
-        )
-            .`when`<AccessibilityNodeInfo?>(node)
+                },
+            ).`when`(node)
             .getBoundsInScreen(ArgumentMatchers.any<Rect?>())
     }
 }

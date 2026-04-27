@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.WindowManager
@@ -61,7 +62,8 @@ class FocusVisualizerControllerTest {
 
     @Before
     fun prepare() {
-        Mockito.`when`<WindowManager.LayoutParams>(layoutParamGenerator!!.get())
+        Mockito
+            .`when`<WindowManager.LayoutParams>(layoutParamGenerator!!.get())
             .thenReturn(layoutParams)
         listener = null
         Mockito.`when`<Date>(dateProvider!!.get()).thenReturn(oldDateMock)
@@ -73,7 +75,7 @@ class FocusVisualizerControllerTest {
                 windowManager!!,
                 layoutParamGenerator!!,
                 focusVisualizationCanvas,
-                dateProvider!!
+                dateProvider!!,
             )
     }
 
@@ -86,7 +88,8 @@ class FocusVisualizerControllerTest {
     fun onFocusEventDoesNotCallVisualizerIfStateIsFalse() {
         Mockito.`when`<Boolean?>(focusVisualizationStateManagerMock!!.state).thenReturn(false)
         testSubject!!.onFocusEvent(accessibilityEventMock!!)
-        Mockito.verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(0))
+        Mockito
+            .verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(0))
             .addNewFocusedElement(accessibilityNodeInfo)
     }
 
@@ -98,7 +101,8 @@ class FocusVisualizerControllerTest {
         Mockito.`when`<Long?>(oldDateMock!!.getTime()).thenReturn(500L)
         Mockito.`when`<Long?>(newDateMock!!.getTime()).thenReturn(501L)
         testSubject!!.onFocusEvent(accessibilityEventMock!!)
-        Mockito.verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(0))
+        Mockito
+            .verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(0))
             .addNewFocusedElement(accessibilityNodeInfo)
     }
 
@@ -108,12 +112,14 @@ class FocusVisualizerControllerTest {
         Mockito.reset<DateProvider?>(dateProvider)
         Mockito.`when`<Date>(dateProvider!!.get()).thenReturn(newDateMock)
         Mockito.`when`<Boolean?>(focusVisualizationStateManagerMock!!.state).thenReturn(true)
-        Mockito.`when`<AccessibilityNodeInfo?>(accessibilityEventMock!!.getSource())
+        Mockito
+            .`when`<AccessibilityNodeInfo?>(accessibilityEventMock!!.getSource())
             .thenReturn(accessibilityNodeInfo)
         Mockito.`when`<Long?>(oldDateMock!!.getTime()).thenReturn(500L)
         Mockito.`when`<Long?>(newDateMock!!.getTime()).thenReturn(10000L)
         testSubject!!.onFocusEvent(accessibilityEventMock!!)
-        Mockito.verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(1))
+        Mockito
+            .verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(1))
             .addNewFocusedElement(accessibilityNodeInfo)
     }
 
@@ -135,7 +141,8 @@ class FocusVisualizerControllerTest {
     fun onAppChangeDoesNotCallVisualizerIfStateIsFalse() {
         Mockito.`when`<Boolean?>(focusVisualizationStateManagerMock!!.state).thenReturn(false)
         testSubject!!.onAppChanged(accessibilityNodeInfo)
-        Mockito.verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(0))
+        Mockito
+            .verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(0))
             .resetVisualizations()
     }
 
@@ -143,7 +150,8 @@ class FocusVisualizerControllerTest {
     fun onAppChangeDoesCallVisualizerIfStateIsTrue() {
         Mockito.`when`<Boolean?>(focusVisualizationStateManagerMock!!.state).thenReturn(true)
         testSubject!!.onAppChanged(accessibilityNodeInfo)
-        Mockito.verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(1))
+        Mockito
+            .verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(1))
             .resetVisualizations()
     }
 
@@ -151,9 +159,11 @@ class FocusVisualizerControllerTest {
     fun onOrientationChangeDoesNothingIfStateIsFalse() {
         Mockito.`when`<Boolean?>(focusVisualizationStateManagerMock!!.state).thenReturn(false)
         testSubject!!.onOrientationChanged(0)
-        Mockito.verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(0))
+        Mockito
+            .verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(0))
             .resetVisualizations()
-        Mockito.verify<WindowManager?>(windowManager, Mockito.times(0))
+        Mockito
+            .verify<WindowManager?>(windowManager, Mockito.times(0))
             .updateViewLayout(focusVisualizationCanvas, layoutParams)
     }
 
@@ -161,30 +171,34 @@ class FocusVisualizerControllerTest {
     fun onOrientationChangeUpdatesVisualizationAsNecessaryIfStateIsTrue() {
         Mockito.`when`<Boolean?>(focusVisualizationStateManagerMock!!.state).thenReturn(true)
         testSubject!!.onOrientationChanged(0)
-        Mockito.verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(1))
+        Mockito
+            .verify<FocusVisualizer?>(focusVisualizerMock, Mockito.times(1))
             .resetVisualizations()
-        Mockito.verify<WindowManager?>(windowManager, Mockito.times(1))
+        Mockito
+            .verify<WindowManager?>(windowManager, Mockito.times(1))
             .updateViewLayout(focusVisualizationCanvas, layoutParams)
     }
 
     @Test
     fun onFocusVisualizationStateChangeToEnabledAddsVisualization() {
-        Mockito.doAnswer(
-            Answer { invocation: InvocationOnMock? ->
-                listener = invocation!!.getArgument<Consumer<Boolean?>?>(0)
-                listener!!.accept(true)
-                null
-            })
-            .`when`<FocusVisualizationStateManager?>(focusVisualizationStateManagerMock)
+        Mockito
+            .doAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    listener = invocation!!.getArgument<Consumer<Boolean?>?>(0)
+                    listener!!.accept(true)
+                    null
+                },
+            ).`when`<FocusVisualizationStateManager?>(focusVisualizationStateManagerMock)
             .subscribe(ArgumentMatchers.any<Consumer<Boolean?>?>())
 
-        Mockito.doAnswer(
-            Answer { invocation: InvocationOnMock? ->
-                val runnable = invocation!!.getArgument<Runnable>(0)
-                runnable.run()
-                null
-            })
-            .`when`<UIThreadRunner?>(uiThreadRunner)
+        Mockito
+            .doAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    val runnable = invocation!!.getArgument<Runnable>(0)
+                    runnable.run()
+                    null
+                },
+            ).`when`<UIThreadRunner?>(uiThreadRunner)
             .run(ArgumentMatchers.any<Runnable>())
 
         testSubject =
@@ -195,33 +209,37 @@ class FocusVisualizerControllerTest {
                 windowManager!!,
                 layoutParamGenerator!!,
                 focusVisualizationCanvas,
-                dateProvider!!
+                dateProvider!!,
             )
 
-        Mockito.verify<WindowManager?>(windowManager)
+        Mockito
+            .verify<WindowManager?>(windowManager)
             .addView(focusVisualizationCanvas, layoutParams)
     }
 
     @Test
     fun onFocusVisualizationStateChangeToEnabledAddsVisualizationWithLastEventSource() {
         Mockito.`when`<Boolean?>(focusVisualizationStateManagerMock!!.state).thenReturn(false)
-        Mockito.`when`<AccessibilityNodeInfo?>(accessibilityEventMock!!.getSource())
+        Mockito
+            .`when`<AccessibilityNodeInfo?>(accessibilityEventMock!!.getSource())
             .thenReturn(accessibilityNodeInfo)
-        Mockito.doAnswer(
-            Answer { invocation: InvocationOnMock? ->
-                listener = invocation!!.getArgument<Consumer<Boolean?>?>(0)
-                null
-            })
-            .`when`<FocusVisualizationStateManager?>(focusVisualizationStateManagerMock)
+        Mockito
+            .doAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    listener = invocation!!.getArgument<Consumer<Boolean?>?>(0)
+                    null
+                },
+            ).`when`<FocusVisualizationStateManager?>(focusVisualizationStateManagerMock)
             .subscribe(ArgumentMatchers.any<Consumer<Boolean?>?>())
 
-        Mockito.doAnswer(
-            Answer { invocation: InvocationOnMock? ->
-                val runnable = invocation!!.getArgument<Runnable>(0)
-                runnable.run()
-                null
-            })
-            .`when`<UIThreadRunner?>(uiThreadRunner)
+        Mockito
+            .doAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    val runnable = invocation!!.getArgument<Runnable>(0)
+                    runnable.run()
+                    null
+                },
+            ).`when`<UIThreadRunner?>(uiThreadRunner)
             .run(ArgumentMatchers.any<Runnable>())
 
         testSubject =
@@ -232,36 +250,40 @@ class FocusVisualizerControllerTest {
                 windowManager!!,
                 layoutParamGenerator!!,
                 focusVisualizationCanvas,
-                dateProvider!!
+                dateProvider!!,
             )
 
         testSubject!!.onFocusEvent(accessibilityEventMock!!)
         listener!!.accept(true)
 
-        Mockito.verify<WindowManager?>(windowManager)
+        Mockito
+            .verify<WindowManager?>(windowManager)
             .addView(focusVisualizationCanvas, layoutParams)
-        Mockito.verify<FocusVisualizer?>(focusVisualizerMock)
+        Mockito
+            .verify<FocusVisualizer?>(focusVisualizerMock)
             .addNewFocusedElement(accessibilityNodeInfo)
     }
 
     @Test
     fun onFocusVisualizationStateChangToDisabledRemovesVisualizations() {
-        Mockito.doAnswer(
-            Answer { invocation: InvocationOnMock? ->
-                listener = invocation!!.getArgument<Consumer<Boolean?>?>(0)
-                listener!!.accept(false)
-                null
-            })
-            .`when`<FocusVisualizationStateManager?>(focusVisualizationStateManagerMock)
+        Mockito
+            .doAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    listener = invocation!!.getArgument<Consumer<Boolean?>?>(0)
+                    listener!!.accept(false)
+                    null
+                },
+            ).`when`<FocusVisualizationStateManager?>(focusVisualizationStateManagerMock)
             .subscribe(ArgumentMatchers.any<Consumer<Boolean?>?>())
 
-        Mockito.doAnswer(
-            Answer { invocation: InvocationOnMock? ->
-                val runnable = invocation!!.getArgument<Runnable>(0)
-                runnable.run()
-                null
-            })
-            .`when`<UIThreadRunner?>(uiThreadRunner)
+        Mockito
+            .doAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    val runnable = invocation!!.getArgument<Runnable>(0)
+                    runnable.run()
+                    null
+                },
+            ).`when`<UIThreadRunner?>(uiThreadRunner)
             .run(ArgumentMatchers.any<Runnable>())
 
         testSubject =
@@ -272,7 +294,7 @@ class FocusVisualizerControllerTest {
                 windowManager!!,
                 layoutParamGenerator!!,
                 focusVisualizationCanvas,
-                dateProvider!!
+                dateProvider!!,
             )
 
         Mockito.verify<FocusVisualizer?>(focusVisualizerMock).resetVisualizations()

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -10,8 +11,6 @@ class OnScreenshotAvailableProvider {
     fun getOnScreenshotAvailable(
         metrics: DisplayMetrics,
         bitmapProvider: BitmapProvider,
-        bitmapConsumer: Consumer<Bitmap>
-    ): OnScreenshotAvailable {
-        return OnScreenshotAvailable(metrics, bitmapProvider, bitmapConsumer)
-    }
+        bitmapConsumer: Consumer<Bitmap>,
+    ): OnScreenshotAvailable = OnScreenshotAvailable(metrics, bitmapProvider, bitmapConsumer)
 }

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice.axe
 
 import android.util.DisplayMetrics
@@ -12,7 +13,7 @@ import java.util.function.Supplier
 object AxeScannerFactory {
     fun createAxeScanner(
         deviceConfigFactory: DeviceConfigFactory,
-        displayMetricsSupplier: Supplier<DisplayMetrics>
+        displayMetricsSupplier: Supplier<DisplayMetrics>,
     ): AxeScanner {
         val axeViewsFactory =
             AxeViewsFactory(NodeViewBuilderFactory(), AccessibilityNodeInfoQueueBuilder())

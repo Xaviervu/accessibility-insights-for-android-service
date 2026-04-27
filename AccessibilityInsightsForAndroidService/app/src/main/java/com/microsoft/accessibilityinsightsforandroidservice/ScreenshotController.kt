@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -18,28 +19,26 @@ class ScreenshotController(
     private val screenshotHandler: Handler?,
     private val onScreenshotAvailableProvider: OnScreenshotAvailableProvider,
     private val bitmapProvider: BitmapProvider,
-    private val mediaProjectionSupplier: Supplier<MediaProjection?>
+    private val mediaProjectionSupplier: Supplier<MediaProjection?>?,
 ) {
     private lateinit var metrics: DisplayMetrics
     private var imageReader: ImageReader? = null
     private var display: VirtualDisplay? = null
 
     fun getScreenshotWithMediaProjection(bitmapConsumer: Consumer<Bitmap?>) {
-        val sharedMediaProjection = mediaProjectionSupplier.get()
-
-        if (sharedMediaProjection == null) {
+        val sharedMediaProjection = mediaProjectionSupplier?.get()
+        if(mediaProjectionSupplier == null) {
             bitmapConsumer.accept(null)
             return
         }
+        imageReader?.close()
 
-            imageReader?.close()
-
-            display?.release()
+        display?.release()
 
         metrics = displayMetricsSupplier.get()
         imageReader = getImageReader(metrics, bitmapConsumer)
         display =
-            sharedMediaProjection.createVirtualDisplay(
+            sharedMediaProjection?.createVirtualDisplay(
                 "myDisplay",
                 metrics.widthPixels,
                 metrics.heightPixels,
@@ -47,25 +46,25 @@ class ScreenshotController(
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 imageReader?.surface,
                 null,
-                null
+                null,
             )
     }
 
     private fun getImageReader(
         metrics: DisplayMetrics,
-        bitmapConsumer: Consumer<Bitmap?>
+        bitmapConsumer: Consumer<Bitmap?>,
     ): ImageReader {
         val imageReader =
             ImageReader.newInstance(
                 metrics.widthPixels,
-                metrics.heightPixels,  // The linter gives a false positive here because it wants us to use one of the
+                metrics.heightPixels, // The linter gives a false positive here because it wants us to use one of the
                 // ImageFormat.* constants, but ImageReader.newInstance documents the PixelFormat
                 // constants as being acceptable, too. We don't control the choice of format; it's
                 // determined by the input data we get from the system screenshot functionality.
                 //
                 // noinspection WrongConstant
                 PixelFormat.RGBA_8888,
-                2
+                2,
             )
 
         val onBitmapAvailable =
@@ -76,7 +75,9 @@ class ScreenshotController(
 
         val onScreenshotAvailable =
             onScreenshotAvailableProvider.getOnScreenshotAvailable(
-                metrics, bitmapProvider, onBitmapAvailable
+                metrics,
+                bitmapProvider,
+                onBitmapAvailable,
             )
         imageReader.setOnImageAvailableListener(onScreenshotAvailable, screenshotHandler)
 

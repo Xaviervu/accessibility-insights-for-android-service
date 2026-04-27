@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
@@ -21,41 +22,41 @@ import java.util.Queue
 @RunWith(MockitoJUnitRunner::class)
 class AxeViewsFactoryTest {
     @Mock
-    var nodeViewBuilderFactoryMock: NodeViewBuilderFactory? = null
+    lateinit var nodeViewBuilderFactoryMock: NodeViewBuilderFactory
 
     @Mock
-    var queueBuilderMock: AccessibilityNodeInfoQueueBuilder? = null
+    lateinit var queueBuilderMock: AccessibilityNodeInfoQueueBuilder
 
     @Mock
-    var rootNodeBuilder: NodeViewBuilder? = null
+    lateinit var rootNodeBuilder: NodeViewBuilder
 
     @Mock
-    var childNodeBuilder: NodeViewBuilder? = null
+    lateinit var childNodeBuilder: NodeViewBuilder
 
     @Mock
-    var labelNodeBuilder: NodeViewBuilder? = null
+    lateinit var labelNodeBuilder: NodeViewBuilder
 
     @Mock
-    var rootNodeMock: AccessibilityNodeInfo? = null
+    lateinit var rootNodeMock: AccessibilityNodeInfo
 
     @Mock
-    var childNodeMock: AccessibilityNodeInfo? = null
+    lateinit var childNodeMock: AccessibilityNodeInfo
 
     @Mock
-    var labelNodeMock: AccessibilityNodeInfo? = null
+    lateinit var labelNodeMock: AccessibilityNodeInfo
 
     @Mock
-    var rootViewMock: AxeView? = null
+    lateinit  var rootViewMock: AxeView
 
     @Mock
-    var childViewMock: AxeView? = null
+    lateinit var childViewMock: AxeView
 
     @Mock
-    var labelViewMock: AxeView? = null
+    lateinit var labelViewMock: AxeView
 
-    var queue: Queue<OrderedValue<AccessibilityNodeInfo?>?>? = null
+    lateinit var queue: Queue<OrderedValue<AccessibilityNodeInfo>>
 
-    var testSubject: AxeViewsFactory? = null
+    lateinit  var testSubject: AxeViewsFactory
 
     val nodeClassName: String = "node class name"
 
@@ -65,17 +66,18 @@ class AxeViewsFactoryTest {
         setupNodeViewCreation(childNodeBuilder, childNodeMock, childViewMock)
         setupNodeViewCreation(labelNodeBuilder, labelNodeMock, labelViewMock)
 
-        queue = LinkedList<OrderedValue<AccessibilityNodeInfo?>?>()
-        Mockito.`when`<Queue<OrderedValue<AccessibilityNodeInfo>>>(
-            queueBuilderMock!!.buildPriorityQueue(
-                rootNodeMock!!
-            )
-        ).thenReturn(queue)
+        queue = LinkedList()
+        Mockito
+            .`when`(
+                queueBuilderMock.buildPriorityQueue(
+                    rootNodeMock,
+                ),
+            ).thenReturn(queue)
 
-        Mockito.`when`<CharSequence?>(childNodeMock!!.getClassName()).thenReturn(nodeClassName)
-        Mockito.`when`<CharSequence?>(labelNodeMock!!.getClassName()).thenReturn(nodeClassName)
+        Mockito.`when`<CharSequence?>(childNodeMock.className).thenReturn(nodeClassName)
+        Mockito.`when`<CharSequence?>(labelNodeMock.className).thenReturn(nodeClassName)
 
-        testSubject = AxeViewsFactory(nodeViewBuilderFactoryMock!!, queueBuilderMock!!)
+        testSubject = AxeViewsFactory(nodeViewBuilderFactoryMock, queueBuilderMock)
     }
 
     @Test
@@ -83,7 +85,7 @@ class AxeViewsFactoryTest {
     fun axeViewIsNotNull() {
         enqueueNode(rootNodeMock)
 
-        Assert.assertNotNull(testSubject!!.createAxeViews(rootNodeMock!!))
+        Assert.assertNotNull(testSubject.createAxeViews(rootNodeMock))
     }
 
     @Test
@@ -91,97 +93,104 @@ class AxeViewsFactoryTest {
     fun createsAxeViewWithoutChildren() {
         enqueueNode(rootNodeMock)
 
-        val axeView = testSubject!!.createAxeViews(rootNodeMock!!)
+        val axeView = testSubject.createAxeViews(rootNodeMock)
         Assert.assertNotNull(axeView)
         Assert.assertEquals(axeView, rootViewMock)
 
-        Mockito.verify<NodeViewBuilderFactory?>(nodeViewBuilderFactoryMock, Mockito.times(1))
+        Mockito
+            .verify(nodeViewBuilderFactoryMock, Mockito.times(1))
             .createNodeViewBuilder(
-                ArgumentMatchers.eq<AccessibilityNodeInfo?>(rootNodeMock),
-                ArgumentMatchers.eq<ArrayList<AxeView>?>(
-                    ArrayList<AxeView?>()
+                ArgumentMatchers.eq(rootNodeMock),
+                ArgumentMatchers.eq(
+                    ArrayList(),
                 ),
-                ArgumentMatchers.eq<AxeView?>(null)
+                ArgumentMatchers.eq<AxeView>(null),
             )
     }
 
     @Test
     @Throws(ViewChangedException::class)
     fun createsAxeViewWithChildNode() {
-        Mockito.`when`<Int?>(rootNodeMock!!.getChildCount()).thenReturn(1)
-        Mockito.`when`<AccessibilityNodeInfo?>(rootNodeMock!!.getChild(0)).thenReturn(childNodeMock)
+        Mockito.`when`(rootNodeMock.childCount).thenReturn(1)
+        Mockito.`when`(rootNodeMock.getChild(0)).thenReturn(childNodeMock)
 
         enqueueNode(childNodeMock)
         enqueueNode(rootNodeMock)
 
-        val axeView = testSubject!!.createAxeViews(rootNodeMock!!)
+        val axeView = testSubject.createAxeViews(rootNodeMock)
         Assert.assertNotNull(axeView)
         Assert.assertEquals(axeView, rootViewMock)
 
-        val children = ArrayList<AxeView?>()
+        val children = ArrayList<AxeView>()
         children.add(childViewMock)
 
-        Mockito.verify<NodeViewBuilderFactory?>(nodeViewBuilderFactoryMock, Mockito.times(1))
+        Mockito
+            .verify(nodeViewBuilderFactoryMock, Mockito.times(1))
             .createNodeViewBuilder(
-                ArgumentMatchers.eq<AccessibilityNodeInfo?>(rootNodeMock),
-                ArgumentMatchers.eq<ArrayList<AxeView?>?>(children),
-                ArgumentMatchers.eq<AxeView?>(null)
+                ArgumentMatchers.eq(rootNodeMock),
+                ArgumentMatchers.eq(children),
+                ArgumentMatchers.eq<AxeView?>(null),
             )
-        Mockito.verify<NodeViewBuilderFactory?>(nodeViewBuilderFactoryMock, Mockito.times(1))
+        Mockito
+            .verify(nodeViewBuilderFactoryMock, Mockito.times(1))
             .createNodeViewBuilder(
-                ArgumentMatchers.eq<AccessibilityNodeInfo?>(childNodeMock),
-                ArgumentMatchers.eq<ArrayList<AxeView>?>(
-                    ArrayList<AxeView?>()
+                ArgumentMatchers.eq(childNodeMock),
+                ArgumentMatchers.eq<ArrayList<AxeView>>(
+                    ArrayList<AxeView>(),
                 ),
-                ArgumentMatchers.eq<AxeView?>(null)
+                ArgumentMatchers.eq<AxeView>(null),
             )
     }
 
     @Test
     @Throws(ViewChangedException::class)
     fun createsAxeViewWithLabeledByNode() {
-        Mockito.`when`<AccessibilityNodeInfo?>(rootNodeMock!!.getLabeledBy())
+        Mockito
+            .`when`(rootNodeMock.getLabeledBy())
             .thenReturn(labelNodeMock)
 
         enqueueNode(labelNodeMock)
         enqueueNode(rootNodeMock)
 
-        val axeView = testSubject!!.createAxeViews(rootNodeMock!!)
+        val axeView = testSubject.createAxeViews(rootNodeMock)
         Assert.assertNotNull(axeView)
         Assert.assertEquals(axeView, rootViewMock)
 
-        Mockito.verify<NodeViewBuilderFactory?>(nodeViewBuilderFactoryMock, Mockito.times(1))
+        Mockito
+            .verify(nodeViewBuilderFactoryMock, Mockito.times(1))
             .createNodeViewBuilder(
-                ArgumentMatchers.eq<AccessibilityNodeInfo?>(rootNodeMock),
-                ArgumentMatchers.eq<ArrayList<AxeView>?>(
-                    ArrayList<AxeView?>()
+                ArgumentMatchers.eq(rootNodeMock),
+                ArgumentMatchers.eq(
+                    ArrayList(),
                 ),
-                ArgumentMatchers.eq<AxeView?>(labelViewMock)
+                ArgumentMatchers.eq(labelViewMock),
             )
-        Mockito.verify<NodeViewBuilderFactory?>(nodeViewBuilderFactoryMock, Mockito.times(1))
+        Mockito
+            .verify(nodeViewBuilderFactoryMock, Mockito.times(1))
             .createNodeViewBuilder(
-                ArgumentMatchers.eq<AccessibilityNodeInfo?>(labelNodeMock),
-                ArgumentMatchers.eq<ArrayList<AxeView>?>(
-                    ArrayList<AxeView?>()
+                ArgumentMatchers.eq(labelNodeMock),
+                ArgumentMatchers.eq(
+                    ArrayList(),
                 ),
-                ArgumentMatchers.eq<AxeView?>(null)
+                ArgumentMatchers.eq<AxeView?>(null),
             )
     }
 
     @Test
     @Throws(ViewChangedException::class)
     fun refreshAndRetryIfViewChanged() {
-        setupViewChangedScenario(true, false)
+        setupViewChangedScenario(retryShouldSucceed = true, withLabelNode = false)
 
-        val axeView = testSubject!!.createAxeViews(rootNodeMock!!)
+        val axeView = testSubject.createAxeViews(rootNodeMock)
         Assert.assertNotNull(axeView)
         Assert.assertEquals(axeView, rootViewMock)
 
-        Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.times(1)).refresh()
-        Mockito.verify<AccessibilityNodeInfoQueueBuilder?>(queueBuilderMock, Mockito.times(2))
-            .buildPriorityQueue(rootNodeMock!!)
-        Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.times(2)).getChildCount()
-        Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.times(2)).getChild(0)
+        Mockito.verify(rootNodeMock, Mockito.times(1)).refresh()
+        Mockito
+            .verify(queueBuilderMock, Mockito.times(2))
+            .buildPriorityQueue(rootNodeMock)
+        Mockito.verify(rootNodeMock, Mockito.times(2)).childCount
+        Mockito.verify(rootNodeMock, Mockito.times(2)).getChild(0)
     }
 
     @Test
@@ -191,18 +200,22 @@ class AxeViewsFactoryTest {
         val numRetries = 5
 
         try {
-            testSubject!!.createAxeViews(rootNodeMock!!)
+            testSubject.createAxeViews(rootNodeMock)
             Assert.fail("Expected createAxeViews to throw exception")
-        } catch (e: ViewChangedException) {
-            Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.times(numRetries))
+        } catch (_: ViewChangedException) {
+            Mockito
+                .verify(rootNodeMock, Mockito.times(numRetries))
                 .refresh()
-            Mockito.verify<AccessibilityNodeInfoQueueBuilder?>(
-                queueBuilderMock,
-                Mockito.times(numRetries + 1)
-            ).buildPriorityQueue(rootNodeMock!!)
-            Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.times(numRetries + 1))
-                .getChildCount()
-            Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.times(numRetries + 1))
+            Mockito
+                .verify(
+                    queueBuilderMock,
+                    Mockito.times(numRetries + 1),
+                ).buildPriorityQueue(rootNodeMock)
+            Mockito
+                .verify(rootNodeMock, Mockito.times(numRetries + 1))
+                .childCount
+            Mockito
+                .verify(rootNodeMock, Mockito.times(numRetries + 1))
                 .getChild(0)
         }
     }
@@ -210,81 +223,92 @@ class AxeViewsFactoryTest {
     @Test
     @Throws(ViewChangedException::class)
     fun recyclesNodesOnSuccess() {
-        Mockito.`when`<Int?>(rootNodeMock!!.getChildCount()).thenReturn(1)
-        Mockito.`when`<AccessibilityNodeInfo?>(rootNodeMock!!.getChild(0)).thenReturn(childNodeMock)
-        Mockito.`when`<AccessibilityNodeInfo?>(rootNodeMock!!.getLabeledBy())
+        Mockito.`when`(rootNodeMock.childCount).thenReturn(1)
+        Mockito.`when`(rootNodeMock.getChild(0)).thenReturn(childNodeMock)
+        Mockito
+            .`when`(rootNodeMock.getLabeledBy())
             .thenReturn(labelNodeMock)
 
         enqueueNode(labelNodeMock)
         enqueueNode(childNodeMock)
         enqueueNode(rootNodeMock)
 
-        val axeView = testSubject!!.createAxeViews(rootNodeMock!!)
+        val axeView = testSubject.createAxeViews(rootNodeMock)
         Assert.assertNotNull(axeView)
         Assert.assertEquals(axeView, rootViewMock)
 
-        Mockito.verify<AccessibilityNodeInfo?>(childNodeMock, Mockito.times(1)).recycle()
-        Mockito.verify<AccessibilityNodeInfo?>(labelNodeMock, Mockito.times(1)).recycle()
-        Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.never()).recycle()
+        Mockito.verify(childNodeMock, Mockito.times(1)).recycle()
+        Mockito.verify(labelNodeMock, Mockito.times(1)).recycle()
+        Mockito.verify(rootNodeMock, Mockito.never()).recycle()
     }
 
     @Test
     @Throws(ViewChangedException::class)
     fun recyclesNodesOnRetry() {
-        setupViewChangedScenario(true, true)
+        setupViewChangedScenario(retryShouldSucceed = true, withLabelNode = true)
 
-        val axeView = testSubject!!.createAxeViews(rootNodeMock!!)
+        val axeView = testSubject.createAxeViews(rootNodeMock)
         Assert.assertNotNull(axeView)
         Assert.assertEquals(axeView, rootViewMock)
 
-        Mockito.verify<AccessibilityNodeInfo?>(childNodeMock, Mockito.times(2)).recycle()
-        Mockito.verify<AccessibilityNodeInfo?>(labelNodeMock, Mockito.times(2)).recycle()
-        Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.never()).recycle()
+        Mockito.verify(childNodeMock, Mockito.times(2)).recycle()
+        Mockito.verify(labelNodeMock, Mockito.times(2)).recycle()
+        Mockito.verify(rootNodeMock, Mockito.never()).recycle()
     }
 
     @Test
     fun recyclesNodesOnRetryFailure() {
-        setupViewChangedScenario(false, true)
+        setupViewChangedScenario(retryShouldSucceed = false, withLabelNode = true)
 
         val numRetries = 5
 
         try {
-            testSubject!!.createAxeViews(rootNodeMock!!)
+            testSubject.createAxeViews(rootNodeMock)
             Assert.fail("Expected createAxeViews to throw exception")
-        } catch (e: ViewChangedException) {
-            Mockito.verify<AccessibilityNodeInfo?>(childNodeMock, Mockito.times(numRetries + 1))
+        } catch (_: ViewChangedException) {
+            Mockito
+                .verify(childNodeMock, Mockito.times(numRetries + 1))
                 .recycle()
-            Mockito.verify<AccessibilityNodeInfo?>(labelNodeMock, Mockito.times(numRetries + 1))
+            Mockito
+                .verify(labelNodeMock, Mockito.times(numRetries + 1))
                 .recycle()
-            Mockito.verify<AccessibilityNodeInfo?>(rootNodeMock, Mockito.never()).recycle()
+            Mockito.verify(rootNodeMock, Mockito.never()).recycle()
         }
     }
 
     private fun setupNodeViewCreation(
-        builder: NodeViewBuilder?, node: AccessibilityNodeInfo?, view: AxeView?
+        builder: NodeViewBuilder?,
+        node: AccessibilityNodeInfo?,
+        view: AxeView?,
     ) {
-        Mockito.`when`<NodeViewBuilder>(
-            nodeViewBuilderFactoryMock!!.createNodeViewBuilder(
-                ArgumentMatchers.eq<AccessibilityNodeInfo?>(node),
-                ArgumentMatchers.any<MutableList<AxeView>>(),
-                ArgumentMatchers.any<AxeView?>()
-            )
-        )
-            .thenReturn(builder)
-        Mockito.`when`<AxeView?>(builder!!.build()).thenReturn(view)
+        Mockito
+            .`when`(
+                nodeViewBuilderFactoryMock.createNodeViewBuilder(
+                    ArgumentMatchers.eq<AccessibilityNodeInfo>(node),
+                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any<AxeView?>(),
+                ),
+            ).thenReturn(builder)
+        Mockito.`when`(builder?.build()).thenReturn(view)
     }
 
-    private fun setupViewChangedScenario(retryShouldSucceed: Boolean, withLabelNode: Boolean) {
-        Mockito.`when`<Int?>(rootNodeMock!!.getChildCount()).thenReturn(1)
+    private fun setupViewChangedScenario(
+        retryShouldSucceed: Boolean,
+        withLabelNode: Boolean,
+    ) {
+        Mockito.`when`(rootNodeMock.childCount).thenReturn(1)
         if (retryShouldSucceed) {
-            Mockito.`when`<AccessibilityNodeInfo?>(rootNodeMock!!.getChild(0)).thenReturn(null)
+            Mockito
+                .`when`(rootNodeMock.getChild(0))
+                .thenReturn(null)
                 .thenReturn(childNodeMock)
         } else {
-            Mockito.`when`<AccessibilityNodeInfo?>(rootNodeMock!!.getChild(0)).thenReturn(null)
+            Mockito.`when`(rootNodeMock.getChild(0)).thenReturn(null)
         }
 
         if (withLabelNode) {
-            Mockito.`when`<AccessibilityNodeInfo?>(rootNodeMock!!.getLabeledBy())
+            Mockito
+                .`when`(rootNodeMock.getLabeledBy())
                 .thenReturn(labelNodeMock)
             enqueueNode(labelNodeMock)
         }
@@ -292,21 +316,23 @@ class AxeViewsFactoryTest {
         enqueueNode(childNodeMock)
         enqueueNode(rootNodeMock)
 
-        Mockito.reset<AccessibilityNodeInfoQueueBuilder?>(queueBuilderMock)
-        Mockito.`when`<Queue<OrderedValue<AccessibilityNodeInfo>>>(
-            queueBuilderMock!!.buildPriorityQueue(
-                rootNodeMock!!
+        Mockito.reset(queueBuilderMock)
+        Mockito
+            .`when`(
+                queueBuilderMock.buildPriorityQueue(
+                    rootNodeMock,
+                ),
+            ).thenAnswer(
+                Answer { _: InvocationOnMock ->
+                    LinkedList(
+                        queue,
+                    )
+                },
             )
-        )
-            .thenAnswer(Answer { rootNodeMock: InvocationOnMock? ->
-                LinkedList<OrderedValue<AccessibilityNodeInfo?>?>(
-                    queue
-                )
-            })
     }
 
-    private fun enqueueNode(node: AccessibilityNodeInfo?) {
-        val orderedNode = OrderedValue<AccessibilityNodeInfo?>(node, 0L)
-        queue!!.add(orderedNode)
+    private fun enqueueNode(node: AccessibilityNodeInfo) {
+        val orderedNode = OrderedValue(node, 0L)
+        queue.add(orderedNode)
     }
 }

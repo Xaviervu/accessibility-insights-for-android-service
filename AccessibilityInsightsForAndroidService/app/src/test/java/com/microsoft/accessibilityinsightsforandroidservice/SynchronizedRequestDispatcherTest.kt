@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.os.CancellationSignal
@@ -59,9 +60,10 @@ class SynchronizedRequestDispatcherTest {
                 ThrowingRunnable {
                     testSubject!!.request(
                         "cancellable delayed method",
-                        cancellationSignal!!
+                        cancellationSignal!!,
                     )
-                })
+                },
+            )
         request1Thread.start()
 
         delayedRequest.waitForDelayedState()
@@ -87,7 +89,8 @@ class SynchronizedRequestDispatcherTest {
         Assert.assertThrows<Exception?>(
             "RequestDispatcher cannot be set up twice",
             Exception::class.java,
-            ThrowingRunnable { testSubject!!.setup(underlyingDispatcher!!) })
+            ThrowingRunnable { testSubject!!.setup(underlyingDispatcher!!) },
+        )
     }
 
     @Test
@@ -112,8 +115,10 @@ class SynchronizedRequestDispatcherTest {
                 Runnable {
                     Assert.assertThrows<OperationCanceledException?>(
                         OperationCanceledException::class.java,
-                        ThrowingRunnable { testSubject!!.request("method", cancellationSignal!!) })
-                })
+                        ThrowingRunnable { testSubject!!.request("method", cancellationSignal!!) },
+                    )
+                },
+            )
         requestThread.start()
 
         testSubject!!.teardown()
@@ -127,7 +132,8 @@ class SynchronizedRequestDispatcherTest {
         Assert.assertThrows<Exception?>(
             "Service is not running",
             Exception::class.java,
-            ThrowingRunnable { testSubject!!.request("any method", cancellationSignal!!) })
+            ThrowingRunnable { testSubject!!.request("any method", cancellationSignal!!) },
+        )
     }
 
     @Test
@@ -141,9 +147,10 @@ class SynchronizedRequestDispatcherTest {
                 ThrowingRunnable {
                     testSubject!!.request(
                         "cancellable delayed method",
-                        cancellationSignal!!
+                        cancellationSignal!!,
                     )
-                })
+                },
+            )
         request1Thread.start()
 
         delayedRequest.waitForDelayedState()
@@ -154,9 +161,10 @@ class SynchronizedRequestDispatcherTest {
                 ThrowingRunnable {
                     testSubject!!.request(
                         "immediately successful method",
-                        cancellationSignal!!
+                        cancellationSignal!!,
                     )
-                })
+                },
+            )
         request2Thread.start()
 
         // request2 shouldn't run until request1 is allowed to finish
@@ -175,13 +183,13 @@ class SynchronizedRequestDispatcherTest {
     @Throws(Exception::class)
     fun requestPropagatesResponseFromUnderlyingDispatcher() {
         testSubject!!.setup(underlyingDispatcher!!)
-        Mockito.`when`<String?>(
-            underlyingDispatcher!!.request(
-                ArgumentMatchers.eq<String?>("method"),
-                ArgumentMatchers.any<CancellationSignal>()
-            )
-        )
-            .thenReturn("response from underlying dispatcher")
+        Mockito
+            .`when`<String?>(
+                underlyingDispatcher!!.request(
+                    ArgumentMatchers.eq<String?>("method"),
+                    ArgumentMatchers.any<CancellationSignal>(),
+                ),
+            ).thenReturn("response from underlying dispatcher")
 
         val response = testSubject!!.request("method", cancellationSignal!!)
 
@@ -192,18 +200,19 @@ class SynchronizedRequestDispatcherTest {
     @Throws(Exception::class)
     fun requestPropagatesExceptionFromUnderlyingDispatcher() {
         testSubject!!.setup(underlyingDispatcher!!)
-        Mockito.`when`<String?>(
-            underlyingDispatcher!!.request(
-                ArgumentMatchers.eq<String?>("method"),
-                ArgumentMatchers.any<CancellationSignal>()
-            )
-        )
-            .thenThrow(RuntimeException("exception from underlying dispatcher"))
+        Mockito
+            .`when`<String?>(
+                underlyingDispatcher!!.request(
+                    ArgumentMatchers.eq<String?>("method"),
+                    ArgumentMatchers.any<CancellationSignal>(),
+                ),
+            ).thenThrow(RuntimeException("exception from underlying dispatcher"))
 
         Assert.assertThrows<RuntimeException?>(
             "exception from underlying dispatcher",
             RuntimeException::class.java,
-            ThrowingRunnable { testSubject!!.request("method", cancellationSignal!!) })
+            ThrowingRunnable { testSubject!!.request("method", cancellationSignal!!) },
+        )
     }
 
     @Test
@@ -216,8 +225,10 @@ class SynchronizedRequestDispatcherTest {
                 ThrowingRunnable {
                     Assert.assertThrows<OperationCanceledException?>(
                         OperationCanceledException::class.java,
-                        ThrowingRunnable { testSubject!!.request("method", cancellationSignal!!) })
-                })
+                        ThrowingRunnable { testSubject!!.request("method", cancellationSignal!!) },
+                    )
+                },
+            )
         requestThread.start()
 
         cancellationSignal!!.cancel()
@@ -226,16 +237,16 @@ class SynchronizedRequestDispatcherTest {
         Assert.assertFalse(requestThread.isAlive())
     }
 
-    private fun setupBasicCancellationSignalsOnThisThread(): MockedConstruction<CancellationSignal?> {
-        return Mockito.mockConstruction<CancellationSignal?>(
+    private fun setupBasicCancellationSignalsOnThisThread(): MockedConstruction<CancellationSignal?> =
+        Mockito.mockConstruction<CancellationSignal?>(
             CancellationSignal::class.java,
             MockInitializer { mockSignal: CancellationSignal?, context: MockedConstruction.Context? ->
                 setupBasicCancellationSignal(mockSignal!!)
-            })
-    }
+            },
+        )
 
-    private fun startOnNewThread(callback: ThrowingRunnable): Thread {
-        return Thread(
+    private fun startOnNewThread(callback: ThrowingRunnable): Thread =
+        Thread(
             Runnable {
                 try {
                     setupBasicCancellationSignalsOnThisThread().use { cancellationSignalConstructionMock ->
@@ -243,14 +254,16 @@ class SynchronizedRequestDispatcherTest {
                     }
                 } catch (e: Throwable) {
                     Assert.fail(
-                        ("unexpected exception from async request:\n\n"
-                                + e.message
-                                + "\n\n"
-                                + e.getStackTrace().contentToString())
+                        (
+                            "unexpected exception from async request:\n\n" +
+                                e.message +
+                                "\n\n" +
+                                e.getStackTrace().contentToString()
+                        ),
                     )
                 }
-            })
-    }
+            },
+        )
 
     var delayedRequestPollIntervalMillis: Int = 100
 
@@ -258,7 +271,7 @@ class SynchronizedRequestDispatcherTest {
         NotStarted,
         Delaying,
         Finishing,
-        Finished
+        Finished,
     }
 
     private inner class DelayedRequest {
@@ -299,30 +312,31 @@ class SynchronizedRequestDispatcherTest {
     private fun setupCancellableDelayedRequest(): DelayedRequest {
         val delayedRequest = DelayedRequest()
 
-        Mockito.`when`<String?>(
-            underlyingDispatcher!!.request(
-                ArgumentMatchers.eq<String?>("cancellable delayed method"),
-                ArgumentMatchers.any<CancellationSignal>()
-            )
-        )
-            .thenAnswer(
+        Mockito
+            .`when`<String?>(
+                underlyingDispatcher!!.request(
+                    ArgumentMatchers.eq<String?>("cancellable delayed method"),
+                    ArgumentMatchers.any<CancellationSignal>(),
+                ),
+            ).thenAnswer(
                 Answer { invocation: InvocationOnMock? ->
                     val signal = invocation!!.getArgument<CancellationSignal>(1)
                     delayedRequest.request(signal)
-                })
+                },
+            )
 
         return delayedRequest
     }
 
     @Throws(Exception::class)
     private fun setupImmediatelySuccessfulRequest() {
-        Mockito.`when`<String?>(
-            underlyingDispatcher!!.request(
-                ArgumentMatchers.eq<String?>("immediately successful method"),
-                ArgumentMatchers.any<CancellationSignal>()
-            )
-        )
-            .thenReturn("immediately successful method response")
+        Mockito
+            .`when`<String?>(
+                underlyingDispatcher!!.request(
+                    ArgumentMatchers.eq<String?>("immediately successful method"),
+                    ArgumentMatchers.any<CancellationSignal>(),
+                ),
+            ).thenReturn("immediately successful method response")
     }
 
     private fun setupBasicCancellationSignal(mockSignal: CancellationSignal): CancellationSignal {
@@ -330,24 +344,26 @@ class SynchronizedRequestDispatcherTest {
         val onCancelListener =
             AtomicReference<CancellationSignal.OnCancelListener?>(null)
 
-        Mockito.doAnswer(
-            Answer { invocation: InvocationOnMock? ->
-                synchronized(mockSignal) {
-                    isCancelled.set(true)
-                    val listener = onCancelListener.getAndSet(null)
-                    if (listener != null) {
-                        listener.onCancel()
+        Mockito
+            .doAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    synchronized(mockSignal) {
+                        isCancelled.set(true)
+                        val listener = onCancelListener.getAndSet(null)
+                        if (listener != null) {
+                            listener.onCancel()
+                        }
                     }
-                }
-                null
-            })
-            .`when`<CancellationSignal?>(mockSignal)
+                    null
+                },
+            ).`when`<CancellationSignal?>(mockSignal)
             .cancel()
 
         // lenient() prevents Mockito from throwing an UnnecessaryStubbingException - Mockito's default
         // strict() context complains that this is unused because it is only ever used on secondary
         // test threads, not the original @Test thread.
-        Mockito.lenient()
+        Mockito
+            .lenient()
             .doAnswer(
                 Answer { invocation: InvocationOnMock? ->
                     synchronized(mockSignal) {
@@ -356,23 +372,24 @@ class SynchronizedRequestDispatcherTest {
                         }
                     }
                     null
-                })
-            .`when`<CancellationSignal?>(mockSignal)
+                },
+            ).`when`<CancellationSignal?>(mockSignal)
             .throwIfCanceled()
 
-        Mockito.doAnswer(
-            Answer { invocation: InvocationOnMock? ->
-                val listener = invocation!!.getArgument<CancellationSignal.OnCancelListener>(0)
-                synchronized(mockSignal) {
-                    if (isCancelled.get()) {
-                        listener.onCancel()
-                    } else {
-                        onCancelListener.set(listener)
+        Mockito
+            .doAnswer(
+                Answer { invocation: InvocationOnMock? ->
+                    val listener = invocation!!.getArgument<CancellationSignal.OnCancelListener>(0)
+                    synchronized(mockSignal) {
+                        if (isCancelled.get()) {
+                            listener.onCancel()
+                        } else {
+                            onCancelListener.set(listener)
+                        }
                     }
-                }
-                null
-            })
-            .`when`<CancellationSignal?>(mockSignal)
+                    null
+                },
+            ).`when`<CancellationSignal?>(mockSignal)
             .setOnCancelListener(ArgumentMatchers.any<CancellationSignal.OnCancelListener?>())
 
         return mockSignal

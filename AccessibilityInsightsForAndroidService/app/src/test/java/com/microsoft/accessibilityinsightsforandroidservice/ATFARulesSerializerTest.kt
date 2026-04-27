@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset
@@ -67,12 +68,12 @@ class ATFARulesSerializerTest {
             return null
         }
 
-        companion object {
-            private const val ANDROID_A11Y_HELP_URL = "excluded from serialized rule"
-            private const val TEST_RESULT_ID = "test result id included in serialized rule"
-        }
-    }
 
+    }
+    companion object {
+        private const val ANDROID_A11Y_HELP_URL = "excluded from serialized rule"
+        private const val TEST_RESULT_ID = "test result id included in serialized rule"
+    }
     @Before
     fun prepare() {
         accessibilityCheckPresetStaticMock =
@@ -103,13 +104,12 @@ class ATFARulesSerializerTest {
                     + "]")
 
         accessibilityCheckPresetStaticMock!!
-            .`when`<Any?>(
-                Verification {
-                    AccessibilityCheckPreset.getAccessibilityHierarchyChecksForPreset(
-                        AccessibilityCheckPreset.LATEST
-                    )
-                })
-            .thenReturn(ImmutableSet.of<TestCheckClass?>(checkStub))
+            .`when`<Any?> {
+                AccessibilityCheckPreset.getAccessibilityHierarchyChecksForPreset(
+                    AccessibilityCheckPreset.LATEST
+                )
+            }
+            .thenReturn(ImmutableSet.of(checkStub))
 
         val actualSerializedRules = testSubject!!.serializeATFARules()
 

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.WindowManager
@@ -15,25 +16,26 @@ class FocusVisualizerController(
     private val windowManager: WindowManager,
     private val layoutParamGenerator: LayoutParamGenerator,
     private val focusVisualizationCanvas: FocusVisualizationCanvas?,
-    private val dateProvider: DateProvider
+    private val dateProvider: DateProvider,
 ) {
     private var lastEventSource: AccessibilityNodeInfo? = null
     private var lastOrientationChange: Date
     private val maximumOrientationChangeDelay: Long = 1000
 
     init {
-        this.focusVisualizationStateManager.subscribe(Consumer { enabled: Boolean? ->
-            this.onFocusVisualizationStateChange(
-                enabled!!
-            )
-        })
+        this.focusVisualizationStateManager.subscribe(
+            Consumer { enabled: Boolean? ->
+                this.onFocusVisualizationStateChange(
+                    enabled!!,
+                )
+            },
+        )
         this.lastOrientationChange = dateProvider.get()
     }
 
     fun onFocusEvent(event: AccessibilityEvent) {
         lastEventSource = event.source
-        if (!focusVisualizationStateManager.state || ignoreFocusEventDueToRecentOrientationChange()
-        ) {
+        if (!focusVisualizationStateManager.state || ignoreFocusEventDueToRecentOrientationChange()) {
             return
         }
 

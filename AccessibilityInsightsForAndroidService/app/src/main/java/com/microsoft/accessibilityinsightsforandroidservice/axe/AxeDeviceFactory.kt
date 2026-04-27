@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice.axe
 
 import android.os.Build
@@ -11,7 +12,7 @@ import java.util.function.Supplier
 
 class AxeDeviceFactory(
     private val deviceConfigFactory: DeviceConfigFactory,
-    private val displayMetricsSupplier: Supplier<DisplayMetrics>
+    private val displayMetricsSupplier: Supplier<DisplayMetrics>,
 ) {
     fun createAxeDevice(rootNode: AccessibilityNodeInfo?): AxeDevice {
         val displayMetrics = displayMetricsSupplier.get()
@@ -22,7 +23,7 @@ class AxeDeviceFactory(
             deviceConfig.deviceName,
             compoundVersion,
             displayMetrics.heightPixels,
-            displayMetrics.widthPixels
+            displayMetrics.widthPixels,
         )
     }
 }

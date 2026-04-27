@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
@@ -26,7 +27,7 @@ class AccessibilityNodeInfoQueueBuilderTest {
     @Mock
     var grandchildNode: AccessibilityNodeInfo? = null
 
-    var testSubject: AccessibilityNodeInfoQueueBuilder? = null
+    lateinit var testSubject: AccessibilityNodeInfoQueueBuilder
 
     @Before
     fun prepare() {
@@ -35,16 +36,16 @@ class AccessibilityNodeInfoQueueBuilderTest {
 
     @Test
     fun buildEmptyQueue() {
-        val queue: Queue<OrderedValue<AccessibilityNodeInfo?>?> =
-            testSubject!!.buildPriorityQueue(null)
+        val queue: Queue<OrderedValue<AccessibilityNodeInfo>> =
+            testSubject.buildPriorityQueue(null)
         Assert.assertNotNull(queue)
         Assert.assertTrue(queue.isEmpty())
     }
 
     @Test
     fun buildSingleNodeQueue() {
-        val queue: Queue<OrderedValue<AccessibilityNodeInfo?>?> =
-            testSubject!!.buildPriorityQueue(rootNode!!)
+        val queue: Queue<OrderedValue<AccessibilityNodeInfo>> =
+            testSubject.buildPriorityQueue(rootNode)
         Assert.assertNotNull(queue)
         Assert.assertEquals(queue.size.toLong(), 1)
 
@@ -55,8 +56,8 @@ class AccessibilityNodeInfoQueueBuilderTest {
     fun buildQueueWithChildren() {
         createChildren()
 
-        val queue: Queue<OrderedValue<AccessibilityNodeInfo?>?> =
-            testSubject!!.buildPriorityQueue(rootNode!!)
+        val queue: Queue<OrderedValue<AccessibilityNodeInfo>> =
+            testSubject.buildPriorityQueue(rootNode)
 
         val rootOrder = Long.Companion.MAX_VALUE
         val childOrder = rootOrder - 1
@@ -80,10 +81,10 @@ class AccessibilityNodeInfoQueueBuilderTest {
     fun buildQueueWithLabelNodes() {
         createChildren()
 
-        Mockito.`when`<AccessibilityNodeInfo?>(childNode0!!.getLabelFor()).thenReturn(childNode1)
+        Mockito.`when`<AccessibilityNodeInfo?>(childNode0?.getLabelFor()).thenReturn(childNode1)
 
-        val queue: Queue<OrderedValue<AccessibilityNodeInfo?>?> =
-            testSubject!!.buildPriorityQueue(rootNode!!)
+        val queue: Queue<OrderedValue<AccessibilityNodeInfo>> =
+            testSubject.buildPriorityQueue(rootNode)
 
         val rootOrder = Long.Companion.MAX_VALUE
         val child0Order = (rootOrder - 1) / 2
@@ -98,18 +99,18 @@ class AccessibilityNodeInfoQueueBuilderTest {
     }
 
     fun createChildren() {
-        Mockito.`when`<Int?>(rootNode!!.getChildCount()).thenReturn(2)
-        Mockito.`when`<AccessibilityNodeInfo?>(rootNode!!.getChild(0)).thenReturn(childNode0)
-        Mockito.`when`<AccessibilityNodeInfo?>(rootNode!!.getChild(1)).thenReturn(childNode1)
+        Mockito.`when`<Int?>(rootNode?.childCount).thenReturn(2)
+        Mockito.`when`<AccessibilityNodeInfo?>(rootNode?.getChild(0)).thenReturn(childNode0)
+        Mockito.`when`<AccessibilityNodeInfo?>(rootNode?.getChild(1)).thenReturn(childNode1)
 
-        Mockito.`when`<Int?>(childNode0!!.getChildCount()).thenReturn(1)
+        Mockito.`when`<Int?>(childNode0?.childCount).thenReturn(1)
         Mockito.`when`<AccessibilityNodeInfo?>(childNode0!!.getChild(0)).thenReturn(grandchildNode)
     }
 
     fun assertNextQueueItemEquals(
-        queue: Queue<OrderedValue<AccessibilityNodeInfo?>?>,
+        queue: Queue<OrderedValue<AccessibilityNodeInfo>>,
         node: AccessibilityNodeInfo?,
-        priority: Long
+        priority: Long,
     ) {
         val nextItem = queue.poll()
         Assert.assertNotNull(nextItem)

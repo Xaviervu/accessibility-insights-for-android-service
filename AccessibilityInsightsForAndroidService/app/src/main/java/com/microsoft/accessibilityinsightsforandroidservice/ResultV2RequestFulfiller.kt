@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -18,7 +19,7 @@ class ResultV2RequestFulfiller(
     private val axeScanner: AxeScanner,
     private val atfaScanner: ATFAScanner,
     private val screenshotController: ScreenshotController,
-    private val resultsV2ContainerSerializer: ResultsV2ContainerSerializer
+    private val resultsV2ContainerSerializer: ResultsV2ContainerSerializer,
 ) : RequestFulfiller {
     @Throws(Exception::class)
     override fun fulfillRequest(cancellationSignal: CancellationSignal): String {
@@ -33,7 +34,7 @@ class ResultV2RequestFulfiller(
 
                     if (screenshot == null) {
                         throw Exception(
-                            "Could not acquire screenshot. Has the user granted screen recording permissions?"
+                            "Could not acquire screenshot. Has the user granted screen recording permissions?",
                         )
                     }
 
@@ -52,7 +53,8 @@ class ResultV2RequestFulfiller(
                     errorResponse.set(e)
                 }
                 doneSignal.countDown()
-            })
+            },
+        )
 
         doneSignal.await()
         if (errorResponse.get() != null) {
@@ -63,7 +65,9 @@ class ResultV2RequestFulfiller(
 
     @Throws(ScanException::class, ViewChangedException::class)
     private fun getScanContent(
-        rootNode: AccessibilityNodeInfo, screenshot: Bitmap, cancellationSignal: CancellationSignal
+        rootNode: AccessibilityNodeInfo,
+        screenshot: Bitmap,
+        cancellationSignal: CancellationSignal,
     ): String {
         cancellationSignal.throwIfCanceled()
         val axeResult = axeScanner.scanWithAxe(rootNode, screenshot)

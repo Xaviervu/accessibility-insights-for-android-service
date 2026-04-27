@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import org.junit.Assert
@@ -72,5 +73,5 @@ class ThreadSafeSwapperTest {
         Assert.assertEquals(expectedReturnValue, actualReturnValue)
     }
 
-    private inner class GenericTestObject
+    inner class GenericTestObject
 }

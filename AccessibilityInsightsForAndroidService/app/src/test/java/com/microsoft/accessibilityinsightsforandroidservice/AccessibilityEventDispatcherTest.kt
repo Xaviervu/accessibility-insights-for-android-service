@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityEvent
@@ -53,10 +54,11 @@ class AccessibilityEventDispatcherTest {
         testSubject!!.addOnAppChangedListener(onAppChangedListenerMock)
         testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-        Mockito.verify<Consumer<AccessibilityNodeInfo?>?>(
-            onAppChangedListenerMock,
-            Mockito.times(1)
-        ).accept(rootNodeMock)
+        Mockito
+            .verify<Consumer<AccessibilityNodeInfo?>?>(
+                onAppChangedListenerMock,
+                Mockito.times(1),
+            ).accept(rootNodeMock)
     }
 
     @Test
@@ -67,10 +69,11 @@ class AccessibilityEventDispatcherTest {
         testSubject!!.addOnAppChangedListener(onAppChangedListenerMock)
         testSubject!!.onAccessibilityEvent(eventMock!!, null)
 
-        Mockito.verify<Consumer<AccessibilityNodeInfo?>?>(
-            onAppChangedListenerMock,
-            Mockito.times(0)
-        ).accept(rootNodeMock)
+        Mockito
+            .verify<Consumer<AccessibilityNodeInfo?>?>(
+                onAppChangedListenerMock,
+                Mockito.times(0),
+            ).accept(rootNodeMock)
     }
 
     @Test
@@ -84,14 +87,16 @@ class AccessibilityEventDispatcherTest {
 
         Mockito.reset<AccessibilityNodeInfo?>(rootNodeMock)
 
-        Mockito.`when`<CharSequence?>(rootNodeMock!!.getPackageName())
+        Mockito
+            .`when`<CharSequence?>(rootNodeMock!!.getPackageName())
             .thenReturn(differentPackageNameStub)
         testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-        Mockito.verify<Consumer<AccessibilityNodeInfo?>?>(
-            onAppChangedListenerMock,
-            Mockito.times(2)
-        ).accept(rootNodeMock)
+        Mockito
+            .verify<Consumer<AccessibilityNodeInfo?>?>(
+                onAppChangedListenerMock,
+                Mockito.times(2),
+            ).accept(rootNodeMock)
     }
 
     @Test
@@ -102,7 +107,8 @@ class AccessibilityEventDispatcherTest {
         testSubject!!.addOnFocusEventListener(onFocusEventListenerMock)
         testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-        Mockito.verify<Consumer<AccessibilityEvent?>?>(onFocusEventListenerMock, Mockito.times(1))
+        Mockito
+            .verify<Consumer<AccessibilityEvent?>?>(onFocusEventListenerMock, Mockito.times(1))
             .accept(eventMock)
     }
 
@@ -114,7 +120,8 @@ class AccessibilityEventDispatcherTest {
         testSubject!!.addOnFocusEventListener(onFocusEventListenerMock)
         testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-        Mockito.verify<Consumer<AccessibilityEvent?>?>(onFocusEventListenerMock, Mockito.times(0))
+        Mockito
+            .verify<Consumer<AccessibilityEvent?>?>(onFocusEventListenerMock, Mockito.times(0))
             .accept(eventMock)
     }
 
@@ -127,9 +134,11 @@ class AccessibilityEventDispatcherTest {
                 Mockito.`when`<Int?>(eventMock!!.getEventType()).thenReturn(eventType)
                 testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
                 Mockito.reset<AccessibilityEvent?>(eventMock)
-            })
+            },
+        )
 
-        Mockito.verify<Consumer<AccessibilityEvent?>?>(onRedrawEventListenerMock, Mockito.times(4))
+        Mockito
+            .verify<Consumer<AccessibilityEvent?>?>(onRedrawEventListenerMock, Mockito.times(4))
             .accept(eventMock)
     }
 
@@ -141,7 +150,8 @@ class AccessibilityEventDispatcherTest {
         testSubject!!.addOnRedrawEventListener(onRedrawEventListenerMock)
         testSubject!!.onAccessibilityEvent(eventMock!!, rootNodeMock)
 
-        Mockito.verify<Consumer<AccessibilityEvent?>?>(onRedrawEventListenerMock, Mockito.times(0))
+        Mockito
+            .verify<Consumer<AccessibilityEvent?>?>(onRedrawEventListenerMock, Mockito.times(0))
             .accept(eventMock)
     }
 }

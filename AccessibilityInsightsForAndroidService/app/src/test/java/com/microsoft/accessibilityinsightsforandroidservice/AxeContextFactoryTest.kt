@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -50,11 +51,14 @@ class AxeContextFactoryTest {
     @Before
     @Throws(ViewChangedException::class)
     fun prepare() {
-        Mockito.`when`<AxeImage?>(axeImageFactoryMock!!.createAxeImage(screenshotMock))
+        Mockito
+            .`when`<AxeImage?>(axeImageFactoryMock!!.createAxeImage(screenshotMock))
             .thenReturn(axeImageMock)
-        Mockito.`when`<AxeView?>(axeViewsFactoryMock!!.createAxeViews(rootNodeMock!!))
+        Mockito
+            .`when`<AxeView?>(axeViewsFactoryMock!!.createAxeViews(rootNodeMock!!))
             .thenReturn(axeViewMock)
-        Mockito.`when`<AxeDevice>(axeDeviceFactoryMock!!.createAxeDevice(rootNodeMock))
+        Mockito
+            .`when`<AxeDevice>(axeDeviceFactoryMock!!.createAxeDevice(rootNodeMock))
             .thenReturn(axeDeviceMock)
 
         testSubject =

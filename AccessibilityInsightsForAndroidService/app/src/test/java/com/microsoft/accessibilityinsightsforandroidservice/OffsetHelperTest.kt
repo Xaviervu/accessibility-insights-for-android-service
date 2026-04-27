@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.content.res.Resources
@@ -23,9 +24,11 @@ class OffsetHelperTest {
     @Test
     fun getYOffsetReturnsCenterOfElement() {
         Mockito.`when`<Resources?>(viewMock!!.getResources()).thenReturn(resourcesMock)
-        Mockito.`when`<Int?>(resourcesMock!!.getIdentifier("status_bar_height", "dimen", "android"))
+        Mockito
+            .`when`<Int?>(resourcesMock!!.getIdentifier("status_bar_height", "dimen", "android"))
             .thenReturn(1)
-        Mockito.`when`<Int?>(resourcesMock!!.getDimensionPixelSize(ArgumentMatchers.anyInt()))
+        Mockito
+            .`when`<Int?>(resourcesMock!!.getDimensionPixelSize(ArgumentMatchers.anyInt()))
             .thenReturn(10)
 
         Assert.assertEquals(OffsetHelper.getYOffset(viewMock!!).toLong(), 5)

@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
 
 class FocusVisualizer(
     private val styles: FocusVisualizerStyles,
-    private val focusVisualizationCanvas: FocusVisualizationCanvas
+    private val focusVisualizationCanvas: FocusVisualizationCanvas,
 ) {
     private val focusElementHighlights: ArrayList<FocusElementHighlight> = ArrayList<FocusElementHighlight>()
     private val focusElementLines: ArrayList<FocusElementLine> = ArrayList<FocusElementLine>()
@@ -24,7 +25,7 @@ class FocusVisualizer(
 
         if (this.focusElementHighlights.isNotEmpty()) {
             this.setPreviousElementHighlightNonCurrent(
-                this.focusElementHighlights[this.focusElementHighlights.size - 1]
+                this.focusElementHighlights[this.focusElementHighlights.size - 1],
             )
         }
         if (focusElementLines.isNotEmpty()) {
@@ -54,14 +55,15 @@ class FocusVisualizer(
     }
 
     private fun createFocusElementLine(
-        eventSource: AccessibilityNodeInfo?, previousEventSource: AccessibilityNodeInfo?
+        eventSource: AccessibilityNodeInfo?,
+        previousEventSource: AccessibilityNodeInfo?,
     ) {
         val focusElementLine =
             FocusElementLine(
                 eventSource,
                 previousEventSource,
                 this.styles.currentLinePaints,
-                this.focusVisualizationCanvas
+                this.focusVisualizationCanvas,
             )
         this.focusElementLines.add(focusElementLine)
     }
@@ -73,7 +75,7 @@ class FocusVisualizer(
                 this.styles.currentElementPaints,
                 this.styles.focusElementHighlightRadius,
                 this.tabStopCount,
-                this.focusVisualizationCanvas
+                this.focusVisualizationCanvas,
             )
         this.focusElementHighlights.add(focusElementHighlight)
     }
@@ -90,7 +92,7 @@ class FocusVisualizer(
     private fun setDrawItemsAndRedraw() {
         this.focusVisualizationCanvas.setDrawItems(
             this.focusElementHighlights,
-            this.focusElementLines
+            this.focusElementLines,
         )
         this.focusVisualizationCanvas.redraw()
     }

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.content.res.Resources
@@ -22,61 +23,65 @@ import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class FocusElementHighlightTest {
-    var testSubject: FocusElementHighlight? = null
+    lateinit var testSubject: FocusElementHighlight
 
     @Mock
-    var accessibilityNodeInfoMock: AccessibilityNodeInfo? = null
+    lateinit var accessibilityNodeInfoMock: AccessibilityNodeInfo
 
     @Mock
-    var viewMock: View? = null
+    lateinit var viewMock: View
 
     @Mock
-    var innerCirclePaintMock: Paint? = null
+    lateinit var innerCirclePaintMock: Paint
 
     @Mock
-    var outerCirclePaintMock: Paint? = null
+    lateinit var outerCirclePaintMock: Paint
 
     @Mock
-    var differentOuterCirclePaintMock: Paint? = null
+    lateinit var differentOuterCirclePaintMock: Paint
 
     @Mock
-    var numberPaintMock: Paint? = null
+    lateinit var numberPaintMock: Paint
 
     @Mock
-    var transparentInnerCirclePaintMock: Paint? = null
+    lateinit var transparentInnerCirclePaintMock: Paint
 
     @Mock
-    var resourcesMock: Resources? = null
+    lateinit var resourcesMock: Resources
 
     @Mock
-    var canvasMock: Canvas? = null
-    var rectConstructionMock: MockedConstruction<Rect?>? = null
+    lateinit var canvasMock: Canvas
+    lateinit var rectConstructionMock: MockedConstruction<Rect>
 
-    var initialPaints: HashMap<String?, Paint?>? = null
+    lateinit var initialPaints: HashMap<String, Paint>
 
     var tabStopCount: Int = 10
 
     @Before
     @Throws(Exception::class)
     fun prepare() {
-        initialPaints = HashMap<String?, Paint?>()
-        initialPaints!!.put("innerCircle", innerCirclePaintMock)
-        initialPaints!!.put("outerCircle", outerCirclePaintMock)
-        initialPaints!!.put("number", numberPaintMock)
-        initialPaints!!.put("transparentInnerCircle", transparentInnerCirclePaintMock)
+        initialPaints = HashMap()
+        initialPaints["innerCircle"] = innerCirclePaintMock
+        initialPaints["outerCircle"] = outerCirclePaintMock
+        initialPaints["number"] = numberPaintMock
+        initialPaints["transparentInnerCircle"] = transparentInnerCirclePaintMock
 
-        Mockito.`when`<Resources?>(viewMock!!.getResources()).thenReturn(resourcesMock)
-        rectConstructionMock = Mockito.mockConstruction<Rect?>(Rect::class.java)
+        Mockito.`when`<Resources?>(viewMock.resources).thenReturn(resourcesMock)
+        rectConstructionMock = Mockito.mockConstruction(Rect::class.java)
 
         testSubject =
             FocusElementHighlight(
-                accessibilityNodeInfoMock!!, initialPaints, 10, tabStopCount, viewMock!!
+                accessibilityNodeInfoMock,
+                initialPaints,
+                10,
+                tabStopCount,
+                viewMock,
             )
     }
 
     @After
     fun cleanUp() {
-        rectConstructionMock!!.close()
+        rectConstructionMock.close()
     }
 
     @Test
@@ -87,37 +92,39 @@ class FocusElementHighlightTest {
     @Test
     fun drawElementHighlightDoesNothingWhenEventSourceIsNull() {
         testSubject = FocusElementHighlight(null, initialPaints, 10, 10, viewMock!!)
-        testSubject!!.drawElementHighlight(canvasMock!!)
+        testSubject.drawElementHighlight(canvasMock)
         Mockito.verifyNoInteractions(canvasMock)
     }
 
     @Test
     fun drawElementHighlightDoesNothingWhenEventSourceRefreshDoesNotWork() {
-        Mockito.`when`<Boolean?>(accessibilityNodeInfoMock!!.refresh()).thenReturn(false)
-        testSubject!!.drawElementHighlight(canvasMock!!)
+        Mockito.`when`(accessibilityNodeInfoMock.refresh()).thenReturn(false)
+        testSubject.drawElementHighlight(canvasMock)
         Mockito.verifyNoInteractions(canvasMock)
     }
 
     @Test
     @Throws(Exception::class)
     fun drawElementHighlightDrawsTwoCirclesForCurrentElement() {
-        Mockito.`when`<Boolean?>(accessibilityNodeInfoMock!!.refresh()).thenReturn(true)
+        Mockito.`when`(accessibilityNodeInfoMock.refresh()).thenReturn(true)
 
-        testSubject!!.drawElementHighlight(canvasMock!!)
+        testSubject.drawElementHighlight(canvasMock)
 
-        Mockito.verify<Canvas?>(canvasMock, VerificationModeFactory.times(1))
+        Mockito
+            .verify(canvasMock, VerificationModeFactory.times(1))
             .drawCircle(
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
-                ArgumentMatchers.same<Paint?>(transparentInnerCirclePaintMock)
+                ArgumentMatchers.same(transparentInnerCirclePaintMock),
             )
-        Mockito.verify<Canvas?>(canvasMock, VerificationModeFactory.times(1))
+        Mockito
+            .verify(canvasMock, VerificationModeFactory.times(1))
             .drawCircle(
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
-                ArgumentMatchers.same<Paint?>(outerCirclePaintMock)
+                ArgumentMatchers.same(outerCirclePaintMock),
             )
         Mockito.verifyNoMoreInteractions(canvasMock)
     }
@@ -125,31 +132,34 @@ class FocusElementHighlightTest {
     @Test
     @Throws(Exception::class)
     fun drawElementHighlightDrawsTwoCirclesAndANumberForNonCurrentElement() {
-        testSubject!!.setAsNonCurrentElement()
-        Mockito.`when`<Boolean?>(accessibilityNodeInfoMock!!.refresh()).thenReturn(true)
-        testSubject!!.drawElementHighlight(canvasMock!!)
+        testSubject.setAsNonCurrentElement()
+        Mockito.`when`(accessibilityNodeInfoMock.refresh()).thenReturn(true)
+        testSubject.drawElementHighlight(canvasMock)
 
-        Mockito.verify<Canvas?>(canvasMock, VerificationModeFactory.times(1))
+        Mockito
+            .verify(canvasMock, VerificationModeFactory.times(1))
             .drawCircle(
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
-                ArgumentMatchers.same<Paint?>(innerCirclePaintMock)
+                ArgumentMatchers.same(innerCirclePaintMock),
             )
-        Mockito.verify<Canvas?>(canvasMock, VerificationModeFactory.times(1))
+        Mockito
+            .verify(canvasMock, VerificationModeFactory.times(1))
             .drawCircle(
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
-                ArgumentMatchers.same<Paint?>(outerCirclePaintMock)
+                ArgumentMatchers.same(outerCirclePaintMock),
             )
         val expectedText = tabStopCount.toString() + ""
-        Mockito.verify<Canvas?>(canvasMock, VerificationModeFactory.times(1))
+        Mockito
+            .verify(canvasMock, VerificationModeFactory.times(1))
             .drawText(
-                ArgumentMatchers.eq<String?>(expectedText),
+                ArgumentMatchers.eq(expectedText),
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
-                ArgumentMatchers.same<Paint?>(numberPaintMock)
+                ArgumentMatchers.same(numberPaintMock),
             )
         Mockito.verifyNoMoreInteractions(canvasMock)
     }
@@ -157,32 +167,34 @@ class FocusElementHighlightTest {
     @Test
     @Throws(Exception::class)
     fun setPaintsModifiesPaintsUsedToDrawElementHighlights() {
-        Mockito.`when`<Boolean?>(accessibilityNodeInfoMock!!.refresh()).thenReturn(true)
+        Mockito.`when`(accessibilityNodeInfoMock.refresh()).thenReturn(true)
 
-        val updatedPaints = HashMap<String?, Paint?>(initialPaints)
-        updatedPaints.put("outerCircle", differentOuterCirclePaintMock)
+        val updatedPaints = HashMap<String, Paint>(initialPaints)
+        updatedPaints["outerCircle"] = differentOuterCirclePaintMock
 
-        testSubject!!.setPaints(updatedPaints)
-        testSubject!!.drawElementHighlight(canvasMock!!)
+        testSubject.setPaints(updatedPaints)
+        testSubject.drawElementHighlight(canvasMock)
 
-        Mockito.verify<Canvas?>(canvasMock, VerificationModeFactory.times(0))
+        Mockito
+            .verify(canvasMock, VerificationModeFactory.times(0))
             .drawCircle(
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
-                ArgumentMatchers.anyFloat(),  /* original */
-                ArgumentMatchers.same<Paint?>(outerCirclePaintMock)
+                ArgumentMatchers.anyFloat(), // original
+                ArgumentMatchers.same(outerCirclePaintMock),
             )
-        Mockito.verify<Canvas?>(canvasMock, VerificationModeFactory.times(1))
+        Mockito
+            .verify(canvasMock, VerificationModeFactory.times(1))
             .drawCircle(
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
                 ArgumentMatchers.anyFloat(),
-                ArgumentMatchers.same<Paint?>(differentOuterCirclePaintMock)
+                ArgumentMatchers.same(differentOuterCirclePaintMock),
             )
     }
 
     @Test
     fun getEventSourceReturnsAccessibilityNodeInfo() {
-        Assert.assertEquals(testSubject!!.eventSource, accessibilityNodeInfoMock)
+        Assert.assertEquals(testSubject.eventSource, accessibilityNodeInfoMock)
     }
 }

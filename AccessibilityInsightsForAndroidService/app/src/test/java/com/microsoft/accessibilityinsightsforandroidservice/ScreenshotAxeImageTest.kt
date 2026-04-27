@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -73,16 +74,19 @@ class ScreenshotAxeImageTest {
         val expectedString = "some string"
 
         Mockito.mockStatic<Base64?>(Base64::class.java).use { base64StaticMock ->
-            Mockito.`when`<ByteArrayOutputStream>(byteArrayOutputStreamProviderMock!!.get())
+            Mockito
+                .`when`<ByteArrayOutputStream>(byteArrayOutputStreamProviderMock!!.get())
                 .thenReturn(byteArrayOutputStreamMock)
-            Mockito.`when`<ByteArray?>(byteArrayOutputStreamMock!!.toByteArray())
+            Mockito
+                .`when`<ByteArray?>(byteArrayOutputStreamMock!!.toByteArray())
                 .thenReturn(byteArrayStub)
             base64StaticMock
                 .`when`<Any?>(Verification { Base64.encodeToString(byteArrayStub, Base64.NO_WRAP) })
                 .thenReturn(expectedString)
 
             Assert.assertEquals(testSubject!!.toBase64Png(), expectedString)
-            Mockito.verify<Bitmap?>(bitmapMock, Mockito.times(1))
+            Mockito
+                .verify<Bitmap?>(bitmapMock, Mockito.times(1))
                 .compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStreamMock!!)
         }
     }

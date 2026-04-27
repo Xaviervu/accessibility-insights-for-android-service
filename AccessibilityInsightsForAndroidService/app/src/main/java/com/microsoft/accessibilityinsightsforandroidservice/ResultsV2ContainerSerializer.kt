@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import com.deque.axe.android.AxeResult
@@ -16,24 +17,26 @@ import java.io.IOException
 class ResultsV2ContainerSerializer(
     private val atfaRulesSerializer: ATFARulesSerializer,
     private val atfaResultsSerializer: ATFAResultsSerializer,
-    gsonBuilder: GsonBuilder
+    gsonBuilder: GsonBuilder,
 ) {
     private val gson: Gson
     private val resultsContainerTypeAdapter: TypeAdapter<ResultsV2Container> =
         object : TypeAdapter<ResultsV2Container>() {
             @Throws(IOException::class)
-            override fun write(out: JsonWriter, value: ResultsV2Container) {
+            override fun write(
+                out: JsonWriter,
+                value: ResultsV2Container,
+            ) {
                 out.beginObject()
                 out.name("AxeResults").jsonValue(value.AxeResult?.toJson())
                 out.name("ATFARules").jsonValue(atfaRulesSerializer.serializeATFARules())
-                out.name("ATFAResults")
+                out
+                    .name("ATFAResults")
                     .jsonValue(atfaResultsSerializer.serializeATFAResults(value.ATFAResults))
                 out.endObject()
             }
 
-            override fun read(`in`: JsonReader?): ResultsV2Container? {
-                return null
-            }
+            override fun read(`in`: JsonReader?): ResultsV2Container? = null
         }
 
     init {
@@ -41,13 +44,13 @@ class ResultsV2ContainerSerializer(
             gsonBuilder
                 .registerTypeAdapter(
                     ResultsV2Container::class.java,
-                    this.resultsContainerTypeAdapter
-                )
-                .create()
+                    this.resultsContainerTypeAdapter,
+                ).create()
     }
 
     fun createResultsJson(
-        axeResult: AxeResult?, atfaResults: List<AccessibilityHierarchyCheckResult>?
+        axeResult: AxeResult?,
+        atfaResults: List<AccessibilityHierarchyCheckResult>?,
     ): String {
         val container = ResultsV2Container()
         container.ATFAResults = atfaResults

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import java.util.function.Consumer
@@ -31,6 +32,7 @@ class FocusVisualizationStateManager {
         onChangedListeners.forEach(
             Consumer { listener: Consumer<Boolean?>? ->
                 listener!!.accept(enabled)
-            })
+            },
+        )
     }
 }

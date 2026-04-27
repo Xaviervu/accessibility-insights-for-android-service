@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Rect
@@ -13,66 +14,40 @@ class NodeViewBuilder(
     private val accessibilityNode: AccessibilityNodeInfo,
     private val children: MutableList<AxeView>,
     private val labeledBy: AxeView?,
-    boundsRectProvider: AxeRectProvider
+    boundsRectProvider: AxeRectProvider,
 ) : AxeView.Builder {
     private val boundsRect: AxeRect
 
-    override fun boundsInScreen(): AxeRect {
-        return boundsRect
-    }
+    override fun boundsInScreen(): AxeRect = boundsRect
 
     override fun className(): String {
         val rawClassName = safeToString(accessibilityNode.className)
         return rawClassName ?: "Class Name Not Specified--Inserted by Accessibility Insights"
     }
 
-    override fun contentDescription(): String? {
-        return safeToString(accessibilityNode.contentDescription)
-    }
+    override fun contentDescription(): String? = safeToString(accessibilityNode.contentDescription)
 
-    override fun isAccessibilityFocusable(): Boolean {
-        return accessibilityNode.isFocusable
-    }
+    override fun isAccessibilityFocusable(): Boolean = accessibilityNode.isFocusable
 
-    override fun isClickable(): Boolean {
-        return accessibilityNode.isClickable
-    }
+    override fun isClickable(): Boolean = accessibilityNode.isClickable
 
-    override fun isEnabled(): Boolean {
-        return accessibilityNode.isEnabled
-    }
+    override fun isEnabled(): Boolean = accessibilityNode.isEnabled
 
-    override fun isImportantForAccessibility(): Boolean {
-        return accessibilityNode.isImportantForAccessibility
-    }
+    override fun isImportantForAccessibility(): Boolean = accessibilityNode.isImportantForAccessibility
 
-    override fun labeledBy(): AxeView? {
-        return labeledBy
-    }
+    override fun labeledBy(): AxeView? = labeledBy
 
-    override fun packageName(): String? {
-        return safeToString(accessibilityNode.packageName)
-    }
+    override fun packageName(): String? = safeToString(accessibilityNode.packageName)
 
-    override fun paneTitle(): String? {
-        return null
-    }
+    override fun paneTitle(): String? = null
 
-    override fun text(): String? {
-        return safeToString(accessibilityNode.getText())
-    }
+    override fun text(): String? = safeToString(accessibilityNode.getText())
 
-    override fun viewIdResourceName(): String? {
-        return accessibilityNode.viewIdResourceName
-    }
+    override fun viewIdResourceName(): String? = accessibilityNode.viewIdResourceName
 
-    override fun children(): MutableList<AxeView> {
-        return children
-    }
+    override fun children(): MutableList<AxeView> = children
 
-    override fun value(): String? {
-        return null
-    }
+    override fun value(): String? = null
 
     override fun hintText(): String? {
         if (Build.VERSION.SDK_INT >= 26) {

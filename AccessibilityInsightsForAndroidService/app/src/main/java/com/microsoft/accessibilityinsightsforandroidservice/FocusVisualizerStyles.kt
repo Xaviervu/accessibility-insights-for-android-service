@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Color
@@ -10,23 +11,23 @@ import android.graphics.PorterDuffXfermode
 
 class FocusVisualizerStyles {
     private lateinit var currentLinePaint: Paint
-    private lateinit  var currentOuterCirclePaint: Paint
+    private lateinit var currentOuterCirclePaint: Paint
     private lateinit var nonCurrentLinePaint: Paint
     private lateinit var nonCurrentOuterCirclePaint: Paint
-    private lateinit  var innerCirclePaint: Paint
+    private lateinit var innerCirclePaint: Paint
     private lateinit var numberPaint: Paint
     private lateinit var currentBackgroundLinePaint: Paint
     private lateinit var nonCurrentBackgroundLinePaint: Paint
     private lateinit var transparentInnerCirclePaint: Paint
 
     lateinit var currentElementPaints: HashMap<String, Paint>
-    private set
+        private set
     lateinit var nonCurrentElementPaints: HashMap<String, Paint>
-    private set
+        private set
     lateinit var currentLinePaints: HashMap<String, Paint>
-    private set
+        private set
     lateinit var nonCurrentLinePaints: HashMap<String, Paint>
-    private set
+        private set
 
     var focusElementHighlightRadius: Int = 50
 

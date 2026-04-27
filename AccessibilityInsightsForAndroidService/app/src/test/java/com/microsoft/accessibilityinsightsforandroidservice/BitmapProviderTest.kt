@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -31,13 +32,16 @@ class BitmapProviderTest {
     @Before
     fun prepare() {
         bitmapStaticMock = Mockito.mockStatic<Bitmap?>(Bitmap::class.java)
-        bitmapStaticMock!!.`when`<Any?>(Verification {
-            Bitmap.createBitmap(
-                width,
-                height,
-                config!!
-            )
-        }).thenReturn(bitmapMock)
+        bitmapStaticMock!!
+            .`when`<Any?>(
+                Verification {
+                    Bitmap.createBitmap(
+                        width,
+                        height,
+                        config!!,
+                    )
+                },
+            ).thenReturn(bitmapMock)
         testSubject = BitmapProvider()
     }
 

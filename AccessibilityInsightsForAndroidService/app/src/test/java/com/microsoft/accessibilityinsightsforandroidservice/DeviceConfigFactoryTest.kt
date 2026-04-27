@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
@@ -66,7 +67,5 @@ class DeviceConfigFactoryTest {
         Assert.assertEquals(packageNameUnavailable, getActualPackageName(null))
     }
 
-    private fun getActualPackageName(rootNode: AccessibilityNodeInfo?): String? {
-        return testSubject!!.getDeviceConfig(rootNode).packageName
-    }
+    private fun getActualPackageName(rootNode: AccessibilityNodeInfo?): String? = testSubject!!.getDeviceConfig(rootNode).packageName
 }

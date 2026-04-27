@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -30,66 +31,66 @@ import java.util.function.Supplier
 @RunWith(MockitoJUnitRunner::class)
 class ScreenshotControllerTest {
     @Mock
-    var displayMetricsSupplierMock: Supplier<DisplayMetrics?>? = null
+    lateinit var displayMetricsSupplierMock: Supplier<DisplayMetrics>
 
     @Mock
-    var handlerMock: Handler? = null
+    lateinit var handlerMock: Handler
 
     @Mock
-    var onScreenshotAvailableProviderMock: OnScreenshotAvailableProvider? = null
+    lateinit var onScreenshotAvailableProviderMock: OnScreenshotAvailableProvider
 
     @Mock
-    var bitmapProviderMock: BitmapProvider? = null
+    lateinit var bitmapProviderMock: BitmapProvider
 
     @Mock
-    var bitmapConsumerMock: Consumer<Bitmap?>? = null
+    lateinit var bitmapConsumerMock: Consumer<Bitmap?>
 
     @Mock
-    var mediaProjectionSupplierMock: Supplier<MediaProjection?>? = null
+    lateinit var mediaProjectionSupplierMock: Supplier<MediaProjection?>
 
     @Mock
-    var mediaProjectionMock: MediaProjection? = null
+    lateinit var mediaProjectionMock: MediaProjection
 
     @Mock
-    var imageReaderMock: ImageReader? = null
+    lateinit var imageReaderMock: ImageReader
 
     @Mock
-    var surfaceMock: Surface? = null
+    lateinit var surfaceMock: Surface
 
     @Mock
-    var bitmapMock: Bitmap? = null
+    lateinit var bitmapMock: Bitmap
 
     @Mock
-    var onScreenshotAvailableMock: OnScreenshotAvailable? = null
+    lateinit var onScreenshotAvailableMock: OnScreenshotAvailable
 
     @Mock
-    var displayMock: VirtualDisplay? = null
+    lateinit var displayMock: VirtualDisplay
 
-    var imageReaderStaticMock: MockedStatic<ImageReader?>? = null
+    lateinit var imageReaderStaticMock: MockedStatic<ImageReader>
 
     @Captor
-    var bitmapConsumerCallback: ArgumentCaptor<Consumer<Bitmap?>?>? = null
+    lateinit var bitmapConsumerCallback: ArgumentCaptor<Consumer<Bitmap>>
 
-    var displayMetricsStub: DisplayMetrics? = null
-    var testSubject: ScreenshotController? = null
+    lateinit var displayMetricsStub: DisplayMetrics
+    lateinit var testSubject: ScreenshotController
 
     @Before
     fun prepare() {
-        imageReaderStaticMock = Mockito.mockStatic<ImageReader?>(ImageReader::class.java)
+        imageReaderStaticMock = Mockito.mockStatic(ImageReader::class.java)
         displayMetricsStub = DisplayMetricsStub()
         testSubject =
             ScreenshotController(
                 displayMetricsSupplierMock,
                 handlerMock,
-                onScreenshotAvailableProviderMock!!,
-                bitmapProviderMock!!,
-                mediaProjectionSupplierMock!!
+                onScreenshotAvailableProviderMock,
+                bitmapProviderMock,
+                mediaProjectionSupplierMock,
             )
     }
 
     @After
     fun cleanUp() {
-        imageReaderStaticMock!!.close()
+        imageReaderStaticMock.close()
     }
 
     @Test
@@ -99,101 +100,102 @@ class ScreenshotControllerTest {
 
     @Test
     fun nullBitmapReturnedWhenSharedMediaProjectionIsNull() {
-        Mockito.`when`<MediaProjection?>(mediaProjectionSupplierMock!!.get()).thenReturn(null)
+        Mockito.`when`(mediaProjectionSupplierMock.get()).thenReturn(null)
 
-        testSubject!!.getScreenshotWithMediaProjection(bitmapConsumerMock!!)
+        testSubject.getScreenshotWithMediaProjection(bitmapConsumerMock)
 
-        Mockito.verify<Consumer<Bitmap?>?>(bitmapConsumerMock, Mockito.times(1)).accept(null)
+        Mockito.verify(bitmapConsumerMock, Mockito.times(1)).accept(null)
     }
 
     @Test
     fun createVirtualDisplayWithExpectedImageReader() {
         bitmapConsumerCallback = createBitmapConsumerCallback()
-        Mockito.`when`<MediaProjection?>(mediaProjectionSupplierMock!!.get())
+        Mockito
+            .`when`(mediaProjectionSupplierMock.get())
             .thenReturn(mediaProjectionMock)
-        Mockito.`when`<DisplayMetrics?>(displayMetricsSupplierMock!!.get())
+        Mockito
+            .`when`(displayMetricsSupplierMock.get())
             .thenReturn(displayMetricsStub)
-        imageReaderStaticMock!!
+        imageReaderStaticMock
             .`when`<Any?>(
                 Verification {
                     ImageReader.newInstance(
-                        displayMetricsStub!!.widthPixels,
-                        displayMetricsStub!!.heightPixels,
+                        displayMetricsStub.widthPixels,
+                        displayMetricsStub.heightPixels,
                         PixelFormat.RGBA_8888,
-                        2
+                        2,
                     )
-                })
-            .thenReturn(imageReaderMock)
-        Mockito.`when`<Surface?>(imageReaderMock!!.getSurface()).thenReturn(surfaceMock)
-        Mockito.`when`<OnScreenshotAvailable>(
-            onScreenshotAvailableProviderMock!!.getOnScreenshotAvailable(
-                ArgumentMatchers.eq<DisplayMetrics?>(displayMetricsStub),
-                ArgumentMatchers.eq<BitmapProvider?>(bitmapProviderMock),
-                bitmapConsumerCallback!!.capture()
-            )
-        )
-            .thenReturn(onScreenshotAvailableMock)
-        Mockito.`when`<VirtualDisplay?>(
-            mediaProjectionMock!!.createVirtualDisplay(
-                "myDisplay",
-                displayMetricsStub!!.widthPixels,
-                displayMetricsStub!!.heightPixels,
-                displayMetricsStub!!.densityDpi,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                surfaceMock,
-                null,
-                null
-            )
-        )
-            .thenReturn(displayMock)
+                },
+            ).thenReturn(imageReaderMock)
+        Mockito.`when`<Surface?>(imageReaderMock.surface).thenReturn(surfaceMock)
+        Mockito
+            .`when`<OnScreenshotAvailable>(
+                onScreenshotAvailableProviderMock.getOnScreenshotAvailable(
+                    ArgumentMatchers.eq(displayMetricsStub),
+                    ArgumentMatchers.eq(bitmapProviderMock),
+                    bitmapConsumerCallback.capture(),
+                ),
+            ).thenReturn(onScreenshotAvailableMock)
+        Mockito
+            .`when`<VirtualDisplay?>(
+                mediaProjectionMock.createVirtualDisplay(
+                    "myDisplay",
+                    displayMetricsStub.widthPixels,
+                    displayMetricsStub.heightPixels,
+                    displayMetricsStub.densityDpi,
+                    DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                    surfaceMock,
+                    null,
+                    null,
+                ),
+            ).thenReturn(displayMock)
 
-        testSubject!!.getScreenshotWithMediaProjection(bitmapConsumerMock!!)
-        bitmapConsumerCallback!!.getValue()!!.accept(bitmapMock)
+        testSubject.getScreenshotWithMediaProjection(bitmapConsumerMock)
+        bitmapConsumerCallback.getValue().accept(bitmapMock)
 
-        Mockito.verify<VirtualDisplay?>(displayMock, Mockito.times(1)).release()
-        Mockito.verify<Consumer<Bitmap?>?>(bitmapConsumerMock, Mockito.times(1)).accept(bitmapMock)
+        Mockito.verify(displayMock, Mockito.times(1)).release()
+        Mockito.verify(bitmapConsumerMock, Mockito.times(1)).accept(bitmapMock)
     }
 
-    private fun createBitmapConsumerCallback(): ArgumentCaptor<Consumer<Bitmap?>?> {
-        return ArgumentCaptor.forClass<Consumer<Bitmap?>?, Consumer<*>?>(Consumer::class.java)
-    }
+   private fun createBitmapConsumerCallback(): ArgumentCaptor<Consumer<Bitmap>> =
+        ArgumentCaptor.forClass(Consumer::class.java) as ArgumentCaptor<Consumer<Bitmap>>
 
     @Test
     fun createVirtualDisplayCleansResourcesAppropriatelyBeforeGettingScreenshot() {
-        Mockito.`when`<MediaProjection?>(mediaProjectionSupplierMock!!.get())
+        Mockito
+            .`when`(mediaProjectionSupplierMock.get())
             .thenReturn(mediaProjectionMock)
-        Mockito.`when`<DisplayMetrics?>(displayMetricsSupplierMock!!.get())
+        Mockito
+            .`when`(displayMetricsSupplierMock.get())
             .thenReturn(displayMetricsStub)
-        imageReaderStaticMock!!
-            .`when`<Any?>(
-                Verification {
-                    ImageReader.newInstance(
-                        displayMetricsStub!!.widthPixels,
-                        displayMetricsStub!!.heightPixels,
-                        PixelFormat.RGBA_8888,
-                        2
-                    )
-                })
-            .thenReturn(imageReaderMock)
-        Mockito.`when`<Surface?>(imageReaderMock!!.getSurface()).thenReturn(surfaceMock)
-        Mockito.`when`<VirtualDisplay?>(
-            mediaProjectionMock!!.createVirtualDisplay(
-                "myDisplay",
-                displayMetricsStub!!.widthPixels,
-                displayMetricsStub!!.heightPixels,
-                displayMetricsStub!!.densityDpi,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                surfaceMock,
-                null,
-                null
-            )
-        )
-            .thenReturn(displayMock)
+        imageReaderStaticMock
+            .`when`<Any?> {
+                ImageReader.newInstance(
+                    displayMetricsStub.widthPixels,
+                    displayMetricsStub.heightPixels,
+                    PixelFormat.RGBA_8888,
+                    2,
+                )
+            }.thenReturn(imageReaderMock)
+        Mockito.`when`<Surface?>(imageReaderMock.surface).thenReturn(surfaceMock)
+        Mockito
+            .`when`<VirtualDisplay?>(
+                mediaProjectionMock.createVirtualDisplay(
+                    "myDisplay",
+                    displayMetricsStub.widthPixels,
+                    displayMetricsStub.heightPixels,
+                    displayMetricsStub.densityDpi,
+                    DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                    surfaceMock,
+                    null,
+                    null,
+                ),
+            ).thenReturn(displayMock)
 
-        testSubject!!.getScreenshotWithMediaProjection(bitmapConsumerMock!!)
-        testSubject!!.getScreenshotWithMediaProjection(bitmapConsumerMock!!)
+        testSubject.getScreenshotWithMediaProjection(bitmapConsumerMock)
+        testSubject.getScreenshotWithMediaProjection(bitmapConsumerMock)
 
-        Mockito.verify<VirtualDisplay?>(displayMock, Mockito.times(1)).release()
-        Mockito.verify<ImageReader?>(imageReaderMock, Mockito.times(1)).close()
+        Mockito.verify(displayMock, Mockito.times(1)).release()
+        Mockito.verify(imageReaderMock, Mockito.times(1)).close()
     }
 }

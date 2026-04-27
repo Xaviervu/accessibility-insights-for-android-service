@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -10,7 +11,7 @@ import com.deque.axe.android.wrappers.AxeRect
 
 class ScreenshotAxeImage(
     private val screenshot: Bitmap,
-    private val byteArrayOutputStreamProvider: ByteArrayOutputStreamProvider
+    private val byteArrayOutputStreamProvider: ByteArrayOutputStreamProvider,
 ) : AxeImage() {
     private val frameRect: AxeRect
 
@@ -18,11 +19,12 @@ class ScreenshotAxeImage(
         frameRect = AxeRect(0, screenshot.getWidth() - 1, 0, screenshot.getHeight() - 1)
     }
 
-    override fun frame(): AxeRect {
-        return frameRect
-    }
+    override fun frame(): AxeRect = frameRect
 
-    override fun pixel(x: Int, y: Int): AxeColor {
+    override fun pixel(
+        x: Int,
+        y: Int,
+    ): AxeColor {
         val color = AxeColor(this.screenshot.getPixel(x, y))
         return color
     }

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Bitmap
@@ -52,17 +53,18 @@ class AxeScannerTest {
     @Throws(ViewChangedException::class)
     fun scanWithAxeReturnsCorrectResult() {
         Mockito.`when`<Axe>(axeRunnerFactoryMock!!.createAxeRunner()).thenReturn(axeMock)
-        Mockito.`when`<AxeContext>(
-            axeContextFactoryMock!!.createAxeContext(
-                accessibilityNodeInfoMock!!,
-                screenshotMock!!
-            )
-        )
-            .thenReturn(axeContextMock)
+        Mockito
+            .`when`<AxeContext>(
+                axeContextFactoryMock!!.createAxeContext(
+                    accessibilityNodeInfoMock!!,
+                    screenshotMock!!,
+                ),
+            ).thenReturn(axeContextMock)
         Mockito.`when`<AxeResult?>(axeMock!!.run(axeContextMock)).thenReturn(axeResultMock)
 
         Assert.assertEquals(
-            testSubject!!.scanWithAxe(accessibilityNodeInfoMock!!, screenshotMock!!), axeResultMock
+            testSubject!!.scanWithAxe(accessibilityNodeInfoMock!!, screenshotMock!!),
+            axeResultMock,
         )
     }
 }

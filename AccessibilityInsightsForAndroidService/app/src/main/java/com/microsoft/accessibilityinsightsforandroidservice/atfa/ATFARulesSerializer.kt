@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice.atfa
 
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheck
@@ -36,7 +37,7 @@ class ATFARulesSerializer {
 
         val presetChecks: ImmutableSet<AccessibilityHierarchyCheck> =
             AccessibilityCheckPreset.getAccessibilityHierarchyChecksForPreset(
-                AccessibilityCheckPreset.LATEST
+                AccessibilityCheckPreset.LATEST,
             )
 
         return gsonSerializer.toJson(presetChecks)
@@ -55,18 +56,22 @@ class ATFARulesSerializer {
     }
 
     private inner class AccessibilityHierarchyCheckAdapterFactory : TypeAdapterFactory {
-        override fun <T> create(gson: Gson?, type: TypeToken<T?>): TypeAdapter<T?>? {
+        override fun <T> create(
+            gson: Gson?,
+            type: TypeToken<T?>,
+        ): TypeAdapter<T?>? {
             if (!AccessibilityHierarchyCheck::class.java.isAssignableFrom(type.getRawType())) return null
 
             return AccessibilityHierarchyCheckAdapter() as TypeAdapter<T?>
         }
     }
 
-    private inner class AccessibilityHierarchyCheckAdapter
-
-        : TypeAdapter<AccessibilityHierarchyCheck>() {
+    private inner class AccessibilityHierarchyCheckAdapter : TypeAdapter<AccessibilityHierarchyCheck>() {
         @Throws(IOException::class)
-        override fun write(out: JsonWriter, value: AccessibilityHierarchyCheck) {
+        override fun write(
+            out: JsonWriter,
+            value: AccessibilityHierarchyCheck,
+        ) {
             out.beginObject()
             out.name("class").value(value.javaClass.getName())
             out.name("titleMessage").value(value.getTitleMessage(Locale.getDefault()))
@@ -77,9 +82,7 @@ class ATFARulesSerializer {
         }
 
         @Throws(IOException::class)
-        override fun read(`in`: JsonReader?): AccessibilityHierarchyCheck? {
-            return null
-        }
+        override fun read(`in`: JsonReader?): AccessibilityHierarchyCheck? = null
     }
 
     companion object {
@@ -88,15 +91,12 @@ class ATFARulesSerializer {
         private val ClassesToSkip: MutableList<Class<*>?> =
             Arrays.asList<Class<*>?>(Pattern::class.java)
 
-        private val ATFARuleExclusionStrategy: ExclusionStrategy = object : ExclusionStrategy {
-            override fun shouldSkipField(f: FieldAttributes): Boolean {
-                return FieldsToSkip.contains(f.getName())
-            }
+        private val ATFARuleExclusionStrategy: ExclusionStrategy =
+            object : ExclusionStrategy {
+                override fun shouldSkipField(f: FieldAttributes): Boolean = FieldsToSkip.contains(f.getName())
 
-            override fun shouldSkipClass(clazz: Class<*>?): Boolean {
-                return ClassesToSkip.contains(clazz)
+                override fun shouldSkipClass(clazz: Class<*>?): Boolean = ClassesToSkip.contains(clazz)
             }
-        }
 
         private val ClassSerializer =
             JsonSerializer { src: Class<out AccessibilityCheck?>?, typeOfSrc: Type?, context: JsonSerializationContext? ->

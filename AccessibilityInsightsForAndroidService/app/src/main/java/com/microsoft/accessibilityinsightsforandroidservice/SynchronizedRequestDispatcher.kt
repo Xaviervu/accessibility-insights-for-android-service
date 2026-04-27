@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.os.CancellationSignal
@@ -36,7 +37,10 @@ class SynchronizedRequestDispatcher {
 
     @AnyThread
     @Throws(Exception::class)
-    fun request(method: String, cancellationSignal: CancellationSignal): String? {
+    fun request(
+        method: String,
+        cancellationSignal: CancellationSignal,
+    ): String? {
         val combinedCancellationSignal = CancellationSignal()
 
         synchronized(lock) {

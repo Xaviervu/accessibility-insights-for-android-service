@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
@@ -47,7 +48,8 @@ class EventHelperTest {
     fun claimLastSourceCallsSwapWithNullObjectOnlyOnce() {
         testSubject!!.claimLastSource()
 
-        Mockito.verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(1))
+        Mockito
+            .verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(1))
             .swap(null)
     }
 
@@ -55,13 +57,15 @@ class EventHelperTest {
     fun restoreLastSourceCallsSetIfCurrentlyNullOnlyOnce() {
         testSubject!!.restoreLastSource(mockNodeInfo)
 
-        Mockito.verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(1))
+        Mockito
+            .verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(1))
             .setIfCurrentlyNull(mockNodeInfo)
     }
 
     @Test
     fun recordEventProperlyHandlesNonNullEventSource() {
-        Mockito.`when`<AccessibilityNodeInfo?>(mockSwapper!!.swap(mockNodeInfo))
+        Mockito
+            .`when`<AccessibilityNodeInfo?>(mockSwapper!!.swap(mockNodeInfo))
             .thenReturn(mockLastNodeInfo)
 
         testSubject!!.recordEvent(mockNodeInfo)
@@ -73,7 +77,8 @@ class EventHelperTest {
     fun recordEventProperlyHandlesNullEventSource() {
         testSubject!!.recordEvent(null)
 
-        Mockito.verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(0))
+        Mockito
+            .verify<ThreadSafeSwapper<AccessibilityNodeInfo?>?>(mockSwapper, Mockito.times(0))
             .swap(mockNodeInfo)
         Mockito.verify<AccessibilityNodeInfo?>(mockLastNodeInfo, Mockito.times(0)).recycle()
     }

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
@@ -7,10 +8,9 @@ import java.util.PriorityQueue
 import java.util.Queue
 
 class AccessibilityNodeInfoQueueBuilder {
-    fun buildPriorityQueue(
-        rootNode: AccessibilityNodeInfo
-    ): Queue<OrderedValue<AccessibilityNodeInfo>> {
+    fun buildPriorityQueue(rootNode: AccessibilityNodeInfo?): Queue<OrderedValue<AccessibilityNodeInfo>> {
         val queue = PriorityQueue<OrderedValue<AccessibilityNodeInfo>>()
+        if(rootNode == null) return queue
         recursivelyEnqueueNodes(queue, rootNode, Long.Companion.MAX_VALUE)
         return queue
     }
@@ -18,7 +18,7 @@ class AccessibilityNodeInfoQueueBuilder {
     private fun recursivelyEnqueueNodes(
         queue: PriorityQueue<OrderedValue<AccessibilityNodeInfo>>,
         node: AccessibilityNodeInfo,
-        order: Long
+        order: Long,
     ) {
         // The AxeView object requires that we create the AxeView
         // objects for both child nodes and for any labeledBy nodes. Child nodes use

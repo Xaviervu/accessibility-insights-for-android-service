@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.content.Context
@@ -14,19 +15,19 @@ import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class FocusVisualizationCanvasTest {
-    var testSubject: FocusVisualizationCanvas? = null
+    lateinit var testSubject: FocusVisualizationCanvas
 
     @Mock
-    var contextMock: Context? = null
+    lateinit var contextMock: Context
 
     @Mock
-    var focusElementHighlightMock: FocusElementHighlight? = null
+    lateinit var focusElementHighlightMock: FocusElementHighlight
 
     @Mock
-    var focusElementLineMock: FocusElementLine? = null
+    lateinit var focusElementLineMock: FocusElementLine
 
     @Mock
-    var canvasMock: Canvas? = null
+    lateinit var canvasMock: Canvas
 
     @Before
     fun prepare() {
@@ -36,41 +37,45 @@ class FocusVisualizationCanvasTest {
     @Test
     @Throws(Exception::class)
     fun drawHighlightsAndLinesOnlyDrawsHighlightOnFirstPass() {
-        val lineStub = ArrayList<FocusElementLine?>()
+        val lineStub = ArrayList<FocusElementLine>()
         lineStub.add(focusElementLineMock)
 
-        val highlightStub = ArrayList<FocusElementHighlight?>()
+        val highlightStub = ArrayList<FocusElementHighlight>()
         highlightStub.add(focusElementHighlightMock)
 
-        testSubject!!.setDrawItems(highlightStub, lineStub)
-        testSubject!!.drawHighlightsAndLines(canvasMock!!)
+        testSubject.setDrawItems(highlightStub, lineStub)
+        testSubject.drawHighlightsAndLines(canvasMock)
 
-        Mockito.verify<FocusElementHighlight?>(focusElementHighlightMock, Mockito.times(1))
-            .drawElementHighlight(ArgumentMatchers.any<Canvas?>(Canvas::class.java))
-        Mockito.verify<FocusElementLine?>(focusElementLineMock, Mockito.times(0))
-            .drawLine(ArgumentMatchers.any<Canvas?>(Canvas::class.java))
+        Mockito
+            .verify(focusElementHighlightMock, Mockito.times(1))
+            .drawElementHighlight(ArgumentMatchers.any(Canvas::class.java))
+        Mockito
+            .verify(focusElementLineMock, Mockito.times(0))
+            .drawLine(ArgumentMatchers.any(Canvas::class.java))
     }
 
     @Test
     @Throws(Exception::class)
     fun drawHighlightsAndLinesDrawsAllRelevantObjectsOnSubsequentPasses() {
-        val lineStub = ArrayList<FocusElementLine?>()
+        val lineStub = ArrayList<FocusElementLine>()
         lineStub.add(focusElementLineMock)
         lineStub.add(focusElementLineMock)
 
-        val highlightStub = ArrayList<FocusElementHighlight?>()
+        val highlightStub = ArrayList<FocusElementHighlight>()
         highlightStub.add(focusElementHighlightMock)
         highlightStub.add(focusElementHighlightMock)
 
-        testSubject!!.setDrawItems(highlightStub, lineStub)
-        testSubject!!.drawHighlightsAndLines(canvasMock!!)
+        testSubject.setDrawItems(highlightStub, lineStub)
+        testSubject.drawHighlightsAndLines(canvasMock)
 
         // Note: drawElementHighlight will call twice for each subsequent onDraw event.  This is to
         // ensure that the line is drawn underneath the highlight, as the canvas drawings draw on
         // top of any previous drawings by default.
-        Mockito.verify<FocusElementHighlight?>(focusElementHighlightMock, Mockito.times(3))
-            .drawElementHighlight(ArgumentMatchers.any<Canvas?>(Canvas::class.java))
-        Mockito.verify<FocusElementLine?>(focusElementLineMock, Mockito.times(1))
-            .drawLine(ArgumentMatchers.any<Canvas?>(Canvas::class.java))
+        Mockito
+            .verify(focusElementHighlightMock, Mockito.times(3))
+            .drawElementHighlight(ArgumentMatchers.any(Canvas::class.java))
+        Mockito
+            .verify(focusElementLineMock, Mockito.times(1))
+            .drawLine(ArgumentMatchers.any(Canvas::class.java))
     }
 }

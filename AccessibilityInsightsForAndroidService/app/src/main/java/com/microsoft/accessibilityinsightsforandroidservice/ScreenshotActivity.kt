@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.app.Activity
@@ -12,6 +13,7 @@ import com.microsoft.accessibilityinsightsforandroidservice.MediaProjectionHolde
 
 class ScreenshotActivity : Activity() {
     private lateinit var mediaManager: MediaProjectionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -19,7 +21,11 @@ class ScreenshotActivity : Activity() {
         startActivityForResult(mediaManager.createScreenCaptureIntent(), SCREENSHOT)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (requestCode == SCREENSHOT) {
             if (resultCode == RESULT_OK && data != null) {
                 set(mediaManager.getMediaProjection(resultCode, data))
@@ -27,7 +33,8 @@ class ScreenshotActivity : Activity() {
         }
 
         if (get() == null) {
-            Toast.makeText(this, R.string.screenshot_permission_not_granted, Toast.LENGTH_LONG)
+            Toast
+                .makeText(this, R.string.screenshot_permission_not_granted, Toast.LENGTH_LONG)
                 .show()
         }
 

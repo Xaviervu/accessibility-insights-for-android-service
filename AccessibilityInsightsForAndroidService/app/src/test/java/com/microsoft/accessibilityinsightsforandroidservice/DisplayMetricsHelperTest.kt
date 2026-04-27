@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.content.Context
@@ -57,18 +58,22 @@ class DisplayMetricsHelperTest {
     fun returnsExpectedDisplayMetrics() {
         val actualDisplayMetrics = DisplayMetricsHelper.getRealDisplayMetrics(contextMock!!)
 
-        Mockito.verify<Display?>(displayMock, VerificationModeFactory.times(1))
+        Mockito
+            .verify<Display?>(displayMock, VerificationModeFactory.times(1))
             .getRealMetrics(displayMetricsMock)
         Assert.assertEquals(actualDisplayMetrics, displayMetricsMock)
     }
 
     private fun setupDisplayMocks() {
         resourcesStaticMock = Mockito.mockStatic<Resources?>(Resources::class.java)
-        resourcesStaticMock!!.`when`<Any?>(Verification { Resources.getSystem() })
+        resourcesStaticMock!!
+            .`when`<Any?>(Verification { Resources.getSystem() })
             .thenReturn(resourcesMock)
-        Mockito.`when`<DisplayMetrics?>(resourcesMock!!.getDisplayMetrics())
+        Mockito
+            .`when`<DisplayMetrics?>(resourcesMock!!.getDisplayMetrics())
             .thenReturn(displayMetricsMock)
-        Mockito.`when`<Any?>(contextMock!!.getSystemService(Context.WINDOW_SERVICE))
+        Mockito
+            .`when`<Any?>(contextMock!!.getSystemService(Context.WINDOW_SERVICE))
             .thenReturn(windowManagerMock)
         Mockito.`when`<Display?>(windowManagerMock!!.getDefaultDisplay()).thenReturn(displayMock)
     }

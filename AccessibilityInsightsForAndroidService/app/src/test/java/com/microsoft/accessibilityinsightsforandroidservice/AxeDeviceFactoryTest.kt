@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.util.DisplayMetrics
@@ -32,7 +33,8 @@ class AxeDeviceFactoryTest {
     @Before
     fun prepare() {
         deviceConfig = DeviceConfig(deviceName, packageName, serviceVersion)
-        Mockito.`when`<DeviceConfig>(deviceConfigFactoryMock!!.getDeviceConfig(rootNodeMock))
+        Mockito
+            .`when`<DeviceConfig>(deviceConfigFactoryMock!!.getDeviceConfig(rootNodeMock))
             .thenReturn(deviceConfig)
 
         displayMetrics = DisplayMetrics()

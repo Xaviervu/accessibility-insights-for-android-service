@@ -1,33 +1,33 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import java.util.Arrays
+import java.util.ArrayList
 import java.util.function.Consumer
 
 class AccessibilityEventDispatcher {
     private var previousPackageName: CharSequence? = null
 
-    private val onAppChangedListeners: ArrayList<Consumer<AccessibilityNodeInfo?>?>
-    private val onFocusEventListeners: ArrayList<Consumer<AccessibilityEvent?>?>
-    private val onRedrawEventListeners: ArrayList<Consumer<AccessibilityEvent?>?>
+    private val onAppChangedListeners: ArrayList<Consumer<AccessibilityNodeInfo?>?> = ArrayList<Consumer<AccessibilityNodeInfo?>?>()
+    private val onFocusEventListeners: ArrayList<Consumer<AccessibilityEvent?>?> = ArrayList<Consumer<AccessibilityEvent?>?>()
+    private val onRedrawEventListeners: ArrayList<Consumer<AccessibilityEvent?>?> = ArrayList<Consumer<AccessibilityEvent?>?>()
 
-    init {
-        onAppChangedListeners = ArrayList<Consumer<AccessibilityNodeInfo?>?>()
-        onFocusEventListeners = ArrayList<Consumer<AccessibilityEvent?>?>()
-        onRedrawEventListeners = ArrayList<Consumer<AccessibilityEvent?>?>()
-    }
+    fun onAccessibilityEvent(
+        event: AccessibilityEvent,
+        rootNode: AccessibilityNodeInfo?,
+    ) {
+        val eventType = event.eventType
 
-    fun onAccessibilityEvent(event: AccessibilityEvent, rootNode: AccessibilityNodeInfo?) {
-        val eventType = event.getEventType()
-
-        if (rootNode != null
-            && (previousPackageName == null
-                    || previousPackageName != rootNode.getPackageName())
+        if (rootNode != null &&
+            (
+                previousPackageName == null ||
+                    previousPackageName != rootNode.packageName
+            )
         ) {
-            previousPackageName = rootNode.getPackageName()
+            previousPackageName = rootNode.packageName
             this.callListeners<AccessibilityNodeInfo?>(onAppChangedListeners, rootNode)
         }
 
@@ -54,29 +54,29 @@ class AccessibilityEventDispatcher {
         onAppChangedListeners.add(listener)
     }
 
-    private fun isFocusEvent(eventType: Int): Boolean {
-        return eventType == AccessibilityEvent.TYPE_VIEW_FOCUSED
-    }
+    private fun isFocusEvent(eventType: Int): Boolean = eventType == AccessibilityEvent.TYPE_VIEW_FOCUSED
 
-    private fun isRedrawEvent(eventType: Int): Boolean {
-        return redrawEventTypes.contains(eventType)
-    }
+    private fun isRedrawEvent(eventType: Int): Boolean = redrawEventTypes.contains(eventType)
 
-    private fun <T> callListeners(listeners: ArrayList<Consumer<T?>?>, newValue: T?) {
+    private fun <T> callListeners(
+        listeners: ArrayList<Consumer<T?>?>,
+        newValue: T?,
+    ) {
         listeners.forEach(
             Consumer { listener: Consumer<T?>? ->
                 listener!!.accept(newValue)
-            })
+            },
+        )
     }
 
     companion object {
         private const val TAG = "AccessibilityEventDispatcher"
-        @JvmField
-        var redrawEventTypes: MutableList<Int?> = Arrays.asList<Int?>(
-            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
-            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
-            AccessibilityEvent.TYPE_VIEW_SCROLLED,
-            AccessibilityEvent.TYPE_WINDOWS_CHANGED
-        )
+        var redrawEventTypes: MutableList<Int> =
+            mutableListOf(
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
+                AccessibilityEvent.TYPE_VIEW_SCROLLED,
+                AccessibilityEvent.TYPE_WINDOWS_CHANGED,
+            )
     }
 }

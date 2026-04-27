@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice.axe
 
 import android.graphics.Bitmap
@@ -11,10 +12,13 @@ import com.microsoft.accessibilityinsightsforandroidservice.ViewChangedException
 class AxeContextFactory(
     private val axeImageFactory: AxeImageFactory,
     private val axeViewsFactory: AxeViewsFactory,
-    private val axeDeviceFactory: AxeDeviceFactory
+    private val axeDeviceFactory: AxeDeviceFactory,
 ) {
     @Throws(ViewChangedException::class)
-    fun createAxeContext(rootNode: AccessibilityNodeInfo, screenshot: Bitmap): AxeContext {
+    fun createAxeContext(
+        rootNode: AccessibilityNodeInfo,
+        screenshot: Bitmap,
+    ): AxeContext {
         val axeView = axeViewsFactory.createAxeViews(rootNode)
         val axeDevice = axeDeviceFactory.createAxeDevice(rootNode)
         val axeImage = axeImageFactory.createAxeImage(screenshot)

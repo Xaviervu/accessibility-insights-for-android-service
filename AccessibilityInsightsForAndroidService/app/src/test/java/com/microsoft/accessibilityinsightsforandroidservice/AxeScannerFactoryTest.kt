@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.util.DisplayMetrics
@@ -29,7 +30,8 @@ class AxeScannerFactoryTest {
         Assert.assertNotNull(
             AxeScannerFactory.createAxeScanner(
                 deviceConfigFactoryMock!!,
-                Supplier { displayMetricsMock!! })
+                Supplier { displayMetricsMock!! },
+            ),
         )
     }
 }

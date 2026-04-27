@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
@@ -14,12 +15,12 @@ import org.mockito.junit.MockitoJUnitRunner
 @RunWith(MockitoJUnitRunner::class)
 class NodeViewBuilderFactoryTest {
     @Mock
-    var node: AccessibilityNodeInfo? = null
+    lateinit var node: AccessibilityNodeInfo
 
     @Mock
     var view: AxeView? = null
 
-    var testSubject: NodeViewBuilderFactory? = null
+    lateinit var testSubject: NodeViewBuilderFactory
 
     @Before
     fun prepare() {
@@ -28,6 +29,6 @@ class NodeViewBuilderFactoryTest {
 
     @Test
     fun nodeViewIsNotNull() {
-        Assert.assertNotNull(testSubject!!.createNodeViewBuilder(node!!, null, null))
+        Assert.assertNotNull(testSubject.createNodeViewBuilder(node, mutableListOf(), null))
     }
 }

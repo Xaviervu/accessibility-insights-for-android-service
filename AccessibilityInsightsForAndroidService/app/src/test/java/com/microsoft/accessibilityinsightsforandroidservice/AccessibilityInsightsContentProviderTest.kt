@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.net.Uri
@@ -61,13 +62,14 @@ class AccessibilityInsightsContentProviderTest {
         Assert.assertTrue(testSubject!!.onCreate(requestDispatcherMock!!, tempFileProviderMock!!))
 
         parcelFileDescriptorStaticMock!!
-            .`when`<Any?>(Verification {
-                ParcelFileDescriptor.open(
-                    tempFileMock,
-                    ParcelFileDescriptor.MODE_READ_ONLY
-                )
-            })
-            .thenReturn(tempFileDescriptor)
+            .`when`<Any?>(
+                Verification {
+                    ParcelFileDescriptor.open(
+                        tempFileMock,
+                        ParcelFileDescriptor.MODE_READ_ONLY,
+                    )
+                },
+            ).thenReturn(tempFileDescriptor)
     }
 
     @After
@@ -94,7 +96,8 @@ class AccessibilityInsightsContentProviderTest {
         setupCallerAsNotAdb()
         Assert.assertThrows<SecurityException?>(
             SecurityException::class.java,
-            ThrowingRunnable { testSubject!!.call("METHOD", "ARG", null) })
+            ThrowingRunnable { testSubject!!.call("METHOD", "ARG", null) },
+        )
     }
 
     @Test
@@ -102,7 +105,8 @@ class AccessibilityInsightsContentProviderTest {
         setupCallerAsNotAdb()
         Assert.assertThrows<SecurityException?>(
             SecurityException::class.java,
-            ThrowingRunnable { testSubject!!.openFile(uriMock!!, "r", null) })
+            ThrowingRunnable { testSubject!!.openFile(uriMock!!, "r", null) },
+        )
     }
 
     @Test
@@ -118,20 +122,22 @@ class AccessibilityInsightsContentProviderTest {
         val dispatcherResponse = "dispatcher response"
         Mockito.`when`<String?>(uriMock!!.getPath()).thenReturn("/uri-path")
         val expectedMethod = "/uri-path"
-        Mockito.`when`<String?>(
-            requestDispatcherMock!!.request(
-                expectedMethod,
-                cancellationSignalMock!!
-            )
-        )
-            .thenReturn(dispatcherResponse)
-        Mockito.`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
+        Mockito
+            .`when`<String?>(
+                requestDispatcherMock!!.request(
+                    expectedMethod,
+                    cancellationSignalMock!!,
+                ),
+            ).thenReturn(dispatcherResponse)
+        Mockito
+            .`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
             .thenReturn(tempFileMock)
         Assert.assertSame(
             tempFileDescriptor,
-            testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock)
+            testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock),
         )
-        Mockito.verify<TempFileProvider?>(tempFileProviderMock)
+        Mockito
+            .verify<TempFileProvider?>(tempFileProviderMock)
             .createTempFileWithContents(dispatcherResponse)
     }
 
@@ -141,22 +147,24 @@ class AccessibilityInsightsContentProviderTest {
         setupCallerAsAdb()
         Mockito.`when`<String?>(uriMock!!.getPath()).thenReturn("/uri-path")
         val expectedMethod = "/uri-path"
-        Mockito.`when`<String?>(
-            requestDispatcherMock!!.request(
-                expectedMethod,
-                cancellationSignalMock!!
-            )
-        )
-            .thenThrow(Exception("dispatcher error"))
-        Mockito.`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
+        Mockito
+            .`when`<String?>(
+                requestDispatcherMock!!.request(
+                    expectedMethod,
+                    cancellationSignalMock!!,
+                ),
+            ).thenThrow(Exception("dispatcher error"))
+        Mockito
+            .`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
             .thenReturn(tempFileMock)
         Assert.assertSame(
             tempFileDescriptor,
-            testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock)
+            testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock),
         )
 
         val serializedException = "java.lang.Exception: dispatcher error"
-        Mockito.verify<TempFileProvider?>(tempFileProviderMock)
+        Mockito
+            .verify<TempFileProvider?>(tempFileProviderMock)
             .createTempFileWithContents(serializedException)
     }
 
@@ -166,13 +174,15 @@ class AccessibilityInsightsContentProviderTest {
         setupCallerAsAdb()
 
         Mockito.`when`<String?>(uriMock!!.getPath()).thenReturn("uri-path")
-        Mockito.`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
+        Mockito
+            .`when`<File>(tempFileProviderMock!!.createTempFileWithContents(ArgumentMatchers.any<String?>()))
             .thenThrow(IOException("tempFileProvider error"))
 
         Assert.assertThrows<RuntimeException?>(
             "tempFileProvider error",
             RuntimeException::class.java,
-            ThrowingRunnable { testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock) })
+            ThrowingRunnable { testSubject!!.openFile(uriMock!!, "r", cancellationSignalMock) },
+        )
     }
 
     @Test
@@ -181,14 +191,15 @@ class AccessibilityInsightsContentProviderTest {
         setupCallerAsAdb()
         val dispatcherResponse = "dispatcher response"
         val expectedMethod = "/method"
-        Mockito.`when`<String?>(
-            requestDispatcherMock!!.request(
-                ArgumentMatchers.eq<String?>(
-                    expectedMethod
-                ), ArgumentMatchers.notNull<CancellationSignal>()
-            )
-        )
-            .thenReturn(dispatcherResponse)
+        Mockito
+            .`when`<String?>(
+                requestDispatcherMock!!.request(
+                    ArgumentMatchers.eq<String?>(
+                        expectedMethod,
+                    ),
+                    ArgumentMatchers.notNull<CancellationSignal>(),
+                ),
+            ).thenReturn(dispatcherResponse)
 
         val returnedBundle = testSubject!!.call("method", null, null)
 
@@ -202,14 +213,15 @@ class AccessibilityInsightsContentProviderTest {
     fun callEmitsBundleWithSerializedExceptionOnDispatcherError() {
         setupCallerAsAdb()
         val expectedMethod = "/method"
-        Mockito.`when`<String?>(
-            requestDispatcherMock!!.request(
-                ArgumentMatchers.eq<String?>(
-                    expectedMethod
-                ), ArgumentMatchers.notNull<CancellationSignal>()
-            )
-        )
-            .thenThrow(Exception("dispatcher error"))
+        Mockito
+            .`when`<String?>(
+                requestDispatcherMock!!.request(
+                    ArgumentMatchers.eq<String?>(
+                        expectedMethod,
+                    ),
+                    ArgumentMatchers.notNull<CancellationSignal>(),
+                ),
+            ).thenThrow(Exception("dispatcher error"))
 
         val returnedBundle = testSubject!!.call("method", null, null)
 

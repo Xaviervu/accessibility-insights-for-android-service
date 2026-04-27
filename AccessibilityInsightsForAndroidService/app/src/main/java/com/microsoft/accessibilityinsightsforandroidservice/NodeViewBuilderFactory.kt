@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
@@ -11,8 +12,8 @@ class NodeViewBuilderFactory {
     // implement the AxeView.builder interface, which we do in NodeViewBuilder. This is a factory
     // for that class.
     fun createNodeViewBuilder(
-        node: AccessibilityNodeInfo, children: MutableList<AxeView>, labeledBy: AxeView?
-    ): NodeViewBuilder {
-        return NodeViewBuilder(node, children, labeledBy, AxeRectProvider())
-    }
+        node: AccessibilityNodeInfo,
+        children: MutableList<AxeView>,
+        labeledBy: AxeView?,
+    ): NodeViewBuilder = NodeViewBuilder(node, children, labeledBy, AxeRectProvider())
 }

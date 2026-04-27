@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.os.CancellationSignal
@@ -35,6 +36,7 @@ class UnrecognizedRequestFulfillerTest {
         Assert.assertThrows<RuntimeException?>(
             "Unrecognized request: Test request method",
             RuntimeException::class.java,
-            ThrowingRunnable { testSubject!!.fulfillRequest(cancellationSignal!!) })
+            ThrowingRunnable { testSubject!!.fulfillRequest(cancellationSignal!!) },
+        )
     }
 }

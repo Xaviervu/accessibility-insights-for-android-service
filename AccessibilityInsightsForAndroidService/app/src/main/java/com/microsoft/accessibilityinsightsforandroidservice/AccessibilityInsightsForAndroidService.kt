@@ -1,19 +1,6 @@
-// Portions Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-//
-// Copyright 2016 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.accessibilityservice.AccessibilityService
@@ -63,24 +50,20 @@ class AccessibilityInsightsForAndroidService : AccessibilityService() {
     init {
         axeScanner =
             AxeScannerFactory.createAxeScanner(
-                deviceConfigFactory
+                deviceConfigFactory,
             ) { this.realDisplayMetrics }
         atfaScanner = ATFAScannerFactory.createATFAScanner(this)
         eventHelper = EventHelper(ThreadSafeSwapper<AccessibilityNodeInfo?>())
     }
 
     private val realDisplayMetrics: DisplayMetrics
-        get() =// Correct screen metrics are only accessible within the context of the running
+        get() = // Correct screen metrics are only accessible within the context of the running
             // service. They're not available when the service initializes, hence the callback
             DisplayMetricsHelper.getRealDisplayMetrics(this)
 
     private fun stopScreenshotHandlerThread() {
-        if (screenshotHandlerThread != null) {
-            screenshotHandlerThread!!.quit()
-            screenshotHandlerThread = null
-        }
-
-        screenshotController = null
+        screenshotHandlerThread?.quit()
+        screenshotHandlerThread = null
     }
 
     override fun onServiceConnected() {
@@ -94,15 +77,17 @@ class AccessibilityInsightsForAndroidService : AccessibilityService() {
         info.feedbackType = AccessibilityEvent.TYPES_ALL_MASK
         info.notificationTimeout = 0
         info.flags =
-            (AccessibilityServiceInfo.DEFAULT
-                    or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS)
+            (
+                AccessibilityServiceInfo.DEFAULT
+                    or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+            )
 
         setServiceInfo(info)
 
         stopScreenshotHandlerThread()
         screenshotHandlerThread = HandlerThread("ScreenshotHandlerThread")
-        screenshotHandlerThread!!.start()
-        val screenshotHandler = Handler(screenshotHandlerThread!!.getLooper())
+        screenshotHandlerThread?.start()
+        val screenshotHandler = screenshotHandlerThread?.getLooper()?.let { Handler(it) }
 
         screenshotController =
             ScreenshotController(
@@ -110,7 +95,8 @@ class AccessibilityInsightsForAndroidService : AccessibilityService() {
                 screenshotHandler,
                 onScreenshotAvailableProvider,
                 bitmapProvider,
-                { MediaProjectionHolder.get() })
+                { MediaProjectionHolder.get() },
+            )
 
         SynchronizedRequestDispatcher.SharedInstance.teardown()
         tempFileProvider = TempFileProvider(applicationContext)
@@ -121,37 +107,40 @@ class AccessibilityInsightsForAndroidService : AccessibilityService() {
         val layoutParamGenerator = LayoutParamGenerator { this.realDisplayMetrics }
         focusVisualizationCanvas = FocusVisualizationCanvas(this)
         focusVisualizer = FocusVisualizer(FocusVisualizerStyles(), focusVisualizationCanvas)
-        focusVisualizerController = FocusVisualizerController(
-            focusVisualizer,
-            focusVisualizationStateManager,
-            UIThreadRunner(),
-            windowManager,
-            layoutParamGenerator,
-            focusVisualizationCanvas,
-            DateProvider()
-        )
+        focusVisualizerController =
+            FocusVisualizerController(
+                focusVisualizer,
+                focusVisualizationStateManager,
+                UIThreadRunner(),
+                windowManager,
+                layoutParamGenerator,
+                focusVisualizationCanvas,
+                DateProvider(),
+            )
         accessibilityEventDispatcher = AccessibilityEventDispatcher()
         deviceOrientationHandler =
             DeviceOrientationHandler(resources.configuration.orientation)
         val rootNodeFinder = RootNodeFinder()
-        val resultsV2ContainerSerializer = ResultsV2ContainerSerializer(
-            ATFARulesSerializer(),
-            ATFAResultsSerializer(GsonBuilder()),
-            GsonBuilder()
-        )
+        val resultsV2ContainerSerializer =
+            ResultsV2ContainerSerializer(
+                ATFARulesSerializer(),
+                ATFAResultsSerializer(GsonBuilder()),
+                GsonBuilder(),
+            )
 
         setupFocusVisualizationListeners()
 
-        val requestDispatcher = RequestDispatcher(
-            rootNodeFinder,
-            screenshotController!!,
-            eventHelper,
-            axeScanner,
-            atfaScanner,
-            deviceConfigFactory,
-            focusVisualizationStateManager,
-            resultsV2ContainerSerializer
-        )
+        val requestDispatcher =
+            RequestDispatcher(
+                rootNodeFinder,
+                screenshotController!!,
+                eventHelper,
+                axeScanner,
+                atfaScanner,
+                deviceConfigFactory,
+                focusVisualizationStateManager,
+                resultsV2ContainerSerializer,
+            )
         SynchronizedRequestDispatcher.SharedInstance.setup(requestDispatcher)
     }
 
@@ -163,15 +152,16 @@ class AccessibilityInsightsForAndroidService : AccessibilityService() {
                 NotificationChannel(
                     NOTIFICATION_CHANNEL_ID,
                     getString(R.string.accessibility_service_label),
-                    NotificationManager.IMPORTANCE_LOW
+                    NotificationManager.IMPORTANCE_LOW,
                 )
             notificationManager.createNotificationChannel(channel)
         }
-        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
-        } else {
-            Notification.Builder(this)
-        }
+        val builder =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+            } else {
+                Notification.Builder(this)
+            }
 
         val notification =
             builder
@@ -181,7 +171,9 @@ class AccessibilityInsightsForAndroidService : AccessibilityService() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
-                NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION,
             )
         } else {
             startForeground(NOTIFICATION_ID, notification)
@@ -189,24 +181,30 @@ class AccessibilityInsightsForAndroidService : AccessibilityService() {
     }
 
     private fun setupFocusVisualizationListeners() {
-        accessibilityEventDispatcher.addOnRedrawEventListener(Consumer { event: AccessibilityEvent ->
-            focusVisualizerController.onRedrawEvent(
-                event
-            )
-        })
-        accessibilityEventDispatcher.addOnFocusEventListener(Consumer { event: AccessibilityEvent ->
-            focusVisualizerController.onFocusEvent(
-                event
-            )
-        })
-        accessibilityEventDispatcher.addOnAppChangedListener(Consumer { nodeInfo: AccessibilityNodeInfo ->
-            focusVisualizerController.onAppChanged(
-                nodeInfo
-            )
-        })
+        accessibilityEventDispatcher.addOnRedrawEventListener(
+            Consumer { event: AccessibilityEvent ->
+                focusVisualizerController.onRedrawEvent(
+                    event,
+                )
+            },
+        )
+        accessibilityEventDispatcher.addOnFocusEventListener(
+            Consumer { event: AccessibilityEvent ->
+                focusVisualizerController.onFocusEvent(
+                    event,
+                )
+            },
+        )
+        accessibilityEventDispatcher.addOnAppChangedListener(
+            Consumer { nodeInfo: AccessibilityNodeInfo ->
+                focusVisualizerController.onAppChanged(
+                    nodeInfo,
+                )
+            },
+        )
         deviceOrientationHandler.subscribe { orientation: Int? ->
             focusVisualizerController.onOrientationChanged(
-                orientation
+                orientation,
             )
         }
     }
@@ -230,7 +228,9 @@ class AccessibilityInsightsForAndroidService : AccessibilityService() {
         val windowId = event.windowId
 
         val eventType = event.eventType
-        if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || eventType == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER || eventType == AccessibilityEvent.TYPE_VIEW_HOVER_EXIT) {
+        if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || eventType == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER ||
+            eventType == AccessibilityEvent.TYPE_VIEW_HOVER_EXIT
+        ) {
             activeWindowId = windowId
         }
 

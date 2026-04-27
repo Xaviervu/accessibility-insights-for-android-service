@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.graphics.Canvas
@@ -12,7 +13,7 @@ class FocusElementLine(
     private val eventSource: AccessibilityNodeInfo?,
     private val previousEventSource: AccessibilityNodeInfo?,
     private var paints: HashMap<String, Paint>,
-    private val view: View
+    private val view: View,
 ) {
     lateinit var paintVar: HashMap<String, Paint>
     private var yOffset = 0
@@ -44,7 +45,7 @@ class FocusElementLine(
             this.xEnd,
             this.yEnd,
             this.paints.get("backgroundLine")!!,
-            canvas
+            canvas,
         )
         this.drawConnectingLine(
             this.xStart,
@@ -52,7 +53,7 @@ class FocusElementLine(
             this.xEnd,
             this.yEnd,
             this.paints.get("foregroundLine")!!,
-            canvas
+            canvas,
         )
     }
 
@@ -70,7 +71,12 @@ class FocusElementLine(
     }
 
     private fun drawConnectingLine(
-        xStart: Int, yStart: Int, xEnd: Int, yEnd: Int, paint: Paint, canvas: Canvas
+        xStart: Int,
+        yStart: Int,
+        xEnd: Int,
+        yEnd: Int,
+        paint: Paint,
+        canvas: Canvas,
     ) {
         canvas.drawLine(xStart.toFloat(), yStart.toFloat(), xEnd.toFloat(), yEnd.toFloat(), paint)
     }

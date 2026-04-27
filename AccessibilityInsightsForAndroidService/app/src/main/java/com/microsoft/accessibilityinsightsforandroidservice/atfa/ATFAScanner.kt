@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.accessibilityinsightsforandroidservice.atfa
 
 import android.content.Context
@@ -13,17 +14,21 @@ import com.google.android.apps.common.testing.accessibility.framework.uielement.
 import com.google.android.apps.common.testing.accessibility.framework.utils.contrast.BitmapImage
 import java.util.ArrayList
 
-class ATFAScanner(private val context: Context) {
-    private val relevantResultTypes = listOf(
-        AccessibilityCheckResultType.ERROR,
-        AccessibilityCheckResultType.INFO,
-        AccessibilityCheckResultType.WARNING,
-        AccessibilityCheckResultType.RESOLVED,
-        AccessibilityCheckResultType.NOT_RUN
-    )
+class ATFAScanner(
+    private val context: Context,
+) {
+    private val relevantResultTypes =
+        listOf(
+            AccessibilityCheckResultType.ERROR,
+            AccessibilityCheckResultType.INFO,
+            AccessibilityCheckResultType.WARNING,
+            AccessibilityCheckResultType.RESOLVED,
+            AccessibilityCheckResultType.NOT_RUN,
+        )
 
     fun scanWithATFA(
-        rootNode: AccessibilityNodeInfo, screenshot: BitmapImage?
+        rootNode: AccessibilityNodeInfo,
+        screenshot: BitmapImage?,
     ): MutableList<AccessibilityHierarchyCheckResult> {
         val parameters = Parameters()
         parameters.setSaveViewImages(true)
@@ -32,7 +37,7 @@ class ATFAScanner(private val context: Context) {
 
         val checks =
             AccessibilityCheckPreset.getAccessibilityHierarchyChecksForPreset(
-                AccessibilityCheckPreset.LATEST
+                AccessibilityCheckPreset.LATEST,
             )
         val hierarchy =
             AccessibilityHierarchyAndroid.newBuilder(rootNode, this.context).build()
@@ -45,7 +50,7 @@ class ATFAScanner(private val context: Context) {
 
         return AccessibilityCheckResultUtils.getResultsForTypes(
             results,
-            relevantResultTypes.toSet()
+            relevantResultTypes.toSet(),
         )
     }
 }
