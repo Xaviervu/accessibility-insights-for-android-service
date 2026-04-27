@@ -22,6 +22,9 @@ import android.os.OperationCanceledException;
 import android.view.accessibility.AccessibilityNodeInfo;
 import com.deque.axe.android.AxeResult;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult;
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -38,8 +41,10 @@ public class ResultV2RequestFulfillerTest {
 
   @Mock RootNodeFinder rootNodeFinder;
   @Mock EventHelper eventHelper;
-  @Mock AxeScanner axeScanner;
-  @Mock ATFAScanner atfaScanner;
+  @Mock
+  AxeScanner axeScanner;
+  @Mock
+  ATFAScanner atfaScanner;
   @Mock ScreenshotController screenshotController;
   @Mock Bitmap screenshotMock;
   @Mock AccessibilityNodeInfo sourceNode;

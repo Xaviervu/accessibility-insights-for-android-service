@@ -12,6 +12,8 @@ import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 import com.deque.axe.android.AxeView;
 import com.deque.axe.android.wrappers.AxeRect;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRectProvider;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
@@ -26,7 +28,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class NodeViewBuilderTest {
 
   @Mock AccessibilityNodeInfo node;
-  @Mock AxeRectProvider rectProvider;
+  @Mock
+  AxeRectProvider rectProvider;
   List<AxeView> children;
 
   private final int boundsLeft = 0;

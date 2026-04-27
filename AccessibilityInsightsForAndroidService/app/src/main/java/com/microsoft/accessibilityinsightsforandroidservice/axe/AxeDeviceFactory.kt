@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.accessibilityinsightsforandroidservice
+package com.microsoft.accessibilityinsightsforandroidservice.axe
 
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.accessibility.AccessibilityNodeInfo
 import com.deque.axe.android.AxeDevice
+import com.microsoft.accessibilityinsightsforandroidservice.DeviceConfigFactory
 import java.util.function.Supplier
 
 class AxeDeviceFactory(

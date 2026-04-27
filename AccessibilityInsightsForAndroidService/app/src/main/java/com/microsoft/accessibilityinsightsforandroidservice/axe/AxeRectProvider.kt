@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.accessibilityinsightsforandroidservice
+package com.microsoft.accessibilityinsightsforandroidservice.axe
 
 import com.deque.axe.android.wrappers.AxeRect
 

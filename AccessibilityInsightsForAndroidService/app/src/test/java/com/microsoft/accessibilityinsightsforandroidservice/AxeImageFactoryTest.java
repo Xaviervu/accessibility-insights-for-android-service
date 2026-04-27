@@ -4,6 +4,9 @@
 package com.microsoft.accessibilityinsightsforandroidservice;
 
 import android.graphics.Bitmap;
+
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeImageFactory;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

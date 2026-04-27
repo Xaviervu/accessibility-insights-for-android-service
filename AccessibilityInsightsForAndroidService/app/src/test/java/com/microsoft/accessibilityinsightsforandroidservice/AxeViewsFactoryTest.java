@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 
 import android.view.accessibility.AccessibilityNodeInfo;
 import com.deque.axe.android.AxeView;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeViewsFactory;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;

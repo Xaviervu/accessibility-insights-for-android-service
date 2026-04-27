@@ -21,6 +21,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAResultsSerializer;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;

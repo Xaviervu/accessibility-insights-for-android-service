@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.accessibilityinsightsforandroidservice
+package com.microsoft.accessibilityinsightsforandroidservice.atfa
 
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheck
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset

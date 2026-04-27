@@ -12,6 +12,8 @@ import com.google.android.apps.common.testing.accessibility.framework.uielement.
 import com.google.android.apps.common.testing.accessibility.framework.uielement.ViewHierarchyElement;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonParser;
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFARulesSerializer;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;

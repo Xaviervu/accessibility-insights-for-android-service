@@ -16,6 +16,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonWriter;
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAResultsSerializer;
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFARulesSerializer;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -33,8 +36,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class ResultsV2ContainerSerializerTest {
 
   @Mock AxeResult axeResultMock;
-  @Mock ATFARulesSerializer atfaRulesSerializer;
-  @Mock ATFAResultsSerializer atfaResultsSerializer;
+  @Mock
+  ATFARulesSerializer atfaRulesSerializer;
+  @Mock
+  ATFAResultsSerializer atfaResultsSerializer;
   @Mock GsonBuilder gsonBuilder;
   @Mock JsonWriter jsonWriter;
   @Mock Gson gson;

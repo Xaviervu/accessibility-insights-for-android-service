@@ -4,6 +4,8 @@ package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.os.CancellationSignal
 import com.microsoft.accessibilityinsightsforandroidservice.Logger.logVerbose
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner
 
 class RequestDispatcher(
     private val rootNodeFinder: RootNodeFinder,

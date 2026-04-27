@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 
 import android.util.DisplayMetrics;
 import android.view.accessibility.AccessibilityNodeInfo;
+
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeDeviceFactory;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

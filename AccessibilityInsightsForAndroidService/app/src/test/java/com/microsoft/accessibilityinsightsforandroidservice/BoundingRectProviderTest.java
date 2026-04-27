@@ -3,6 +3,8 @@
 
 package com.microsoft.accessibilityinsightsforandroidservice;
 
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRectProvider;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

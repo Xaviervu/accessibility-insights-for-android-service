@@ -7,6 +7,7 @@ import android.os.Build
 import android.view.accessibility.AccessibilityNodeInfo
 import com.deque.axe.android.AxeView
 import com.deque.axe.android.wrappers.AxeRect
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRectProvider
 
 class NodeViewBuilder(
     private val accessibilityNode: AccessibilityNodeInfo,

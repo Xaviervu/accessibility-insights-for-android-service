@@ -10,6 +10,10 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import com.deque.axe.android.Axe;
 import com.deque.axe.android.AxeContext;
 import com.deque.axe.android.AxeResult;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeContextFactory;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRunnerFactory;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,8 +26,10 @@ public class AxeScannerTest {
 
   @Mock Bitmap screenshotMock;
   @Mock AccessibilityNodeInfo accessibilityNodeInfoMock;
-  @Mock AxeRunnerFactory axeRunnerFactoryMock;
-  @Mock AxeContextFactory axeContextFactoryMock;
+  @Mock
+  AxeRunnerFactory axeRunnerFactoryMock;
+  @Mock
+  AxeContextFactory axeContextFactoryMock;
   @Mock AxeResult axeResultMock;
   @Mock Axe axeMock;
   @Mock AxeContext axeContextMock;

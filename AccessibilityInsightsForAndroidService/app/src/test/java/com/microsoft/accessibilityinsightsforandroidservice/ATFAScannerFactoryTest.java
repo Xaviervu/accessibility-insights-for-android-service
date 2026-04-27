@@ -4,6 +4,9 @@
 package com.microsoft.accessibilityinsightsforandroidservice;
 
 import android.content.Context;
+
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScannerFactory;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

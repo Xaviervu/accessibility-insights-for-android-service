@@ -6,6 +6,8 @@ import android.graphics.Bitmap
 import android.os.CancellationSignal
 import android.view.accessibility.AccessibilityNodeInfo
 import com.google.android.apps.common.testing.accessibility.framework.utils.contrast.BitmapImage
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer

@@ -1,9 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.accessibilityinsightsforandroidservice
+package com.microsoft.accessibilityinsightsforandroidservice.axe
 
 import android.view.accessibility.AccessibilityNodeInfo
 import com.deque.axe.android.AxeView
+import com.microsoft.accessibilityinsightsforandroidservice.AccessibilityNodeInfoQueueBuilder
+import com.microsoft.accessibilityinsightsforandroidservice.NodeViewBuilderFactory
+import com.microsoft.accessibilityinsightsforandroidservice.OrderedValue
+import com.microsoft.accessibilityinsightsforandroidservice.ViewChangedException
 import java.util.Hashtable
 import java.util.Queue
 import kotlin.collections.ArrayList
@@ -11,6 +15,7 @@ import kotlin.collections.HashSet
 import kotlin.collections.MutableList
 import kotlin.collections.MutableMap
 import kotlin.collections.MutableSet
+import kotlin.collections.get
 
 class AxeViewsFactory(
     var nodeViewBuilderFactory: NodeViewBuilderFactory,

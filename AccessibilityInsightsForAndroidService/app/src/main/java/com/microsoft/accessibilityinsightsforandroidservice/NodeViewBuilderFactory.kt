@@ -4,6 +4,7 @@ package com.microsoft.accessibilityinsightsforandroidservice
 
 import android.view.accessibility.AccessibilityNodeInfo
 import com.deque.axe.android.AxeView
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeRectProvider
 
 class NodeViewBuilderFactory {
     // The reason we need something called BuilderFactory is because axe-android requires us to

@@ -4,6 +4,9 @@
 package com.microsoft.accessibilityinsightsforandroidservice;
 
 import android.util.DisplayMetrics;
+
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScannerFactory;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.accessibilityinsightsforandroidservice
+package com.microsoft.accessibilityinsightsforandroidservice.axe
 
 import android.util.DisplayMetrics
+import com.microsoft.accessibilityinsightsforandroidservice.AccessibilityNodeInfoQueueBuilder
+import com.microsoft.accessibilityinsightsforandroidservice.ByteArrayOutputStreamProvider
+import com.microsoft.accessibilityinsightsforandroidservice.DeviceConfigFactory
+import com.microsoft.accessibilityinsightsforandroidservice.NodeViewBuilderFactory
 import java.util.function.Supplier
 
 object AxeScannerFactory {

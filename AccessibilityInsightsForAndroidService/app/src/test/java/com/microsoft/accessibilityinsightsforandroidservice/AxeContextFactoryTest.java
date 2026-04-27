@@ -11,6 +11,11 @@ import com.deque.axe.android.AxeContext;
 import com.deque.axe.android.AxeDevice;
 import com.deque.axe.android.AxeView;
 import com.deque.axe.android.colorcontrast.AxeImage;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeContextFactory;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeDeviceFactory;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeImageFactory;
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeViewsFactory;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,11 +26,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class AxeContextFactoryTest {
 
-  @Mock AxeImageFactory axeImageFactoryMock;
+  @Mock
+  AxeImageFactory axeImageFactoryMock;
   @Mock AxeImage axeImageMock;
-  @Mock AxeViewsFactory axeViewsFactoryMock;
+  @Mock
+  AxeViewsFactory axeViewsFactoryMock;
   @Mock AxeView axeViewMock;
-  @Mock AxeDeviceFactory axeDeviceFactoryMock;
+  @Mock
+  AxeDeviceFactory axeDeviceFactoryMock;
   @Mock AxeDevice axeDeviceMock;
   @Mock AccessibilityNodeInfo rootNodeMock;
   @Mock Bitmap screenshotMock;

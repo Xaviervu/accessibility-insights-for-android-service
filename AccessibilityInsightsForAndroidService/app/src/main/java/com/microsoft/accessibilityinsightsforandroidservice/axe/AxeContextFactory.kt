@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.accessibilityinsightsforandroidservice
+package com.microsoft.accessibilityinsightsforandroidservice.axe
 
 import android.graphics.Bitmap
 import android.view.accessibility.AccessibilityNodeInfo
 import com.deque.axe.android.AxeContext
 import com.deque.axe.android.wrappers.AxeEventStream
+import com.microsoft.accessibilityinsightsforandroidservice.ViewChangedException
 
 class AxeContextFactory(
     private val axeImageFactory: AxeImageFactory,

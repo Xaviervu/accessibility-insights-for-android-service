@@ -18,6 +18,8 @@ import com.google.android.apps.common.testing.accessibility.framework.Parameters
 import com.google.android.apps.common.testing.accessibility.framework.uielement.AccessibilityHierarchyAndroid;
 import com.google.android.apps.common.testing.accessibility.framework.utils.contrast.BitmapImage;
 import com.google.common.collect.ImmutableSet;
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner;
+
 import java.util.Collections;
 import java.util.List;
 import org.junit.After;

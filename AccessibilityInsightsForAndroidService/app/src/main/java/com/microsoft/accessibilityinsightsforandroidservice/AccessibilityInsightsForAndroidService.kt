@@ -33,8 +33,13 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.google.gson.GsonBuilder
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAResultsSerializer
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFARulesSerializer
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScanner
+import com.microsoft.accessibilityinsightsforandroidservice.atfa.ATFAScannerFactory
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScanner
+import com.microsoft.accessibilityinsightsforandroidservice.axe.AxeScannerFactory
 import java.util.function.Consumer
-import java.util.function.Supplier
 
 @SuppressLint("AccessibilityPolicy")
 class AccessibilityInsightsForAndroidService : AccessibilityService() {
